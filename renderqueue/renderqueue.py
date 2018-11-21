@@ -17,12 +17,13 @@ import socket
 import sys
 import time
 
-from uistyle.Qt import QtCore, QtGui, QtWidgets
-import uistyle.ui_template as UI
+from Qt import QtCore, QtGui, QtWidgets
+import icons_rc
+import ui_template as UI
 
 # Import custom modules
 import oswrapper
-#import database
+import database
 import outputparser
 #import sequence
 #import verbose
@@ -38,7 +39,7 @@ WINDOW_OBJECT = "RenderQueueUI"
 
 # Set the UI and the stylesheet
 UI_FILE = "renderqueue.ui"
-STYLESHEET = '/opt/profiles/mike/dev_tmp/renderqueue/renderqueue/uistyle/style.qss'  # Set to None to use the parent app's stylesheet
+STYLESHEET = 'style.qss'  # Set to None to use the parent app's stylesheet
 
 # Other options
 STORE_WINDOW_GEOMETRY = True
@@ -114,8 +115,8 @@ class RenderQueueApp(QtWidgets.QMainWindow, UI.TemplateUI):
 		self.ui.actionExit.setIcon(QtGui.QIcon.fromTheme("application-exit-symbolic"))
 
 		# Instantiate render queue class and load data
-		# self.rq = database.RenderQueue()
-		# self.rq.loadXML(os.path.join(os.environ['IC_CONFIGDIR'], 'renderQueue.xml'), use_template=False)
+		self.rq = database.RenderQueue()
+		#self.rq.loadXML(os.path.join(os.environ['IC_CONFIGDIR'], 'renderQueue.xml'), use_template=False)
 
 		# Create a QProcess object to handle the rendering process
 		# asynchronously
@@ -267,13 +268,17 @@ class RenderQueueApp(QtWidgets.QMainWindow, UI.TemplateUI):
 			function should be read only.
 		"""
 		if reloadDatabase:
-			self.rq.loadXML(quiet=True)  # Reload XML data
+			pass
+			#self.rq.loadXML(quiet=True)  # Reload XML data
 
 		# Stop the widget from emitting signals
 		self.ui.renderQueue_treeWidget.blockSignals(True)
 
 		# Populate tree widget with render jobs
-		for jobElement in self.rq.getJobs():
+		jobs = self.rq.getJobs()
+		if jobs is None:
+			return
+		for jobElement in jobs:
 
 			# Get values from XML
 			jobID = jobElement.get('id')

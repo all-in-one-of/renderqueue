@@ -16,8 +16,8 @@ import sys
 import time
 import traceback
 
-from uistyle.Qt import QtCore, QtGui, QtWidgets
-import uistyle.ui_template as UI
+from Qt import QtCore, QtGui, QtWidgets
+import ui_template as UI
 
 # Import custom modules
 import oswrapper
@@ -41,7 +41,7 @@ WINDOW_OBJECT = "renderSubmitUI"
 
 # Set the UI and the stylesheet
 UI_FILE = "submit.ui"
-STYLESHEET = '/opt/profiles/mike/dev_tmp/renderqueue/renderqueue/uistyle/style.qss'  # Set to None to use the parent app's stylesheet
+STYLESHEET = 'style.qss'  # Set to None to use the parent app's stylesheet
 
 # Other options
 STORE_WINDOW_GEOMETRY = True

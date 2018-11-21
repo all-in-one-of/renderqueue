@@ -1,0 +1,16 @@
+<RCC>
+  <qresource prefix="icons">
+    <file>icons/icon_add.png</file>
+    <file>icons/icon_arrow_down.png</file>
+    <file>icons/icon_arrow_up.png</file>
+    <file>icons/icon_cross.png</file>
+    <file>icons/icon_delete.png</file>
+    <file>icons/icon_editor.png</file>
+    <file>icons/icon_pause.png</file>
+    <file>icons/icon_refresh.png</file>
+    <file>icons/icon_render.png</file>
+    <file>icons/icon_resubmit.png</file>
+    <file>icons/icon_settings.png</file>
+    <file>icons/icon_tick.png</file>
+  </qresource>
+</RCC>
