@@ -5,13 +5,11 @@
 # Mike Bonnington <mjbonnington@gmail.com>
 # (c) 2016-2018
 #
-# Manages the Render Queue XML database.
+# Interface for the Render Queue database.
 
 
 import json
 import uuid
-#import xml.etree.ElementTree as ET
-#import xmlData
 
 # Import custom modules
 import oswrapper
@@ -31,7 +29,6 @@ class RenderQueue():
 	def newJob(self, **kwargs):
 		""" Create a new render job on submission.
 		"""
-		#self.loadXML(quiet=True) # reload XML data
 		jobID = uuid.uuid4().hex # generate UUID
 
 		# jobName, jobType, frames, taskSize, priority = genericOpts

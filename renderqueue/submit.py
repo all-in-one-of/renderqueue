@@ -25,7 +25,7 @@ import oswrapper
 import common
 import submit_deadline as deadline
 import database
-#import sequence
+import sequence
 # import settingsData
 #import userPrefs
 #import verbose
@@ -164,7 +164,7 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 		# Set job type from Icarus environment when possible
 		if UI.ENVIRONMENT == "STANDALONE":
 			#self.jobType = userPrefs.query('rendersubmit', 'lastrenderjobtype', default=self.ui.jobType_comboBox.currentText())
-			self.jobType = self.ui.jobType_comboBox.currentText()
+			self.jobType = self.ui.jobType_comboBox.currentText() # TEMP HACK
 			self.ui.jobType_comboBox.setCurrentIndex(self.ui.jobType_comboBox.findText(self.jobType))
 			self.ui.camera_label.setEnabled(False)
 			self.ui.camera_comboBox.setEnabled(False)
@@ -241,7 +241,7 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 		else:
 			pass
 			#self.getFrameRangeFromShotSettings()
-		#self.calcFrameList()
+		self.calcFrameList()
 
 		if flags:
 			self.ui.flags_lineEdit.setText(flags)
@@ -270,7 +270,7 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 			comboBox = self.ui.nukeScript_comboBox
 		scene = self.makePathAbsolute(comboBox.currentText()).replace("\\", "/")
 
-		self.xmlData = render_common.settings_file(scene, suffix="_icSubmissionData.xml")
+		self.xmlData = common.settings_file(scene, suffix="_icSubmissionData.xml")
 		if self.xmlData:
 			self.xd.loadXML(self.xmlData, use_template=False)
 			self.setupWidgets(self.ui, updateOnly=True)
@@ -366,7 +366,9 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 	def makePathRelative(self, absPath):
 		""" Convert an absolute path to a relative path.
 		"""
-		if absPath.startswith(self.relativeScenesDir):
+		if self.relativeScenesDir is "":
+			return absPath
+		elif absPath.startswith(self.relativeScenesDir):
 			return absPath.replace(self.relativeScenesDir, self.relativeScenesToken)
 		else:
 			return False
@@ -888,13 +890,14 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 				# Actually submit the job
 				if self.submitTo == "Render Queue":
 					result, result_msg = self.submitToRenderQueue(**submit_args)
-				if self.submitTo == "Deadline":
+				elif self.submitTo == "Deadline":
 					result, result_msg = deadline.submit_job(**submit_args)
 
 				# Show post-confirmation dialog
-				# dialog_title = "Submission Results - %s" %submit_args['jobName']
-				# dialog_msg = job_info_msg + "\n" + result_msg
-				# dialog.display(dialog_msg, dialog_title, conf=True)
+				dialog_title = "Submission Results - %s" %submit_args['jobName']
+				dialog_msg = job_info_msg + "\n" + result_msg
+				#dialog.display(dialog_msg, dialog_title, conf=True)
+				self.promptDialog(dialog_msg, dialog_title, conf=True)
 
 
 	def getSubmissionOptions(self):
@@ -903,8 +906,7 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 		submit_args = {}
 
 		if self.submitTo == "Render Queue":
-			#self.calcFrameList(quiet=False)
-			pass
+			self.calcFrameList(quiet=False)
 			# if not self.calcFrameList(quiet=False):
 			# 	return None
 
@@ -931,7 +933,7 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 			submit_args['plugin'] = "CommandLine"  # Deadline only
 			command = self.ui.command_lineEdit.text()
 			submit_args['jobName'] = os.path.splitext(os.path.basename(command))[0]
-			submit_args['executable'] = command
+			submit_args['command'] = command
 			submit_args['flags'] = self.ui.flags_lineEdit.text()
 			submit_args['renderLayers'] = None
 
@@ -1015,6 +1017,7 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 		# 		#verbose.error(error_msg)
 		# 		print(error_msg)
 		# 		return False, "Failed to submit job.\n%s" %error_msg
+		renderCmd = ""
 
 		# Instantiate render queue class, load data, and create new job
 		rq = database.RenderQueue()
@@ -1022,7 +1025,9 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 
 		try:
 			#renderOpts = kwargs['scene']
-			renderCmd = ""
+			kwargs['jobType'] = self.jobType
+			kwargs['tasks'] = self.taskList
+			kwargs['submitTime'] = time.strftime(time_format_str)
 
 			# Set up Nuke command-line flags
 			if self.jobType == "Nuke":
@@ -1038,14 +1043,17 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 					kwargs['renderLayer'] = renderLayer
 
 					# Package option variables into tuples
-					jobName = "%s - %s" %(kwargs['jobName'], renderLayer)
-					genericOpts = jobName, self.jobType, kwargs['frames'], kwargs['taskSize'], kwargs['priority']
+					kwargs['jobName'] += " - " + renderLayer
+					#jobName = "%s - %s" %(kwargs['jobName'], renderLayer)
+					#genericOpts = jobName, self.jobType, kwargs['frames'], kwargs['taskSize'], kwargs['priority']
 					if self.jobType == "Maya":
-						mayaFlags = "-rl %s" %renderLayer
-						renderOpts = kwargs['scene'], kwargs['mayaProject'], mayaFlags, kwargs['renderer'], renderCmd
+						kwargs['flags'] += "-rl %s " %renderLayer
+						#mayaFlags = "-rl %s" %renderLayer
+						#renderOpts = kwargs['scene'], kwargs['mayaProject'], mayaFlags, kwargs['renderer'], renderCmd
 					elif self.jobType == "Nuke":
-						nukeFlags = "%s -X %s" %(kwargs['flags'], renderLayer)
-						renderOpts = kwargs['scene'], nukeFlags, renderCmd
+						kwargs['flags'] += "-X %s " %renderLayer
+						#nukeFlags = "%s -X %s" %(kwargs['flags'], renderLayer)
+						#renderOpts = kwargs['scene'], nukeFlags, renderCmd
 
 					#rq.newJob(genericOpts, renderOpts, self.taskList, os.environ.get('IC_USERNAME', getpass.getuser()), time.strftime(time_format_str), kwargs['comment'])
 					rq.newJob(**kwargs)
@@ -1058,11 +1066,11 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 
 			else:  # Single job submission ---------------------------------------
 				# Package option variables into tuples
-				genericOpts = kwargs['jobName'], self.jobType, kwargs['frames'], kwargs['taskSize'], kwargs['priority']
-				if self.jobType == "Maya":
-					renderOpts = kwargs['scene'], kwargs['mayaProject'], kwargs['flags'], kwargs['renderer'], renderCmd
-				elif self.jobType == "Nuke":
-					renderOpts = kwargs['scene'], kwargs['flags'], renderCmd
+				# genericOpts = kwargs['jobName'], self.jobType, kwargs['frames'], kwargs['taskSize'], kwargs['priority']
+				# if self.jobType == "Maya":
+				# 	renderOpts = kwargs['scene'], kwargs['mayaProject'], kwargs['flags'], kwargs['renderer'], renderCmd
+				# elif self.jobType == "Nuke":
+				# 	renderOpts = kwargs['scene'], kwargs['flags'], renderCmd
 
 				#rq.newJob(genericOpts, renderOpts, self.taskList, os.environ.get('IC_USERNAME', getpass.getuser()), time.strftime(time_format_str), kwargs['comment'])
 				rq.newJob(**kwargs)
