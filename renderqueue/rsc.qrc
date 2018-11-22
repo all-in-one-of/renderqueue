@@ -1,0 +1,26 @@
+<RCC>
+  <qresource>
+    <file>images/indicator_less.png</file>
+    <file>images/indicator_less_disabled.png</file>
+    <file>images/indicator_more.png</file>
+    <file>images/indicator_more_disabled.png</file>
+    <file>images/popup_indicator.png</file>
+    <file>images/branch-end.png</file>
+    <file>images/branch-more.png</file>
+    <file>images/vline.png</file>
+    <file>images/arrow_down_disabled.png</file>
+    <file>images/arrow_down.png</file>
+    <file>images/arrow_left_disabled.png</file>
+    <file>images/arrow_left.png</file>
+    <file>images/arrow_right_disabled.png</file>
+    <file>images/arrow_right.png</file>
+    <file>images/arrow_up_disabled.png</file>
+    <file>images/arrow_up.png</file>
+    <file>images/checkbox_checked_disabled.png</file>
+    <file>images/checkbox_checked.png</file>
+    <file>images/checkbox_indeterminate_disabled.png</file>
+    <file>images/checkbox_indeterminate.png</file>
+    <file>images/radiobutton_checked_disabled.png</file>
+    <file>images/radiobutton_checked.png</file>
+  </qresource>
+</RCC>

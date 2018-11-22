@@ -1,0 +1,38 @@
+{
+    "comment": "bollocks", 
+    "version": "2018", 
+    "taskSize": 1, 
+    "renderLayers": "balls", 
+    "scene": "", 
+    "renderer": "arnold", 
+    "frames": "1-20", 
+    "renderCmdEnvVar": "MAYARENDERVERSION", 
+    "mayaProject": "", 
+    "group": "", 
+    "priority": 50, 
+    "camera": "", 
+    "useRenderSetup": false, 
+    "username": "mike", 
+    "pool": "", 
+    "envVars": [
+        "JOB", 
+        "SHOT", 
+        "JOBPATH", 
+        "SHOTPATH", 
+        "MAYADIR", 
+        "MAYASCENESDIR", 
+        "MAYARENDERSDIR"
+    ], 
+    "plugin": "MayaBatch", 
+    "renderLayer": "balls", 
+    "jobName": "", 
+    "flags": "", 
+    "output": {
+        "balls": [
+            "$MAYADIR/renders/<Scene>/balls", 
+            "balls_<RenderPass>.####.exr"
+        ]
+    }, 
+    "outputFilePath": "$MAYADIR/renders", 
+    "outputFilePrefix": "<Scene>/<RenderLayer>/<RenderLayer>_<RenderPass>"
+}

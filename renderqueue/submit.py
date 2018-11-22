@@ -24,7 +24,7 @@ import oswrapper
 #import pDialog
 import common
 import submit_deadline as deadline
-#import database
+import database
 #import sequence
 # import settingsData
 #import userPrefs
@@ -433,7 +433,8 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 				comboBox.insertItem(0, newEntry)
 				comboBox.setCurrentIndex(0)  # Always insert the new entry at the top of the list and select it
 			else:
-				verbose.warning("Only %s belonging to the current shot can be submitted." %fileTerminology)
+				#verbose.warning("Only %s belonging to the current shot can be submitted." %fileTerminology)
+				print("Warning: Only %s belonging to the current shot can be submitted." %fileTerminology)
 
 
 	def getFrameRangeFromShotSettings(self):
@@ -584,7 +585,8 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 			if self.numList is False:
 				#raise RuntimeError("Invalid entry for frame range.")
 				if not quiet:
-					verbose.warning("Invalid entry for frame range.")
+					#verbose.warning("Invalid entry for frame range.")
+					print("Warning: Invalid entry for frame range.")
 				# self.ui.frames_lineEdit.setProperty("mandatoryField", True)
 				# self.ui.frames_lineEdit.style().unpolish(self.ui.frames_lineEdit)
 				# self.ui.frames_lineEdit.style().polish(self.ui.frames_lineEdit)
@@ -602,7 +604,8 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 			elif self.numList is None:
 				#raise RuntimeError("No frame range specified.")
 				if not quiet:
-					verbose.warning("No frame range specified.")
+					#verbose.warning("No frame range specified.")
+					print("Warning: No frame range specified.")
 				# self.ui.frames_lineEdit.setProperty("mandatoryField", True)
 				# self.ui.frames_lineEdit.style().unpolish(self.ui.frames_lineEdit)
 				# self.ui.frames_lineEdit.style().polish(self.ui.frames_lineEdit)
@@ -649,7 +652,8 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 				return True
 
 		except (MemoryError, OverflowError):
-			verbose.warning("Specified frame range value(s) too large to process.")
+			#verbose.warning("Specified frame range value(s) too large to process.")
+			print("Warning: Specified frame range value(s) too large to process.")
 			return False
 
 		# except RuntimeError:
@@ -858,7 +862,8 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 			if self.submitTo == "Render Queue":
 				if submit_args['frames']:
 					submit_args['taskSize'] = self.ui.taskSize_spinBox.value()
-					frames_msg = "%d %s to be rendered; %d %s to be submitted.\n" %(len(self.numList), verbose.pluralise("frame", len(self.numList)), len(self.taskList), verbose.pluralise("task", len(self.taskList)))
+					#frames_msg = "%d %s to be rendered; %d %s to be submitted.\n" %(len(self.numList), verbose.pluralise("frame", len(self.numList)), len(self.taskList), verbose.pluralise("task", len(self.taskList)))
+					frames_msg = "%d frame(s) to be rendered; %d task(s) to be submitted.\n" %(len(self.numList), len(self.taskList))
 				else:
 					submit_args['frames'] = "Unknown"
 					submit_args['taskSize'] = "Unknown"
@@ -967,7 +972,7 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 			submit_args['plugin'] = "Nuke"  # Deadline only
 			submit_args['renderCmdEnvVar'] = 'NUKEVERSION'  # RQ only
 			submit_args['flags'] = ""  # RQ only
-			submit_args['version'] = os.environ['NUKE_VER'].split('v')[0]  #jobData.getAppVersion('Nuke')
+			submit_args['version'] = os.environ.get('NUKE_VER', "10.0v3").split('v')[0]  #jobData.getAppVersion('Nuke')
 			submit_args['isMovie'] = self.getCheckBoxValue(self.ui.isMovie_checkBox)
 			submit_args['nukeX'] = self.getCheckBoxValue(self.ui.useNukeX_checkBox)
 			submit_args['interactiveLicense'] = self.getCheckBoxValue(self.ui.interactiveLicense_checkBox)
@@ -997,22 +1002,28 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 
 		if kwargs is not None:
 			for key, value in kwargs.items(): # iteritems(): for Python 2.x
-				verbose.print_("%24s = %s" %(key, value))
+				#verbose.print_("%24s = %s" %(key, value))
+				print("%24s = %s" %(key, value))
 
-		# Check render command is valid
-		renderCmdEnvVar = kwargs['renderCmdEnvVar']
-		try:
-			renderCmd = os.environ[renderCmdEnvVar].replace("\\", "/")
-		except KeyError:
-			error_msg = "Path to %s render command executable not found. This can be set with the environment variable '%s'." %(self.jobType, renderCmdEnvVar)
-			verbose.error(error_msg)
-			return False, "Failed to submit job.\n%s" %error_msg
+		# # Check render command is valid
+		# if self.jobType != "Generic":
+		# 	renderCmdEnvVar = kwargs['renderCmdEnvVar']
+		# 	try:
+		# 		renderCmd = os.environ[renderCmdEnvVar].replace("\\", "/")
+		# 	except KeyError:
+		# 		error_msg = "Path to %s render command executable not found. This can be set with the environment variable '%s'." %(self.jobType, renderCmdEnvVar)
+		# 		#verbose.error(error_msg)
+		# 		print(error_msg)
+		# 		return False, "Failed to submit job.\n%s" %error_msg
 
 		# Instantiate render queue class, load data, and create new job
-		rq = renderQueue.RenderQueue()
-		rq.loadXML(os.path.join(os.environ['IC_CONFIGDIR'], 'renderQueue.xml'), use_template=False)
+		rq = database.RenderQueue()
+		#rq.loadXML(os.path.join(os.environ['IC_CONFIGDIR'], 'renderQueue.xml'), use_template=False)
 
 		try:
+			#renderOpts = kwargs['scene']
+			renderCmd = ""
+
 			# Set up Nuke command-line flags
 			if self.jobType == "Nuke":
 				if kwargs['nukeX']:
@@ -1036,11 +1047,14 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 						nukeFlags = "%s -X %s" %(kwargs['flags'], renderLayer)
 						renderOpts = kwargs['scene'], nukeFlags, renderCmd
 
-					rq.newJob(genericOpts, renderOpts, self.taskList, os.environ.get('IC_USERNAME', getpass.getuser()), time.strftime(time_format_str), kwargs['comment'])
+					#rq.newJob(genericOpts, renderOpts, self.taskList, os.environ.get('IC_USERNAME', getpass.getuser()), time.strftime(time_format_str), kwargs['comment'])
+					rq.newJob(**kwargs)
+
 					num_jobs += 1
 
 				result = True
-				result_msg = "Successfully submitted %d %s." %(num_jobs, verbose.pluralise("job", num_jobs))
+				#result_msg = "Successfully submitted %d %s." %(num_jobs, verbose.pluralise("job", num_jobs))
+				result_msg = "Successfully submitted %d job(s)." %num_jobs
 
 			else:  # Single job submission ---------------------------------------
 				# Package option variables into tuples
@@ -1050,7 +1064,8 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 				elif self.jobType == "Nuke":
 					renderOpts = kwargs['scene'], kwargs['flags'], renderCmd
 
-				rq.newJob(genericOpts, renderOpts, self.taskList, os.environ.get('IC_USERNAME', getpass.getuser()), time.strftime(time_format_str), kwargs['comment'])
+				#rq.newJob(genericOpts, renderOpts, self.taskList, os.environ.get('IC_USERNAME', getpass.getuser()), time.strftime(time_format_str), kwargs['comment'])
+				rq.newJob(**kwargs)
 
 				result = True
 				result_msg = "Successfully submitted job."
@@ -1060,7 +1075,8 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 			exc_type, exc_value, exc_traceback = sys.exc_info()
 			traceback.print_exception(exc_type, exc_value, exc_traceback)
 			result_msg = "Failed to submit job."
-			verbose.error(result_msg)
+			#verbose.error(result_msg)
+			print(result_msg)
 			result_msg += "\nCheck console output for details."
 
 		return result, result_msg

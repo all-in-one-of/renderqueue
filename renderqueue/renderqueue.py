@@ -112,7 +112,27 @@ class RenderQueueApp(QtWidgets.QMainWindow, UI.TemplateUI):
 
 		# newAct = new QAction(tr("&New"), this);
 		# newAct->setIcon(QIcon::fromTheme("document-new"));
-		self.ui.actionExit.setIcon(QtGui.QIcon.fromTheme("application-exit-symbolic"))
+		#self.ui.actionExit.setIcon(QtGui.QIcon.fromTheme("application-exit-symbolic"))
+		#self.ui.actionExit.setIcon(QtGui.QIcon("icons/application-exit.svg"))
+		# svg_renderer = QtSvg.QSvgRenderer("icons/application-exit.svg")
+		# image = QtGui.QImage(64, 64, QtGui.QImage.Format_ARGB32)
+		# # Set the ARGB to 0 to prevent rendering artifacts
+		# image.fill(0x00000000)
+		# svg_renderer.render(QtGui.QPainter(image))
+		# pixmap = QtGui.QPixmap.fromImage(image)
+		# icon = QtGui.QIcon(pixmap)
+		# self.ui.actionExit.setIcon(icon)
+		#self.ui.actionExit.setSizeHint(1, QtCore.QSize(64, 64))
+		self.ui.actionSettings.setIcon(self.setSVGIcon('configure'))
+		self.ui.actionAbout.setIcon(self.setSVGIcon('help-about'))
+		self.ui.actionExit.setIcon(self.setSVGIcon('application-exit'))
+		self.ui.refresh_toolButton.setIcon(self.setSVGIcon('view-refresh'))
+		self.ui.jobPause_toolButton.setIcon(self.setSVGIcon('media-playback-pause'))
+		self.ui.jobKill_toolButton.setIcon(self.setSVGIcon('paint-none'))
+		self.ui.jobDelete_toolButton.setIcon(self.setSVGIcon('edit-delete'))
+		self.ui.jobResubmit_toolButton.setIcon(self.setSVGIcon('gtk-convert'))
+		self.ui.taskComplete_toolButton.setIcon(self.setSVGIcon('dialog-ok-apply'))
+		self.ui.taskRequeue_toolButton.setIcon(self.setSVGIcon('gtk-convert'))
 
 		# Instantiate render queue class and load data
 		self.rq = database.RenderQueue()
@@ -586,6 +606,18 @@ class RenderQueueApp(QtWidgets.QMainWindow, UI.TemplateUI):
 		self.renderOutput += line
 		self.ui.output_textEdit.setPlainText(self.renderOutput)
 		self.ui.output_textEdit.moveCursor(QtGui.QTextCursor.End)
+
+
+		# Get the render job item or create it if it doesn't exist
+		#workerListItem = self.getQueueItem(self.ui.workers_treeWidget.invisibleRootItem(), jobID)
+		workerListItem = QtWidgets.QTreeWidgetItem(self.ui.workers_treeWidget.invisibleRootItem())
+
+		# Fill columns with data
+		workerListItem.setText(0, self.localhost)
+		workerListItem.setText(1, self.workerStatus)
+		# workerListItem.setText(2, workerRunningTime)
+		# workerListItem.setText(3, workerPool)
+		# workerListItem.setText(4, workerPriority)
 
 
 	def restoreSelection(self):

@@ -133,7 +133,8 @@ def rename(source, destination, quiet=False):
 	dst = os.path.normpath(destination)
 
 	if not quiet:
-		verbose.print_('rename "%s" -> "%s"' %(src, dst))
+		#verbose.print_('rename "%s" -> "%s"' %(src, dst))
+		print('rename "%s" -> "%s"' %(src, dst))
 	try:
 		os.rename(src, dst)
 		return True, dst

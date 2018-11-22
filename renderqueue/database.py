@@ -8,9 +8,18 @@
 # Manages the Render Queue XML database.
 
 
+import json
 import uuid
 #import xml.etree.ElementTree as ET
 #import xmlData
+
+# Import custom modules
+import oswrapper
+
+
+class RenderTask():
+	""" Class to hold an individual task.
+	"""
 
 
 #class RenderQueue(xmlData.XMLData):
@@ -18,19 +27,26 @@ class RenderQueue():
 	""" Class to manage the render queue database.
 	"""
 
-	def newJob(self, genericOpts, renderOpts, tasks, user, submitTime, comment):
-	#def newJob(self, **kwargs):
+	#def newJob(self, genericOpts, renderOpts, tasks, user, submitTime, comment):
+	def newJob(self, **kwargs):
 		""" Create a new render job on submission.
 		"""
 		#self.loadXML(quiet=True) # reload XML data
 		jobID = uuid.uuid4().hex # generate UUID
 
-		jobName, jobType, frames, taskSize, priority = genericOpts
-		#print jobType
-		if jobType == 'Maya':
-			mayaScene, mayaProject, mayaFlags, renderer, mayaRenderCmd = renderOpts
-		elif jobType == 'Nuke':
-			nukeScript, nukeFlags, nukeRenderCmd = renderOpts
+		# jobName, jobType, frames, taskSize, priority = genericOpts
+		# #print jobType
+		# if jobType == 'Maya':
+		# 	mayaScene, mayaProject, mayaFlags, renderer, mayaRenderCmd = renderOpts
+		# elif jobType == 'Nuke':
+		# 	nukeScript, nukeFlags, nukeRenderCmd = renderOpts
+
+		#oswrapper.createDir('queue/queued')
+		# write kwargs to file and place in queue
+		datafile = 'queue/queued/%s.json' %jobID
+
+		with open(datafile, 'w') as write_file:
+			json.dump(kwargs, write_file, indent=4)
 
 		# jobElement = self.root.find("job[@id='%s']" %jobID)
 		# if jobElement is None:
