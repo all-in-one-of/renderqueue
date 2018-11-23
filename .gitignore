@@ -23,3 +23,5 @@ Thumbs.db
 *.tar
 *.zip
 
+#Data directories
+queue/*
