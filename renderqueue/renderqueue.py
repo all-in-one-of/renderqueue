@@ -332,17 +332,17 @@ class RenderQueueApp(QtWidgets.QMainWindow, UI.TemplateUI):
 			for task in tasks:
 
 				# Get values from XML
-				taskID = str(task['taskNo']).zfill(4)
+				#taskID = "%s_%s" %(job['jobID'], str(task['taskNo']).zfill(4))
 				taskStatus = task['status']
 				taskTotalTime = 0
 				taskWorker = "None"
 
 				# Get the render task item or create it if it doesn't exist
-				renderTaskItem = self.getQueueItem(renderJobItem, taskID)
+				renderTaskItem = self.getQueueItem(renderJobItem, str(task['taskNo']))
 
 				# Fill columns with data
-				renderTaskItem.setText(0, "Task %s" %taskID)
-				renderTaskItem.setText(1, taskID)
+				renderTaskItem.setText(0, "Task %d" %task['taskNo'])
+				renderTaskItem.setText(1, str(task['taskNo']))
 				renderTaskItem.setText(3, task['frames'])
 				renderTaskItem.setText(4, taskStatus)
 
