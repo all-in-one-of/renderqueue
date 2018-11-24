@@ -168,6 +168,27 @@ def copy(source, destination, quiet=False):
 		return False, msg
 
 
+def move(source, destination, quiet=False):
+	""" Move a file or folder.
+	"""
+	src = os.path.normpath(source)
+	dst = os.path.normpath(destination)
+
+	if not quiet:
+		#verbose.print_('copy "%s" -> "%s"' %(src, dst))
+		print('move "%s" -> "%s"' %(src, dst))
+	try:
+		shutil.move(src, dst)
+		return True, dst
+	except:
+		exc_type, exc_value, exc_traceback = sys.exc_info()
+		msg = traceback.format_exception_only(exc_type, exc_value)[0]
+		if not quiet:
+			#verbose.error(msg)
+			print(msg)
+		return False, msg
+
+
 def copyDirContents(source, destination, umask='000'):
 	""" Copy the contents of a folder recursively.
 		Could rewrite using shutil.copy / copytree?

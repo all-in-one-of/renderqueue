@@ -333,7 +333,7 @@ class RenderQueueApp(QtWidgets.QMainWindow, UI.TemplateUI):
 
 				# Get values from XML
 				taskID = str(task['taskNo']).zfill(4)
-				taskStatus = "Queued"
+				taskStatus = task['status']
 				taskTotalTime = 0
 				taskWorker = "None"
 

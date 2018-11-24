@@ -76,8 +76,8 @@ class TemplateUI(object):
 		self.col['highlight'] = tmpWidget.palette().color(QtGui.QPalette.Highlight)
 		self.computeUIPalette()
 
-		# Set 'Fusion' platform-independent style if running Qt5
-		styles = QtWidgets.QStyleFactory.keys()
+		# # Set 'Fusion' platform-independent style if running Qt5
+		# styles = QtWidgets.QStyleFactory.keys()
 		# if 'Fusion' in styles:
 		# 	self.setStyle('Fusion')  # Mac doesn't like this
 

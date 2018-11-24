@@ -88,10 +88,21 @@ class RenderQueue():
 		""" Read tasks for a specified job.
 		"""
 		tasks = []
-		path = 'queue/tasks/queued/*.json'
+		#statuses = ['queued', 'working', 'completed', 'failed']
+		path = 'queue/tasks/*/%s_*.json' %jobID
 		for filename in glob.glob(path):
+			if 'queued' in filename:
+				status = 'Queued'
+			elif 'working' in filename:
+				status = 'Working'
+			elif 'completed' in filename:
+				status = 'Done'
+			else:
+				status = 'Unknown'
 			with open(filename, 'r') as f:
-				tasks.append(json.load(f))
+				taskdata = json.load(f)
+				taskdata['status'] = status
+				tasks.append(taskdata)
 		return tasks
 
 
