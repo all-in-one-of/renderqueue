@@ -25,7 +25,7 @@ import ui_template as UI
 import oswrapper
 import database
 import outputparser
-#import sequence
+import sequence
 #import verbose
 
 
@@ -298,31 +298,23 @@ class RenderQueueApp(QtWidgets.QMainWindow, UI.TemplateUI):
 		jobs = self.rq.getJobs()
 		if jobs is None:
 			return
-		for jobElement in jobs:
+		for job in jobs:
 
 			# Get values from XML
-			jobID = jobElement.get('id')
-			jobName = self.rq.getValue(jobElement, 'name')
-			jobType = self.rq.getValue(jobElement, 'type')
-			jobFrames = self.rq.getValue(jobElement, 'frames')
-			jobPriority = self.rq.getValue(jobElement, 'priority')
-			jobStatus = self.rq.getValue(jobElement, 'status')
-			jobUser = self.rq.getValue(jobElement, 'user')
-			jobSubmitTime = self.rq.getValue(jobElement, 'submitTime')
-			jobComment = self.rq.getValue(jobElement, 'comment')
+			jobStatus = "Queued"
 
 			# Get the render job item or create it if it doesn't exist
-			renderJobItem = self.getQueueItem(self.ui.renderQueue_treeWidget.invisibleRootItem(), jobID)
+			renderJobItem = self.getQueueItem(self.ui.renderQueue_treeWidget.invisibleRootItem(), job['jobID'])
 
 			# Fill columns with data
-			renderJobItem.setText(0, jobName)
-			renderJobItem.setText(1, jobID)
-			renderJobItem.setText(2, jobType)
-			renderJobItem.setText(3, jobFrames)
+			renderJobItem.setText(0, job['jobName'])
+			renderJobItem.setText(1, job['jobID'])
+			renderJobItem.setText(2, job['jobType'])
+			renderJobItem.setText(3, job['frames'])
 			renderJobItem.setText(4, jobStatus)
-			renderJobItem.setText(5, jobPriority)
-			renderJobItem.setText(6, jobUser)
-			renderJobItem.setText(7, jobSubmitTime)
+			renderJobItem.setText(5, str(job['priority']))
+			renderJobItem.setText(6, job['username'])
+			renderJobItem.setText(7, job['submitTime'])
 
 			# Initialise counters and timers
 			jobTotalTimeSeconds = 0
@@ -330,21 +322,20 @@ class RenderQueueApp(QtWidgets.QMainWindow, UI.TemplateUI):
 			completedTaskCount = 0
 			inProgressTaskFrameCount = 0
 			completedTaskFrameCount = 0
-			if not jobFrames or jobFrames == 'Unknown':
+			if not job['frames'] or job['frames'] == 'Unknown':
 				totalFrameCount = -1
-			#else:
-			#	totalFrameCount = len(sequence.numList(jobFrames))
+			else:
+				totalFrameCount = len(sequence.numList(job['frames']))
 
 			# Populate render tasks
-			taskElements = jobElement.findall('task')
-			for taskElement in taskElements:
+			tasks = self.rq.getTasks(job['jobID'])
+			for task in tasks:
 
 				# Get values from XML
-				taskID = taskElement.get('id')
-				taskFrames = self.rq.getValue(taskElement, 'frames')
-				taskStatus = self.rq.getValue(taskElement, 'status')
-				taskTotalTime = self.rq.getValue(taskElement, 'totalTime')
-				taskWorker = self.rq.getValue(taskElement, 'worker')
+				taskID = str(task['taskNo']).zfill(4)
+				taskStatus = "Queued"
+				taskTotalTime = 0
+				taskWorker = "None"
 
 				# Get the render task item or create it if it doesn't exist
 				renderTaskItem = self.getQueueItem(renderJobItem, taskID)
@@ -352,41 +343,41 @@ class RenderQueueApp(QtWidgets.QMainWindow, UI.TemplateUI):
 				# Fill columns with data
 				renderTaskItem.setText(0, "Task %s" %taskID)
 				renderTaskItem.setText(1, taskID)
-				renderTaskItem.setText(3, taskFrames)
+				renderTaskItem.setText(3, task['frames'])
 				renderTaskItem.setText(4, taskStatus)
 
 				# Calculate progress
-				if taskFrames == 'Unknown':
+				if task['frames'] == 'Unknown':
 					if taskStatus == "Working":
 						inProgressTaskCount += 1
 						inProgressTaskFrameCount = -1
 					if taskStatus == "Done":
 						completedTaskCount += 1
 						completedTaskFrameCount = -1
-				# else:
-				# 	taskFrameCount = len(sequence.numList(taskFrames))
-				# 	if taskStatus == "Working":
-				# 		inProgressTaskCount += 1
-				# 		inProgressTaskFrameCount += taskFrameCount
-				# 	if taskStatus == "Done":
-				# 		completedTaskCount += 1
-				# 		completedTaskFrameCount += taskFrameCount
+				else:
+					taskFrameCount = len(sequence.numList(task['frames']))
+					if taskStatus == "Working":
+						inProgressTaskCount += 1
+						inProgressTaskFrameCount += taskFrameCount
+					if taskStatus == "Done":
+						completedTaskCount += 1
+						completedTaskFrameCount += taskFrameCount
 
 				# Colour the status text
 				for col in range(self.ui.renderQueue_treeWidget.columnCount()):
 					renderTaskItem.setForeground(col, QtGui.QBrush(self.colInactive))
-				if taskStatus == "Queued": # and taskWorker == self.localhost:
-					#renderTaskItem.setForeground(4, QtGui.QBrush(self.colCompleted))
-					renderTaskItem.setIcon(4, self.nullIcon)
-				elif taskStatus == "Working": # and taskWorker == self.localhost:
-					#renderTaskItem.setForeground(4, QtGui.QBrush(self.colActive))
-					renderTaskItem.setIcon(4, self.readyIcon)
-				elif taskStatus == "Done": # and taskWorker == self.localhost:
-					#renderTaskItem.setForeground(4, QtGui.QBrush(self.colCompleted))
-					renderTaskItem.setIcon(4, self.doneIcon)
-				elif taskStatus == "Failed": # and taskWorker == self.localhost:
-					#renderTaskItem.setForeground(4, QtGui.QBrush(self.colCompleted))
-					renderTaskItem.setIcon(4, self.errorIcon)
+				# if taskStatus == "Queued": # and taskWorker == self.localhost:
+				# 	#renderTaskItem.setForeground(4, QtGui.QBrush(self.colCompleted))
+				# 	renderTaskItem.setIcon(4, self.nullIcon)
+				# elif taskStatus == "Working": # and taskWorker == self.localhost:
+				# 	#renderTaskItem.setForeground(4, QtGui.QBrush(self.colActive))
+				# 	renderTaskItem.setIcon(4, self.readyIcon)
+				# elif taskStatus == "Done": # and taskWorker == self.localhost:
+				# 	#renderTaskItem.setForeground(4, QtGui.QBrush(self.colCompleted))
+				# 	renderTaskItem.setIcon(4, self.doneIcon)
+				# elif taskStatus == "Failed": # and taskWorker == self.localhost:
+				# 	#renderTaskItem.setForeground(4, QtGui.QBrush(self.colCompleted))
+				# 	renderTaskItem.setIcon(4, self.errorIcon)
 
 				# Update timers
 				try:
@@ -421,7 +412,7 @@ class RenderQueueApp(QtWidgets.QMainWindow, UI.TemplateUI):
 
 			self.drawJobProgressIndicator(renderJobItem, completedTaskFrameCount, inProgressTaskFrameCount, totalFrameCount, colProgress)
 
-			self.rq.setStatus(jobID, jobStatus)  # Write to XML if status has changed
+			self.rq.setStatus(job['jobID'], jobStatus)  # Write to XML if status has changed
 			renderJobItem.setText(4, jobStatus)
 
 			# Calculate time taken
@@ -432,7 +423,7 @@ class RenderQueueApp(QtWidgets.QMainWindow, UI.TemplateUI):
 
 			renderJobItem.setText(8, str(jobTotalTime))
 			#renderJobItem.setText(9, "%d %s rendering" %(inProgressTaskCount, verbose.pluralise("worker", inProgressTaskCount)))
-			renderJobItem.setText(10, jobComment)
+			renderJobItem.setText(10, job['comment'])
 
 		# Re-enable signals
 		self.ui.renderQueue_treeWidget.blockSignals(False)
@@ -897,10 +888,10 @@ class RenderQueueApp(QtWidgets.QMainWindow, UI.TemplateUI):
 		#verbose.message("[%s] Job ID %s, Task ID %s: Starting render..." %(self.localhost, self.renderJobID, self.renderTaskID))
 		if frames == 'Unknown':
 			frameList = frames
-		# else:
-		# 	frameList = sequence.numList(frames)
-		# 	startFrame = min(frameList)
-		# 	endFrame = max(frameList)
+		else:
+			frameList = sequence.numList(frames)
+			startFrame = min(frameList)
+			endFrame = max(frameList)
 
 
 		jobType = self.rq.getValue(jobElement, 'type')

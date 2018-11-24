@@ -1,0 +1,41 @@
+{
+    "frames": "780-848",
+    "taskSize": 10,
+    "pool": "",
+    "group": "",
+    "priority": 50,
+    "comment": "",
+    "username": "mikebonnington",
+    "envVars": [
+        "JOB",
+        "SHOT",
+        "JOBPATH",
+        "SHOTPATH",
+        "NUKEDIR",
+        "NUKESCRIPTSDIR",
+        "NUKERENDERSDIR"
+    ],
+    "plugin": "Nuke",
+    "renderCmdEnvVar": "NUKEVERSION",
+    "flags": "",
+    "version": "10.0",
+    "isMovie": false,
+    "nukeX": false,
+    "interactiveLicense": false,
+    "scene": "J:/2029472_vw_tiguan/Vfx/PC010/2D/nuke/scripts/mikebonnington/PC010_comp_v009.nk",
+    "jobName": "PC010_comp_v009",
+    "renderLayers": "",
+    "output": {},
+    "jobType": "Nuke",
+    "tasks": [
+        "780-789",
+        "790-799",
+        "800-809",
+        "810-819",
+        "820-829",
+        "830-839",
+        "840-848"
+    ],
+    "submitTime": "2018/11/24 00:30:12",
+    "jobID": "4f6050d46d15416a8339cd10dae33827"
+}

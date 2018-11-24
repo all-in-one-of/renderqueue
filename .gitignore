@@ -24,4 +24,4 @@ Thumbs.db
 *.zip
 
 #Data directories
-queue/*
+renderqueue/queue/*

@@ -8,11 +8,13 @@
 # Interface for the Render Queue database.
 
 
+import glob
 import json
 import uuid
 
 # Import custom modules
 import oswrapper
+import sequence
 
 
 class RenderTask():
@@ -20,132 +22,86 @@ class RenderTask():
 	"""
 
 
-#class RenderQueue(xmlData.XMLData):
 class RenderQueue():
 	""" Class to manage the render queue database.
 	"""
 
-	#def newJob(self, genericOpts, renderOpts, tasks, user, submitTime, comment):
 	def newJob(self, **kwargs):
-		""" Create a new render job on submission.
+		""" Create a new render job and associated tasks.
+			Generates a JSON file with the job UUID to hold data for the
+			render job. Also generates a JSON file for each task. These are
+			placed in the queued subfolder ready to be picked up by workers.
 		"""
-		jobID = uuid.uuid4().hex # generate UUID
+		jobID = uuid.uuid4().hex  # generate UUID
+		kwargs['jobID'] = jobID
 
-		# jobName, jobType, frames, taskSize, priority = genericOpts
-		# #print jobType
-		# if jobType == 'Maya':
-		# 	mayaScene, mayaProject, mayaFlags, renderer, mayaRenderCmd = renderOpts
-		# elif jobType == 'Nuke':
-		# 	nukeScript, nukeFlags, nukeRenderCmd = renderOpts
+		# Write job data file
+		datafile = 'queue/jobs/%s.json' %jobID
+		with open(datafile, 'w') as json_file:
+			json.dump(kwargs, json_file, indent=4)
 
-		#oswrapper.createDir('queue/queued')
-		# write kwargs to file and place in queue
-		datafile = 'queue/queued/%s.json' %jobID
+		# Write tasks and place in queue
+		tasks = kwargs['tasks']
+		for i in range(len(kwargs['tasks'])):
+			taskdata = {}
+			taskdata['jobID'] = jobID
+			taskdata['taskNo'] = i
+			taskdata['frames'] = tasks[i]
+			# taskdata['command'] = kwargs['command']
+			# taskdata['flags'] = kwargs['flags']
 
-		with open(datafile, 'w') as write_file:
-			json.dump(kwargs, write_file, indent=4)
-
-		# jobElement = self.root.find("job[@id='%s']" %jobID)
-		# if jobElement is None:
-		# 	jobElement = ET.SubElement(self.root, 'job')
-		# 	jobElement.set('id', str(jobID))
-
-		# 	nameElement = ET.SubElement(jobElement, 'name')
-		# 	nameElement.text = str(jobName)
-
-		# 	typeElement = ET.SubElement(jobElement, 'type')
-		# 	typeElement.text = str(jobType)
-
-		# 	priorityElement = ET.SubElement(jobElement, 'priority')
-		# 	priorityElement.text = str(priority)
-
-		# 	statusElement = ET.SubElement(jobElement, 'status')
-		# 	statusElement.text = "Queued"
-
-		# 	framesElement = ET.SubElement(jobElement, 'frames')
-		# 	framesElement.text = str(frames)
-
-		# 	taskSizeElement = ET.SubElement(jobElement, 'taskSize')
-		# 	taskSizeElement.text = str(taskSize)
-
-		# 	userElement = ET.SubElement(jobElement, 'user')
-		# 	userElement.text = str(user)
-
-		# 	submitTimeElement = ET.SubElement(jobElement, 'submitTime')
-		# 	submitTimeElement.text = str(submitTime)
-
-		# 	commentElement = ET.SubElement(jobElement, 'comment')
-		# 	commentElement.text = str(comment)
-
-		# 	# totalTimeElement = ET.SubElement(jobElement, 'totalTime')
-		# 	# totalTimeElement.text = "0"
-
-		# 	if jobType == 'Maya':
-		# 		mayaSceneElement = ET.SubElement(jobElement, 'mayaScene')
-		# 		mayaSceneElement.text = str(mayaScene)
-
-		# 		mayaProjectElement = ET.SubElement(jobElement, 'mayaProject')
-		# 		mayaProjectElement.text = str(mayaProject)
-
-		# 		mayaFlagsElement = ET.SubElement(jobElement, 'mayaFlags')
-		# 		mayaFlagsElement.text = str(mayaFlags)
-
-		# 		mayaRenderCmdElement = ET.SubElement(jobElement, 'mayaRenderCmd')
-		# 		mayaRenderCmdElement.text = str(mayaRenderCmd)
-
-		# 	elif jobType == 'Nuke':
-		# 		nukeScriptElement = ET.SubElement(jobElement, 'nukeScript')
-		# 		nukeScriptElement.text = str(nukeScript)
-
-		# 		nukeFlagsElement = ET.SubElement(jobElement, 'nukeFlags')
-		# 		nukeFlagsElement.text = str(nukeFlags)
-
-		# 		nukeRenderCmdElement = ET.SubElement(jobElement, 'nukeRenderCmd')
-		# 		nukeRenderCmdElement.text = str(nukeRenderCmd)
-
-		# 	for i in range(len(tasks)):
-		# 		taskElement = ET.SubElement(jobElement, 'task')
-		# 		taskElement.set('id', str(i))
-
-		# 		taskStatusElement = ET.SubElement(taskElement, 'status')
-		# 		taskStatusElement.text = "Queued"
-
-		# 		taskFramesElement = ET.SubElement(taskElement, 'frames')
-		# 		taskFramesElement.text = str(tasks[i])
-
-		# 		# taskStartTimeElement = ET.SubElement(taskElement, 'startTime')
-
-		# 		taskTotalTimeElement = ET.SubElement(taskElement, 'totalTime')
-		# 		#taskTotalTimeElement.text = "0"
-
-		# 		taskWorkerElement = ET.SubElement(taskElement, 'worker')
-
-		# 		# commandElement = ET.SubElement(taskElement, 'command')
-		# 		# commandElement.text = str(taskCmds[i].replace("\\", "/"))
-
-		# self.saveXML()
+			datafile = 'queue/tasks/queued/%s_%s.json' %(jobID, str(i).zfill(4))
+			with open(datafile, 'w') as json_file:
+				json.dump(taskdata, json_file, indent=4)
 
 
 	def deleteJob(self, jobID):
-		""" Delete a render job.
+		""" Delete a render job and associated tasks.
+			Searches for all JSON files with job UUID under the queue folder
+			structure and deletes them. Also kills processes for tasks that
+			are rendering.
 		"""
-		return False
-		# self.loadXML(quiet=True) # reload XML data
-		# for element in self.root.findall('./job'):
-		# 	if int(element.get('id')) == jobID:
-		# 		if "Working" in element.find('status').text:
-		# 			return False # ignore in-progress jobs
-		# 		else:
-		# 			self.root.remove(element)
-		# 			self.saveXML()
-		# 			return True
+		datafile = 'queue/jobs/%s.json' %jobID
+		oswrapper.recurseRemove(datafile)
+
+
+	def archiveJob(self, jobID):
+		""" Archive a render job and associated tasks.
+			Moves all files associated with a particular job UUID into a
+			special archive folder.
+		"""
+		pass
 
 
 	def getJobs(self):
-		""" Return all render jobs as elements.
+		""" Read jobs.
 		"""
-		return None
-		#return self.root.findall("./job")
+		jobs = []
+		path = 'queue/jobs/*.json'
+		for filename in glob.glob(path):
+			with open(filename, 'r') as f:
+				jobs.append(json.load(f))
+		return jobs
+
+
+	def getTasks(self, jobID):
+		""" Read tasks for a specified job.
+		"""
+		tasks = []
+		path = 'queue/tasks/queued/*.json'
+		for filename in glob.glob(path):
+			with open(filename, 'r') as f:
+				tasks.append(json.load(f))
+		return tasks
+
+
+	# def getJob(self, jobID):
+	# 	""" Read job.
+	# 	"""
+	# 	datafile = 'queue/jobs/%s.json' %jobID
+	# 	with open(datafile) as json_file:
+	# 		data = json.load(json_file)
+	# 	return data
 
 
 	# def getValue(self, element, tag):

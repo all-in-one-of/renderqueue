@@ -78,8 +78,8 @@ class TemplateUI(object):
 
 		# Set 'Fusion' platform-independent style if running Qt5
 		styles = QtWidgets.QStyleFactory.keys()
-		if 'Fusion' in styles:
-			self.setStyle('Fusion')
+		# if 'Fusion' in styles:
+		# 	self.setStyle('Fusion')  # Mac doesn't like this
 
 		# Load and set stylesheet
 		self.stylesheet = stylesheet
@@ -140,7 +140,10 @@ class TemplateUI(object):
 		msgBox.setWindowTitle(title)
 		msgBox.setText(title)
 		msgBox.setInformativeText(message)
-		msgBox.setStandardButtons(QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel)
+		if conf:
+			msgBox.setStandardButtons(QtWidgets.QMessageBox.Ok)
+		else:
+			msgBox.setStandardButtons(QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel)
 		msgBox.setDefaultButton(QtWidgets.QMessageBox.Ok);
 		return msgBox.exec_()
 
