@@ -276,6 +276,8 @@ Developers: %s
 		""" Display right-click context menu for items in render queue tree
 			view widget.
 		"""
+		level = -1  # Initialise with null value in case of empty queue
+		menu = None
 		indices = self.ui.renderQueue_treeWidget.selectedIndexes()
 		if len(indices) > 0:
 			level = 0
@@ -289,7 +291,8 @@ Developers: %s
 		elif level == 1:  # Task
 			menu = self.ui.menuTask
 
-		menu.exec_(self.ui.renderQueue_treeWidget.viewport().mapToGlobal(position))
+		if menu:
+			menu.exec_(self.ui.renderQueue_treeWidget.viewport().mapToGlobal(position))
 
 
 	def resizeColumns(self):

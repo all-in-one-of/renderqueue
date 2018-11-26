@@ -18,16 +18,16 @@ import oswrapper
 import sequence
 
 
-class RenderTask():
-	""" Class to hold an individual task.
-	"""
+# class RenderTask():
+# 	""" Class to hold an individual task.
+# 	"""
 
 
 class RenderQueue():
 	""" Class to manage the render queue database.
 	"""
 	def __init__(self):
-		self.rq_database = '/Volumes/Jobs/rq_database'
+		self.rq_database = 'queue'
 		# try:
 		# 	self.rq_database = os.environ['RQ_DATABASE']
 		# except KeyError:
@@ -38,7 +38,7 @@ class RenderQueue():
 		""" Create a new render job and associated tasks.
 			Generates a JSON file with the job UUID to hold data for the
 			render job. Also generates a JSON file for each task. These are
-			placed in the queued subfolder ready to be picked up by workers.
+			placed in the 'queued' subfolder ready to be picked up by workers.
 		"""
 		jobID = uuid.uuid4().hex  # generate UUID
 		kwargs['jobID'] = jobID

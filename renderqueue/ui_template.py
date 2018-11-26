@@ -12,6 +12,7 @@
 # Currently only Maya and Nuke are supported.
 
 
+import json
 import os
 import platform
 import re
@@ -62,6 +63,8 @@ class TemplateUI(object):
 		if xml_data:
 			self.xd = settingsData.SettingsData()
 			xd_load = self.xd.loadXML(xml_data)
+		self.sd = {}
+
 
 		# Load UI file
 		if ui_file:
@@ -287,12 +290,17 @@ class TemplateUI(object):
 					widget.setProperty('xmlCategory', category)
 
 					if inherit is None:
-						pass
 						#value = self.xd.getValue(category, attr)
-						value = ""
+						try:
+							value = self.sd[attr]
+						except KeyError:
+							value = ""
 					else:
 						#value = self.xd.getValue(category, attr)
-						value = ""
+						try:
+							value = self.sd[attr]
+						except KeyError:
+							value = ""
 						if value == "":
 							value = inherit.getValue(category, attr)
 
@@ -663,6 +671,7 @@ class TemplateUI(object):
 		# else:
 		# 	print("%s=%s" %(currentAttrStr, value))
 		print("%s=%s" %(currentAttrStr, value))
+		self.sd[attr] = value
 		# userPrefs.edit(category, attr, value)
 		#self.xd.setValue(category, attr, str(value))
 		self.currentAttrStr = currentAttrStr
@@ -902,6 +911,9 @@ class TemplateUI(object):
 		# 	return True
 		# else:
 		# 	return False
+		datafile = 'userprefs.json'
+		with open(datafile, 'w') as json_file:
+			json.dump(self.sd, json_file, indent=4)
 		return True
 
 
