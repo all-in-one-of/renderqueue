@@ -22,6 +22,7 @@ import icons_rc
 import ui_template as UI
 
 # Import custom modules
+import about
 import oswrapper
 import database
 import outputparser
@@ -33,12 +34,17 @@ import sequence
 # Configuration
 # ----------------------------------------------------------------------------
 
+VENDOR = ""
+COPYRIGHT = "(c) 2015-2018"
+DEVELOPERS = "Mike Bonnington"
+os.environ['RQ_VERSION'] = "0.2.0"
+
 # Set window title and object names
 WINDOW_TITLE = "Render Queue"
 WINDOW_OBJECT = "RenderQueueUI"
 
 # Set the UI and the stylesheet
-UI_FILE = "renderqueue.ui"
+UI_FILE = 'renderqueue.ui'
 STYLESHEET = 'style.qss'  # Set to None to use the parent app's stylesheet
 
 # Other options
@@ -110,31 +116,22 @@ class RenderQueueApp(QtWidgets.QMainWindow, UI.TemplateUI):
 		# self.errorIcon = QtGui.QIcon()
 		# self.errorIcon.addPixmap(QtGui.QPixmap(oswrapper.absolutePath("$IC_FORMSDIR/rsc/status_icon_error.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
 
-		# newAct = new QAction(tr("&New"), this);
-		# newAct->setIcon(QIcon::fromTheme("document-new"));
-		#self.ui.actionExit.setIcon(QtGui.QIcon.fromTheme("application-exit-symbolic"))
-		#self.ui.actionExit.setIcon(QtGui.QIcon("icons/application-exit.svg"))
-		# svg_renderer = QtSvg.QSvgRenderer("icons/application-exit.svg")
-		# image = QtGui.QImage(64, 64, QtGui.QImage.Format_ARGB32)
-		# # Set the ARGB to 0 to prevent rendering artifacts
-		# image.fill(0x00000000)
-		# svg_renderer.render(QtGui.QPainter(image))
-		# pixmap = QtGui.QPixmap.fromImage(image)
-		# icon = QtGui.QIcon(pixmap)
-		# self.ui.actionExit.setIcon(icon)
-		#self.ui.actionExit.setSizeHint(1, QtCore.QSize(64, 64))
-		self.ui.actionSettings.setIcon(self.setSVGIcon('configure'))
-		self.ui.actionAbout.setIcon(self.setSVGIcon('help-about'))
-		self.ui.actionExit.setIcon(self.setSVGIcon('application-exit'))
-		self.ui.refresh_toolButton.setIcon(self.setSVGIcon('view-refresh'))
-		self.ui.jobPause_toolButton.setIcon(self.setSVGIcon('media-playback-pause'))
-		self.ui.jobKill_toolButton.setIcon(self.setSVGIcon('paint-none'))
-		self.ui.jobDelete_toolButton.setIcon(self.setSVGIcon('edit-delete'))
-		self.ui.jobResubmit_toolButton.setIcon(self.setSVGIcon('gtk-convert'))
-		self.ui.taskComplete_toolButton.setIcon(self.setSVGIcon('dialog-ok-apply'))
-		self.ui.taskRequeue_toolButton.setIcon(self.setSVGIcon('gtk-convert'))
+		# Set SVG icons
+		# self.ui.actionSettings.setIcon(self.setSVGIcon('configure'))
+		# self.ui.actionAbout.setIcon(self.setSVGIcon('help-about'))
+		# self.ui.actionExit.setIcon(self.setSVGIcon('application-exit'))
+		# self.ui.refresh_toolButton.setIcon(self.setSVGIcon('view-refresh'))
+		# self.ui.jobPause_toolButton.setIcon(self.setSVGIcon('media-playback-pause'))
+		# self.ui.jobKill_toolButton.setIcon(self.setSVGIcon('paint-none'))
+		# self.ui.jobDelete_toolButton.setIcon(self.setSVGIcon('edit-delete'))
+		# self.ui.jobResubmit_toolButton.setIcon(self.setSVGIcon('gtk-convert'))
+		# self.ui.taskComplete_toolButton.setIcon(self.setSVGIcon('dialog-ok-apply'))
+		# self.ui.taskRequeue_toolButton.setIcon(self.setSVGIcon('gtk-convert'))
 
 		# Instantiate render queue class and load data
+		# if not os.path.isdir(os.environ.get('RQ_DATABASE', '/Volumes/Jobs/rq_database')):
+		# 	print("ERROR: Database not found: %s" %os.environ['RQ_DATABASE'])
+		# 	os.environ['RQ_DATABASE'] = self.folderDialog('.')
 		self.rq = database.RenderQueue()
 		#self.rq.loadXML(os.path.join(os.environ['IC_CONFIGDIR'], 'renderQueue.xml'), use_template=False)
 
@@ -155,9 +152,13 @@ class RenderQueueApp(QtWidgets.QMainWindow, UI.TemplateUI):
 		self.ui.actionSubmit_new_job.triggered.connect(self.launchRenderSubmit)
 		self.ui.actionRefresh_queue.triggered.connect(self.rebuildRenderQueueView)
 		self.ui.actionResize_columns.triggered.connect(self.resizeColumns)
+		self.ui.actionSettings.triggered.connect(self.openSettings)
+		self.ui.actionAbout.triggered.connect(self.about)
 		self.ui.actionExit.triggered.connect(self.close)
+
 		self.ui.jobSubmit_toolButton.clicked.connect(self.launchRenderSubmit)
 		self.ui.refresh_toolButton.clicked.connect(self.rebuildRenderQueueView)
+		self.ui.settings_toolButton.clicked.connect(self.openSettings)
 
 		# Job menu & toolbar
 		#self.ui.actionEdit.triggered.connect(self.editJob)  # not yet implemented
@@ -230,6 +231,45 @@ class RenderQueueApp(QtWidgets.QMainWindow, UI.TemplateUI):
 		except AttributeError:
 			self.renderSubmitUI = submit.RenderSubmitUI(parent=self)
 			self.renderSubmitUI.display()
+
+
+	def openSettings(self):
+		""" Open settings dialog.
+		"""
+		import settings
+		self.settingsEditor = settings.SettingsDialog(parent=self)
+		result = self.settingsEditor.display(settingsType=WINDOW_TITLE, 
+		                                     categoryLs=['user', 'database'], 
+		                                     startPanel=None, 
+		                                     xmlData='userprefs.json', 
+		                                     inherit=None, 
+		                                     autoFill=False)
+
+		if result:
+			#self.setupJob()
+			pass
+
+
+	def about(self):
+		""" Show about dialog.
+		"""
+		info_str = ""
+		for key, value in self.getInfo().items():
+			info_str += "{} {}\n".format(key, value)
+
+		about_msg = """
+%s
+v%s
+
+Developers: %s
+%s %s
+
+%s
+""" %(WINDOW_TITLE, os.environ['RQ_VERSION'], 
+	  DEVELOPERS, COPYRIGHT, VENDOR, info_str)
+
+		aboutDialog = about.AboutDialog(parent=self)
+		aboutDialog.display(image="about_bg.jpg", message=about_msg)
 
 
 	def openContextMenu(self, position):
@@ -1086,10 +1126,10 @@ class RenderQueueApp(QtWidgets.QMainWindow, UI.TemplateUI):
 if __name__ == "__main__":
 	app = QtWidgets.QApplication(sys.argv)
 
-	# # Apply application style
-	# styles = QtWidgets.QStyleFactory.keys()
-	# if 'Fusion' in styles:  # Qt5
-	# 	app.setStyle('Fusion')
+	# Apply application style
+	styles = QtWidgets.QStyleFactory.keys()
+	if 'Fusion' in styles:  # Qt5
+		app.setStyle('Fusion')
 	# elif 'Plastique' in styles:
 	# 	app.setStyle('Plastique')  # Qt4
 
@@ -1098,6 +1138,12 @@ if __name__ == "__main__":
 	# 	qss=os.path.join(os.environ['IC_FORMSDIR'], STYLESHEET)
 	# 	with open(qss, "r") as fh:
 	# 		app.setStyleSheet(fh.read())
+
+	# Enable high DPI scaling
+	# try:
+	# 	QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling)
+	# except AttributeError:
+	# 	pass
 
 	# Instantiate main application class
 	rqApp = RenderQueueApp()

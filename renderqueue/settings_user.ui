@@ -1,0 +1,459 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>settings_frame</class>
+ <widget class="QFrame" name="settings_frame">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>400</width>
+    <height>400</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Frame</string>
+  </property>
+  <property name="frameShape">
+   <enum>QFrame::NoFrame</enum>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QGroupBox" name="database_groupBox">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="title">
+      <string>Render Queue Database</string>
+     </property>
+     <property name="expandable" stdset="0">
+      <bool>true</bool>
+     </property>
+     <property name="xmlCategory" stdset="0">
+      <string>database</string>
+     </property>
+     <layout class="QFormLayout" name="generic_formLayout">
+      <property name="fieldGrowthPolicy">
+       <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+      </property>
+      <property name="labelAlignment">
+       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+      </property>
+      <property name="horizontalSpacing">
+       <number>4</number>
+      </property>
+      <property name="verticalSpacing">
+       <number>4</number>
+      </property>
+      <property name="margin">
+       <number>8</number>
+      </property>
+      <item row="0" column="0">
+       <widget class="QLabel" name="location_label">
+        <property name="text">
+         <string>Location:</string>
+        </property>
+        <property name="buddy">
+         <cstring>location_lineEdit</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QFrame" name="location_frame">
+        <property name="lineWidth">
+         <number>0</number>
+        </property>
+        <layout class="QHBoxLayout" name="command_horizontalLayout">
+         <property name="spacing">
+          <number>2</number>
+         </property>
+         <property name="margin">
+          <number>0</number>
+         </property>
+         <item>
+          <widget class="QLineEdit" name="location_lineEdit">
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Path the the folder containing the render queue database.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+           <property name="xmlTag" stdset="0">
+            <string>databaseLocation</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QToolButton" name="locationBrowse_toolButton">
+           <property name="text">
+            <string>...</string>
+           </property>
+           <property name="icon">
+            <iconset>
+             <normaloff>:/rsc/rsc/icon_folder.png</normaloff>:/rsc/rsc/icon_folder.png</iconset>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>15</width>
+             <height>15</height>
+            </size>
+           </property>
+           <property name="toolButtonStyle">
+            <enum>Qt::ToolButtonIconOnly</enum>
+           </property>
+           <property name="noBackground" stdset="0">
+            <bool>false</bool>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="userInterface_groupBox">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="title">
+      <string>User Interface</string>
+     </property>
+     <property name="checked">
+      <bool>false</bool>
+     </property>
+     <property name="expandable" stdset="0">
+      <bool>true</bool>
+     </property>
+     <property name="xmlCategory" stdset="0">
+      <string>userInterface</string>
+     </property>
+     <layout class="QFormLayout" name="frames_formLayout">
+      <property name="fieldGrowthPolicy">
+       <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+      </property>
+      <property name="labelAlignment">
+       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+      </property>
+      <property name="horizontalSpacing">
+       <number>4</number>
+      </property>
+      <property name="verticalSpacing">
+       <number>4</number>
+      </property>
+      <property name="margin">
+       <number>8</number>
+      </property>
+      <item row="1" column="0">
+       <widget class="QLabel" name="uiBrightness_label">
+        <property name="text">
+         <string>UI brightness:</string>
+        </property>
+        <property name="buddy">
+         <cstring>uiBrightness_slider</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QFrame" name="uiBrightness_frame">
+        <property name="lineWidth">
+         <number>0</number>
+        </property>
+        <layout class="QHBoxLayout" name="taskSize_horizontalLayout">
+         <property name="spacing">
+          <number>6</number>
+         </property>
+         <property name="margin">
+          <number>0</number>
+         </property>
+         <item>
+          <widget class="QSlider" name="uiBrightness_slider">
+           <property name="minimum">
+            <number>17</number>
+           </property>
+           <property name="maximum">
+            <number>238</number>
+           </property>
+           <property name="singleStep">
+            <number>1</number>
+           </property>
+           <property name="pageStep">
+            <number>17</number>
+           </property>
+           <property name="value">
+            <number>68</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="tickPosition">
+            <enum>QSlider::NoTicks</enum>
+           </property>
+           <property name="tickInterval">
+            <number>10</number>
+           </property>
+           <property name="xmlTag" stdset="0">
+            <string>uiBrightness</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QCheckBox" name="useSystemColors_checkBox">
+        <property name="text">
+         <string>Use system colours</string>
+        </property>
+        <property name="tristate">
+         <bool>false</bool>
+        </property>
+        <property name="xmlTag" stdset="0">
+         <string>useSystemColors</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="uiAccentColor_label">
+        <property name="text">
+         <string>Accent colour:</string>
+        </property>
+        <property name="buddy">
+         <cstring>uiAccentColor_button</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QToolButton" name="uiAccentColor_button">
+        <property name="minimumSize">
+         <size>
+          <width>64</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="xmlTag" stdset="0">
+         <string>uiAccentColor</string>
+        </property>
+        <property name="colorChooser" stdset="0">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="palette_groupBox">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="title">
+      <string>Colour Palette</string>
+     </property>
+     <property name="checked">
+      <bool>false</bool>
+     </property>
+     <property name="expandable" stdset="0">
+      <bool>true</bool>
+     </property>
+     <property name="xmlCategory" stdset="0">
+      <string>colorPalette</string>
+     </property>
+     <layout class="QFormLayout" name="frames_formLayout_2">
+      <property name="fieldGrowthPolicy">
+       <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+      </property>
+      <property name="labelAlignment">
+       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+      </property>
+      <property name="horizontalSpacing">
+       <number>4</number>
+      </property>
+      <property name="verticalSpacing">
+       <number>4</number>
+      </property>
+      <property name="margin">
+       <number>8</number>
+      </property>
+      <item row="0" column="1">
+       <widget class="QFrame" name="uiBrightness_frame_2">
+        <property name="lineWidth">
+         <number>0</number>
+        </property>
+        <layout class="QHBoxLayout" name="taskSize_horizontalLayout_2">
+         <property name="spacing">
+          <number>6</number>
+         </property>
+         <property name="margin">
+          <number>0</number>
+         </property>
+        </layout>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="colorActive_label">
+        <property name="text">
+         <string>Active:</string>
+        </property>
+        <property name="buddy">
+         <cstring>colorActive_button</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QToolButton" name="colorActive_button">
+        <property name="minimumSize">
+         <size>
+          <width>64</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="xmlTag" stdset="0">
+         <string>colorActive</string>
+        </property>
+        <property name="colorChooser" stdset="0">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="colorInactive_label">
+        <property name="text">
+         <string>Inactive:</string>
+        </property>
+        <property name="buddy">
+         <cstring>colorInactive_button</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QToolButton" name="colorInactive_button">
+        <property name="minimumSize">
+         <size>
+          <width>64</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="xmlTag" stdset="0">
+         <string>colorInactive</string>
+        </property>
+        <property name="colorChooser" stdset="0">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="colorSuccess_label">
+        <property name="text">
+         <string>Success:</string>
+        </property>
+        <property name="buddy">
+         <cstring>colorSuccess_button</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="QToolButton" name="colorSuccess_button">
+        <property name="minimumSize">
+         <size>
+          <width>64</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="xmlTag" stdset="0">
+         <string>colorSuccess</string>
+        </property>
+        <property name="colorChooser" stdset="0">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="0">
+       <widget class="QLabel" name="colorWarning_label">
+        <property name="text">
+         <string>Warning:</string>
+        </property>
+        <property name="buddy">
+         <cstring>colorWarning_button</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="1">
+       <widget class="QToolButton" name="colorWarning_button">
+        <property name="minimumSize">
+         <size>
+          <width>64</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="xmlTag" stdset="0">
+         <string>colorWarning</string>
+        </property>
+        <property name="colorChooser" stdset="0">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="0">
+       <widget class="QLabel" name="colorFailure_label">
+        <property name="text">
+         <string>Failure:</string>
+        </property>
+        <property name="buddy">
+         <cstring>colorFailure_button</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="1">
+       <widget class="QToolButton" name="colorFailure_button">
+        <property name="minimumSize">
+         <size>
+          <width>64</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="xmlTag" stdset="0">
+         <string>colorFailure</string>
+        </property>
+        <property name="colorChooser" stdset="0">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+  </layout>
+ </widget>
+ <tabstops>
+  <tabstop>location_lineEdit</tabstop>
+  <tabstop>locationBrowse_toolButton</tabstop>
+  <tabstop>useSystemColors_checkBox</tabstop>
+  <tabstop>uiBrightness_slider</tabstop>
+  <tabstop>uiAccentColor_button</tabstop>
+ </tabstops>
+ <resources/>
+ <connections/>
+</ui>

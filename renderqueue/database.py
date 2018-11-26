@@ -10,6 +10,7 @@
 
 import glob
 import json
+import os
 import uuid
 
 # Import custom modules
@@ -25,6 +26,13 @@ class RenderTask():
 class RenderQueue():
 	""" Class to manage the render queue database.
 	"""
+	def __init__(self):
+		self.rq_database = '/Volumes/Jobs/rq_database'
+		# try:
+		# 	self.rq_database = os.environ['RQ_DATABASE']
+		# except KeyError:
+		# 	return None
+
 
 	def newJob(self, **kwargs):
 		""" Create a new render job and associated tasks.
@@ -36,7 +44,8 @@ class RenderQueue():
 		kwargs['jobID'] = jobID
 
 		# Write job data file
-		datafile = 'queue/jobs/%s.json' %jobID
+		#datafile = 'queue/jobs/%s.json' %jobID
+		datafile = '%s/jobs/%s.json' %(self.rq_database, jobID)
 		with open(datafile, 'w') as json_file:
 			json.dump(kwargs, json_file, indent=4)
 
@@ -50,7 +59,8 @@ class RenderQueue():
 			# taskdata['command'] = kwargs['command']
 			# taskdata['flags'] = kwargs['flags']
 
-			datafile = 'queue/tasks/queued/%s_%s.json' %(jobID, str(i).zfill(4))
+			#datafile = 'queue/tasks/queued/%s_%s.json' %(jobID, str(i).zfill(4))
+			datafile = '%s/tasks/queued/%s_%s.json' %(self.rq_database, jobID, str(i).zfill(4))
 			with open(datafile, 'w') as json_file:
 				json.dump(taskdata, json_file, indent=4)
 
@@ -61,7 +71,7 @@ class RenderQueue():
 			structure and deletes them. Also kills processes for tasks that
 			are rendering.
 		"""
-		datafile = 'queue/jobs/%s.json' %jobID
+		datafile = '%s/jobs/%s.json' %(self.rq_database, jobID)
 		oswrapper.recurseRemove(datafile)
 
 
@@ -77,7 +87,7 @@ class RenderQueue():
 		""" Read jobs.
 		"""
 		jobs = []
-		path = 'queue/jobs/*.json'
+		path = '%s/jobs/*.json' %self.rq_database
 		for filename in glob.glob(path):
 			with open(filename, 'r') as f:
 				jobs.append(json.load(f))
@@ -89,14 +99,16 @@ class RenderQueue():
 		"""
 		tasks = []
 		#statuses = ['queued', 'working', 'completed', 'failed']
-		path = 'queue/tasks/*/%s_*.json' %jobID
+		path = '%s/*/*/%s_*.json' %(self.rq_database, jobID)
 		for filename in glob.glob(path):
-			if 'queued' in filename:
-				status = 'Queued'
-			elif 'working' in filename:
+			if 'workers' in filename:
 				status = 'Working'
+			elif 'queued' in filename:
+				status = 'Queued'
 			elif 'completed' in filename:
 				status = 'Done'
+			elif 'failed' in filename:
+				status = 'Failed'
 			else:
 				status = 'Unknown'
 			with open(filename, 'r') as f:

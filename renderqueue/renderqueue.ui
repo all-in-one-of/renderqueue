@@ -103,6 +103,38 @@
             </property>
            </widget>
           </item>
+          <item>
+           <widget class="QToolButton" name="settings_toolButton">
+            <property name="minimumSize">
+             <size>
+              <width>64</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Submit a new render job&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Maya and Nuke render jobs are supported.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="statusTip">
+             <string>Submit a new render job.</string>
+            </property>
+            <property name="text">
+             <string>Settings</string>
+            </property>
+            <property name="icon">
+             <iconset resource="icons.qrc">
+              <normaloff>:/icons/icons/icon_settings.png</normaloff>:/icons/icons/icon_settings.png</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>32</width>
+              <height>32</height>
+             </size>
+            </property>
+            <property name="toolButtonStyle">
+             <enum>Qt::ToolButtonTextUnderIcon</enum>
+            </property>
+           </widget>
+          </item>
          </layout>
         </widget>
        </item>
@@ -296,7 +328,7 @@
               <widget class="QSlider" name="jobPriority_slider">
                <property name="minimumSize">
                 <size>
-                 <width>100</width>
+                 <width>200</width>
                  <height>0</height>
                 </size>
                </property>
@@ -336,21 +368,21 @@
             </layout>
            </widget>
           </item>
-          <item>
-           <spacer name="jobGroup_horizontalSpacer2">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
          </layout>
         </widget>
+       </item>
+       <item>
+        <spacer name="renderQueueToolbar_horizontalSpacer">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
        </item>
        <item>
         <widget class="QFrame" name="task_frame">
