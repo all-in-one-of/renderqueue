@@ -10,6 +10,7 @@
 
 
 import datetime
+import json
 import logging
 import math
 import os
@@ -86,6 +87,31 @@ class RenderQueueApp(QtWidgets.QMainWindow, UI.TemplateUI):
 		except:
 			pass
 
+		# Load user preferences
+		try:
+			with open('userprefs.json', 'r') as f:
+				self.userprefs = json.load(f)
+		except (IOError, TypeError, ValueError):
+			self.userprefs = {}
+			self.userprefs['databaseLocation'] = ''
+
+		# Instantiate render queue class and load data
+		if os.path.isdir(self.userprefs['databaseLocation']):
+			self.rq = database.RenderQueue(self.userprefs['databaseLocation'])
+		else:
+			print("ERROR: Database not found: %s" %self.userprefs['databaseLocation'])
+			self.userprefs['databaseLocation'] = self.folderDialog('.')
+			self.rq = database.RenderQueue(self.userprefs['databaseLocation'])
+			with open('userprefs.json', 'w') as f:
+				json.dump(self.userprefs, f, indent=4)
+		#self.rq.loadXML(os.path.join(os.environ['IC_CONFIGDIR'], 'renderQueue.xml'), use_template=False)
+
+		# Create a QProcess object to handle the rendering process
+		# asynchronously
+		self.renderProcess = QtCore.QProcess(self)
+		self.renderProcess.finished.connect(self.renderComplete)
+		self.renderProcess.readyReadStandardOutput.connect(self.updateWorkerView)
+
 		# Define global variables
 		self.timeFormatStr = "%Y/%m/%d %H:%M:%S"
 		self.localhost = socket.gethostname()
@@ -94,15 +120,26 @@ class RenderQueueApp(QtWidgets.QMainWindow, UI.TemplateUI):
 		#verbose.registerStatusBar(self.ui.statusBar)  # only in standalone?
 
 		# Define standard UI colours
-		self.colBlack         = QtGui.QColor("#000000")  # black
+#		try:
+		self.colBlack         = QtGui.QColor("#111111")  # black
 		self.colWhite         = QtGui.QColor("#ffffff")  # white
 		self.colBorder        = QtGui.QColor("#222222")  # dark grey
-		self.colInactive      = QtGui.QColor("#666666")  # grey
+		self.colInactive      = QtGui.QColor("#666666")  # grey "#666666"
 		self.colNormal        = QtGui.QColor("#cccccc")  # light grey
-		self.colActive        = QtGui.QColor("#709e32")  # green
-		self.colCompleted     = QtGui.QColor("#00b2ee")  # mid blue
-		self.colCompletedDark = QtGui.QColor("#65d9ee")  # bright blue
-		self.colError         = QtGui.QColor("#bc0000")  # red
+		self.colActive        = QtGui.QColor(self.userprefs['colorActive'])  # green "#709e32"
+		self.colCompleted     = QtGui.QColor(self.userprefs['colorSuccess'])  # mid blue "#00b2ee"
+		self.colCompletedDark = QtGui.QColor(self.userprefs['colorSuccess']).darker()  # bright blue "#65d9ee"
+		self.colError         = QtGui.QColor(self.userprefs['colorWarning'])  # red "#bc0000"
+		# except:
+		# 	self.colBlack         = QtGui.QColor("#111111")  # black
+		# 	self.colWhite         = QtGui.QColor("#ffffff")  # white
+		# 	self.colBorder        = QtGui.QColor("#222222")  # dark grey
+		# 	self.colInactive      = QtGui.QColor("#666666")  # grey "#666666"
+		# 	self.colNormal        = QtGui.QColor("#cccccc")  # light grey
+		# 	self.colActive        = QtGui.QColor("#709e32")  # green "#709e32"
+		# 	self.colCompleted     = QtGui.QColor("#00b2ee")  # mid blue "#00b2ee"
+		# 	self.colCompletedDark = QtGui.QColor("#65d9ee")  # bright blue "#65d9ee"
+		# 	self.colError         = QtGui.QColor("#bc0000")  # red "#bc0000"
 
 		# Define status icons - TODO: generate resources file containing icons
 		# self.readyIcon = QtGui.QIcon()
@@ -127,19 +164,6 @@ class RenderQueueApp(QtWidgets.QMainWindow, UI.TemplateUI):
 		# self.ui.jobResubmit_toolButton.setIcon(self.setSVGIcon('gtk-convert'))
 		# self.ui.taskComplete_toolButton.setIcon(self.setSVGIcon('dialog-ok-apply'))
 		# self.ui.taskRequeue_toolButton.setIcon(self.setSVGIcon('gtk-convert'))
-
-		# Instantiate render queue class and load data
-		# if not os.path.isdir(os.environ.get('RQ_DATABASE', '/Volumes/Jobs/rq_database')):
-		# 	print("ERROR: Database not found: %s" %os.environ['RQ_DATABASE'])
-		# 	os.environ['RQ_DATABASE'] = self.folderDialog('.')
-		self.rq = database.RenderQueue()
-		#self.rq.loadXML(os.path.join(os.environ['IC_CONFIGDIR'], 'renderQueue.xml'), use_template=False)
-
-		# Create a QProcess object to handle the rendering process
-		# asynchronously
-		self.renderProcess = QtCore.QProcess(self)
-		self.renderProcess.finished.connect(self.renderComplete)
-		self.renderProcess.readyReadStandardOutput.connect(self.updateWorkerView)
 
 		# --------------------------------------------------------------------
 		# Connect signals & slots
@@ -241,13 +265,14 @@ class RenderQueueApp(QtWidgets.QMainWindow, UI.TemplateUI):
 		result = self.settingsEditor.display(settingsType=WINDOW_TITLE, 
 		                                     categoryLs=['user', 'database'], 
 		                                     startPanel=None, 
-		                                     xmlData='userprefs.json', 
+		                                     datafile='userprefs.json', 
 		                                     inherit=None, 
 		                                     autoFill=False)
 
 		if result:
-			#self.setupJob()
-			pass
+			with open('userprefs.json', 'r') as f:
+				self.userprefs = json.load(f)
+			self.rebuildRenderQueueView()
 
 
 	def about(self):

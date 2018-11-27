@@ -26,8 +26,9 @@ import sequence
 class RenderQueue():
 	""" Class to manage the render queue database.
 	"""
-	def __init__(self):
-		self.rq_database = 'queue'
+	def __init__(self, location=None):
+		self.rq_database = location
+		print("Connecting to render queue database at: " + location)
 		# try:
 		# 	self.rq_database = os.environ['RQ_DATABASE']
 		# except KeyError:

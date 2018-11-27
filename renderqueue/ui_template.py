@@ -61,9 +61,12 @@ class TemplateUI(object):
 
 		# Instantiate XML data class
 		if xml_data:
-			self.xd = settingsData.SettingsData()
-			xd_load = self.xd.loadXML(xml_data)
-		self.sd = {}
+			# self.xd = settingsData.SettingsData()
+			# xd_load = self.xd.loadXML(xml_data)
+			with open(xml_data, 'r') as f:
+				self.sd = json.load(f)
+		else:
+			self.sd = {}
 
 
 		# Load UI file
@@ -268,11 +271,11 @@ class TemplateUI(object):
 					if not updateOnly:
 						widget.toggled.connect(self.toggleExpandGroup)
 
-			# Enable colour chooser buttons...
-			if widget.property('colorChooser'):
-				if isinstance(widget, QtWidgets.QToolButton):
-					if not updateOnly:
-						widget.clicked.connect(self.storeColor)
+			# # Enable colour chooser buttons...
+			# if widget.property('colorChooser'):
+			# 	if isinstance(widget, QtWidgets.QToolButton):
+			# 		if not updateOnly:
+			# 			widget.clicked.connect(self.storeColor)
 
 			# Set up handler for push buttons...
 			if widget.property('exec'):
@@ -403,6 +406,16 @@ class TemplateUI(object):
 								widget.editTextChanged.connect(self.storeComboBoxValue)
 							else:
 								widget.currentIndexChanged.connect(self.storeComboBoxValue)
+
+					# Enable colour chooser buttons...
+					elif isinstance(widget, QtWidgets.QToolButton):
+						if widget.property('colorChooser'):
+							if value is not "":
+								widget.setStyleSheet("QWidget { background-color: %s }" %value)
+							# if storeProperties:
+							# 	self.storeValue(category, attr, widget.currentText())
+							if not updateOnly:
+								widget.clicked.connect(self.storeColor)
 
 
 	def findCategory(self, widget):

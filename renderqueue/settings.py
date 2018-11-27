@@ -10,6 +10,7 @@
 # with their own UI file and helper module (if required).
 
 
+import json
 import os
 import sys
 
@@ -51,6 +52,7 @@ class SettingsDialog(QtWidgets.QDialog, UI.TemplateUI):
 		             window_title=WINDOW_TITLE, 
 		             ui_file=UI_FILE, 
 		             stylesheet=STYLESHEET, 
+		             xml_data='userprefs.json', 
 		             store_window_geometry=STORE_WINDOW_GEOMETRY)  # re-write as **kwargs ?
 
 		# Set window flags
@@ -69,16 +71,16 @@ class SettingsDialog(QtWidgets.QDialog, UI.TemplateUI):
 
 
 	def display(self, settingsType="Generic", categoryLs=[], startPanel=None, 
-	            xmlData=None, inherit=None, autoFill=False):
+	            datafile=None, inherit=None, autoFill=False):
 		""" Display the dialog.
 
 			'settingsType' is the name given to the settings dialog.
 			'categoryLs' is a list of categories, should correspond to a page
 			of properties defined by a .ui file.
 			'startPanel' if set will jump straight to the named panel.
-			'xmlData' is the path to the XML file storing the settings.
+			'datafile' is the path to the data file storing the settings.
 			'inherit' whether to inherit any values. This should be in the
-			form of a path just like the 'xmlData' argument.
+			form of a path just like the 'datafile' argument.
 			'autoFill' when true, attempt to fill some fields automatically.
 		"""
 		if startPanel:
@@ -89,7 +91,7 @@ class SettingsDialog(QtWidgets.QDialog, UI.TemplateUI):
 
 		self.settingsType = settingsType
 		self.categoryLs = categoryLs
-		self.xmlData = xmlData
+		self.datafile = datafile
 		self.inherit = inherit
 		self.autoFill = autoFill
 
@@ -113,7 +115,9 @@ class SettingsDialog(QtWidgets.QDialog, UI.TemplateUI):
 		# self.ui.categories_listWidget.blockSignals(True)
 
 		# Load data from xml file(s)
-		# self.xd.loadXML(self.xmlData)
+		#self.xd.loaddata(self.datafile)
+		with open(self.datafile, 'r') as f:
+			self.xd = json.load(f)
 		if self.inherit:
 			import settingsData
 			self.id = settingsData.SettingsData()
@@ -207,7 +211,8 @@ class SettingsDialog(QtWidgets.QDialog, UI.TemplateUI):
 		for widget in self.ui.settings_frame.findChildren(QtWidgets.QWidget):
 			attr = widget.property('xmlTag')
 			if attr:
-				self.xd.removeElement(self.currentCategory, attr)
+				#self.xd.removeElement(self.currentCategory, attr)
+				del(self.xd[attr])
 
 		self.openProperties(self.currentCategory, storeProperties=False)
 
