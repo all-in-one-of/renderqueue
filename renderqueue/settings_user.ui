@@ -47,7 +47,16 @@
       <property name="verticalSpacing">
        <number>4</number>
       </property>
-      <property name="margin">
+      <property name="leftMargin">
+       <number>8</number>
+      </property>
+      <property name="topMargin">
+       <number>8</number>
+      </property>
+      <property name="rightMargin">
+       <number>8</number>
+      </property>
+      <property name="bottomMargin">
        <number>8</number>
       </property>
       <item row="0" column="0">
@@ -69,7 +78,16 @@
          <property name="spacing">
           <number>2</number>
          </property>
-         <property name="margin">
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
           <number>0</number>
          </property>
          <item>
@@ -147,7 +165,16 @@
       <property name="verticalSpacing">
        <number>4</number>
       </property>
-      <property name="margin">
+      <property name="leftMargin">
+       <number>8</number>
+      </property>
+      <property name="topMargin">
+       <number>8</number>
+      </property>
+      <property name="rightMargin">
+       <number>8</number>
+      </property>
+      <property name="bottomMargin">
        <number>8</number>
       </property>
       <item row="1" column="0">
@@ -169,7 +196,16 @@
          <property name="spacing">
           <number>6</number>
          </property>
-         <property name="margin">
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
           <number>0</number>
          </property>
          <item>
@@ -268,80 +304,23 @@
      <property name="xmlCategory" stdset="0">
       <string>colorPalette</string>
      </property>
-     <layout class="QFormLayout" name="frames_formLayout_2">
-      <property name="fieldGrowthPolicy">
-       <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
-      </property>
-      <property name="labelAlignment">
-       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-      </property>
-      <property name="horizontalSpacing">
-       <number>4</number>
-      </property>
-      <property name="verticalSpacing">
-       <number>4</number>
-      </property>
-      <property name="margin">
-       <number>8</number>
-      </property>
-      <item row="0" column="1">
-       <widget class="QFrame" name="uiBrightness_frame_2">
-        <property name="lineWidth">
-         <number>0</number>
-        </property>
-        <layout class="QHBoxLayout" name="taskSize_horizontalLayout_2">
-         <property name="spacing">
-          <number>6</number>
-         </property>
-         <property name="margin">
-          <number>0</number>
-         </property>
-        </layout>
-       </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="colorActive_label">
-        <property name="text">
-         <string>Active:</string>
-        </property>
-        <property name="buddy">
-         <cstring>colorActive_button</cstring>
-        </property>
-       </widget>
-      </item>
+     <layout class="QGridLayout" name="gridLayout">
       <item row="1" column="1">
-       <widget class="QToolButton" name="colorActive_button">
-        <property name="minimumSize">
-         <size>
-          <width>64</width>
-          <height>0</height>
-         </size>
-        </property>
-        <property name="xmlTag" stdset="0">
-         <string>colorActive</string>
-        </property>
-        <property name="colorChooser" stdset="0">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="colorInactive_label">
-        <property name="text">
-         <string>Inactive:</string>
-        </property>
-        <property name="buddy">
-         <cstring>colorInactive_button</cstring>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="1">
        <widget class="QToolButton" name="colorInactive_button">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
         <property name="minimumSize">
          <size>
           <width>64</width>
           <height>0</height>
          </size>
+        </property>
+        <property name="text">
+         <string>Inactive</string>
         </property>
         <property name="xmlTag" stdset="0">
          <string>colorInactive</string>
@@ -351,23 +330,22 @@
         </property>
        </widget>
       </item>
-      <item row="3" column="0">
-       <widget class="QLabel" name="colorSuccess_label">
-        <property name="text">
-         <string>Success:</string>
-        </property>
-        <property name="buddy">
-         <cstring>colorSuccess_button</cstring>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="1">
+      <item row="1" column="2">
        <widget class="QToolButton" name="colorSuccess_button">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
         <property name="minimumSize">
          <size>
           <width>64</width>
           <height>0</height>
          </size>
+        </property>
+        <property name="text">
+         <string>Success</string>
         </property>
         <property name="xmlTag" stdset="0">
          <string>colorSuccess</string>
@@ -377,23 +355,47 @@
         </property>
        </widget>
       </item>
-      <item row="4" column="0">
-       <widget class="QLabel" name="colorWarning_label">
-        <property name="text">
-         <string>Warning:</string>
+      <item row="1" column="0">
+       <widget class="QToolButton" name="colorActive_button">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
         </property>
-        <property name="buddy">
-         <cstring>colorWarning_button</cstring>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="1">
-       <widget class="QToolButton" name="colorWarning_button">
         <property name="minimumSize">
          <size>
           <width>64</width>
           <height>0</height>
          </size>
+        </property>
+        <property name="text">
+         <string>Active</string>
+        </property>
+        <property name="xmlTag" stdset="0">
+         <string>colorActive</string>
+        </property>
+        <property name="colorChooser" stdset="0">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="3">
+       <widget class="QToolButton" name="colorWarning_button">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>64</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>Warning</string>
         </property>
         <property name="xmlTag" stdset="0">
          <string>colorWarning</string>
@@ -403,23 +405,46 @@
         </property>
        </widget>
       </item>
-      <item row="5" column="0">
-       <widget class="QLabel" name="colorFailure_label">
-        <property name="text">
-         <string>Failure:</string>
+      <item row="0" column="0">
+       <widget class="QFrame" name="uiBrightness_frame_2">
+        <property name="lineWidth">
+         <number>0</number>
         </property>
-        <property name="buddy">
-         <cstring>colorFailure_button</cstring>
-        </property>
+        <layout class="QHBoxLayout" name="taskSize_horizontalLayout_2">
+         <property name="spacing">
+          <number>6</number>
+         </property>
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+        </layout>
        </widget>
       </item>
-      <item row="5" column="1">
+      <item row="1" column="4">
        <widget class="QToolButton" name="colorFailure_button">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
         <property name="minimumSize">
          <size>
           <width>64</width>
           <height>0</height>
          </size>
+        </property>
+        <property name="text">
+         <string>Failure</string>
         </property>
         <property name="xmlTag" stdset="0">
          <string>colorFailure</string>
