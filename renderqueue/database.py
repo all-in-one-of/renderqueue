@@ -29,10 +29,6 @@ class RenderQueue():
 	def __init__(self, location=None):
 		self.rq_database = location
 		print("Connecting to render queue database at: " + location)
-		# try:
-		# 	self.rq_database = os.environ['RQ_DATABASE']
-		# except KeyError:
-		# 	return None
 
 
 	def newJob(self, **kwargs):
@@ -45,7 +41,6 @@ class RenderQueue():
 		kwargs['jobID'] = jobID
 
 		# Write job data file
-		#datafile = 'queue/jobs/%s.json' %jobID
 		datafile = '%s/jobs/%s.json' %(self.rq_database, jobID)
 		with open(datafile, 'w') as json_file:
 			json.dump(kwargs, json_file, indent=4)
@@ -60,7 +55,6 @@ class RenderQueue():
 			# taskdata['command'] = kwargs['command']
 			# taskdata['flags'] = kwargs['flags']
 
-			#datafile = 'queue/tasks/queued/%s_%s.json' %(jobID, str(i).zfill(4))
 			datafile = '%s/tasks/queued/%s_%s.json' %(self.rq_database, jobID, str(i).zfill(4))
 			with open(datafile, 'w') as json_file:
 				json.dump(taskdata, json_file, indent=4)
@@ -74,6 +68,14 @@ class RenderQueue():
 		"""
 		datafile = '%s/jobs/%s.json' %(self.rq_database, jobID)
 		oswrapper.recurseRemove(datafile)
+
+		tasks = []
+		path = '%s/*/*/%s_*.json' %(self.rq_database, jobID)
+		for filename in glob.glob(path):
+			if 'workers' in filename:
+				print("Task %s currently rendering." %filename)
+			else:
+				oswrapper.recurseRemove(filename)
 
 
 	def archiveJob(self, jobID):
