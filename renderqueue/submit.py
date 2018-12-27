@@ -65,7 +65,7 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 		             window_title=WINDOW_TITLE, 
 		             ui_file=UI_FILE, 
 		             stylesheet=STYLESHEET, 
-		             xml_data=xml_data, 
+		             prefs_file=xml_data, 
 		             store_window_geometry=STORE_WINDOW_GEOMETRY)  # re-write as **kwargs ?
 
 		self.conformFormLayoutLabels(self.ui)
@@ -1020,7 +1020,8 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 		renderCmd = ""
 
 		# Instantiate render queue class, load data, and create new job
-		rq = database.RenderQueue()
+		rq = self.parent.rq  # If running from Render Queue
+		#rq = database.RenderQueue()
 		#rq.loadXML(os.path.join(os.environ['IC_CONFIGDIR'], 'renderQueue.xml'), use_template=False)
 
 		try:

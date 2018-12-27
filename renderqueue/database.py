@@ -16,9 +16,15 @@ import uuid
 # Import custom modules
 import oswrapper
 import sequence
+# import ui_template as UI
 
 
-# class RenderTask():
+# class RenderJob(UI.SettingsData):
+# 	""" Class to hold an render job.
+# 	"""
+
+
+# class RenderTask(UI.SettingsData):
 # 	""" Class to hold an individual task.
 # 	"""
 
@@ -27,8 +33,21 @@ class RenderQueue():
 	""" Class to manage the render queue database.
 	"""
 	def __init__(self, location=None):
-		self.rq_database = location
+		self.db_root = location
+		self.db_jobs = os.path.join(location, 'jobs')
+		self.db_tasks = os.path.join(location, 'tasks')
+		self.db_queued = os.path.join(location, 'tasks', 'queued')
+		self.db_completed = os.path.join(location, 'tasks', 'completed')
+		self.db_failed = os.path.join(location, 'tasks', 'failed')
+		self.db_workers = os.path.join(location, 'workers')
 		print("Connecting to render queue database at: " + location)
+		# Create folder structure (could be more dynamic)
+		oswrapper.createDir(self.db_jobs)
+		oswrapper.createDir(self.db_tasks)
+		oswrapper.createDir(self.db_queued)
+		oswrapper.createDir(self.db_completed)
+		oswrapper.createDir(self.db_failed)
+		oswrapper.createDir(self.db_workers)
 
 
 	def newJob(self, **kwargs):
@@ -41,9 +60,9 @@ class RenderQueue():
 		kwargs['jobID'] = jobID
 
 		# Write job data file
-		datafile = '%s/jobs/%s.json' %(self.rq_database, jobID)
-		with open(datafile, 'w') as json_file:
-			json.dump(kwargs, json_file, indent=4)
+		datafile = os.path.join(self.db_jobs, '%s.json' %jobID)
+		with open(datafile, 'w') as f:
+			json.dump(kwargs, f, indent=4)
 
 		# Write tasks and place in queue
 		tasks = kwargs['tasks']
@@ -55,9 +74,10 @@ class RenderQueue():
 			# taskdata['command'] = kwargs['command']
 			# taskdata['flags'] = kwargs['flags']
 
-			datafile = '%s/tasks/queued/%s_%s.json' %(self.rq_database, jobID, str(i).zfill(4))
-			with open(datafile, 'w') as json_file:
-				json.dump(taskdata, json_file, indent=4)
+			datafile = os.path.join(self.db_queued, 
+				'%s_%s.json' %(jobID, str(i).zfill(4)))
+			with open(datafile, 'w') as f:
+				json.dump(taskdata, f, indent=4)
 
 
 	def deleteJob(self, jobID):
@@ -66,16 +86,15 @@ class RenderQueue():
 			structure and deletes them. Also kills processes for tasks that
 			are rendering.
 		"""
-		datafile = '%s/jobs/%s.json' %(self.rq_database, jobID)
+		datafile = os.path.join(self.db_jobs, '%s.json' %jobID)
 		oswrapper.recurseRemove(datafile)
 
-		tasks = []
-		path = '%s/*/*/%s_*.json' %(self.rq_database, jobID)
+		path = '%s/*/*/%s_*.json' %(self.db_root, jobID)
 		for filename in glob.glob(path):
 			if 'workers' in filename:
 				print("Task %s currently rendering." %filename)
-			else:
-				oswrapper.recurseRemove(filename)
+			oswrapper.recurseRemove(filename)
+		return True
 
 
 	def archiveJob(self, jobID):
@@ -86,11 +105,21 @@ class RenderQueue():
 		pass
 
 
+	def requeueJob(self, jobID):
+		""" Requeue a render job and associated tasks.
+		"""
+		#statuses = ['queued', 'working', 'completed', 'failed']
+		path = '%s/*/*/%s_*.json' %(self.db_root, jobID)
+		for filename in glob.glob(path):
+			if 'queued' not in filename:
+				oswrapper.move(filename, self.db_queued)
+
+
 	def getJobs(self):
 		""" Read jobs.
 		"""
 		jobs = []
-		path = '%s/jobs/*.json' %self.rq_database
+		path = '%s/jobs/*.json' %self.db_root
 		for filename in glob.glob(path):
 			with open(filename, 'r') as f:
 				jobs.append(json.load(f))
@@ -102,7 +131,7 @@ class RenderQueue():
 		"""
 		tasks = []
 		#statuses = ['queued', 'working', 'completed', 'failed']
-		path = '%s/*/*/%s_*.json' %(self.rq_database, jobID)
+		path = '%s/*/*/%s_*.json' %(self.db_root, jobID)
 		for filename in glob.glob(path):
 			if 'workers' in filename:
 				status = 'Working'
@@ -121,67 +150,70 @@ class RenderQueue():
 		return tasks
 
 
+	def getQueuedTasks(self, jobID):
+		""" Return all queued tasks for a specified job.
+		"""
+		tasks = []
+		path = '%s/%s_*.json' %(self.db_queued, jobID)
+		for filename in glob.glob(path):
+			with open(filename, 'r') as f:
+				taskdata = json.load(f)
+				tasks.append(taskdata)
+		return tasks
+
+
 	# def getJob(self, jobID):
 	# 	""" Read job.
 	# 	"""
 	# 	datafile = 'queue/jobs/%s.json' %jobID
-	# 	with open(datafile) as json_file:
-	# 		data = json.load(json_file)
+	# 	with open(datafile) as f:
+	# 		data = json.load(f)
 	# 	return data
-
-
-	# def getValue(self, element, tag):
-	# 	""" Return the value of 'tag' belonging to 'element'. - this is now in xmlData.py
-	# 	"""
-	# 	elem = element.find(tag)
-	# 	if elem is not None:
-	# 		text = elem.text
-	# 		if text is not None:
-	# 			return text
-
-	# 	#return "" # return an empty string, not None, so value can be stored in an environment variable without raising an error
 
 
 	def getPriority(self, jobID):
 		""" Get the priority of a render job.
 		"""
-		return 0
-		# element = self.root.find("./job[@id='%s']/priority" %jobID)
-		# return int(element.text)
+		filename = os.path.join(self.db_jobs, '%s.json' %jobID)
+		with open(filename, 'r') as f:
+			job = (json.load(f))
+		return job['priority']
 
 
 	def setPriority(self, jobID, priority):
 		""" Set the priority of a render job.
 		"""
-		pass
-		# self.loadXML(quiet=True) # reload XML data
-		# element = self.root.find("./job[@id='%s']/priority" %jobID)
-		# if 0 <= priority <= 100:
-		# 	element.text = str(priority)
-		# self.saveXML()
-
-
-	def setStatus(self, jobID, status):
-		""" Set the status of a render job.
-		"""
-		pass
-		# #self.loadXML(quiet=True) # reload XML data
-		# element = self.root.find("./job[@id='%s']/status" %jobID)
-		# #print "Set status", element
-		# if element.text == str(status): # do nothing if status hasn't changed
-		# 	return
-		# else:
-		# 	element.text = str(status)
-		# 	self.saveXML()
+		filename = os.path.join(self.db_jobs, '%s.json' %jobID)
+		with open(filename, 'r') as f:
+			job = (json.load(f))
+		if 0 <= priority <= 100:
+			# Only write file if priority has changed
+			if job['priority'] != priority:
+				job['priority'] = priority
+				with open(filename, 'w') as f:
+					json.dump(job, f, indent=4)
+		# elif priority == 0:
+		# 	job['priorityold'] = job['priority']
+		# 	job['priority'] = priority
 
 
 	def dequeueJob(self):
 		""" Find a job with the highest priority that isn't paused or
-			completed.
+			completed, and return the first queued task.
 		"""
-		# self.loadXML(quiet=True) # reload XML data
+		# Get jobs and sort by priority
+		jobs = self.getJobs()
+		from operator import itemgetter
+		for job in sorted(jobs, key=itemgetter('priority'), reverse=True):
+			print("[Priority %d] Job ID %s: %s" %(job['priority'], job['jobID'], job['jobName']))
 
-		# for priority in range(100, 0, -1): # iterate over range starting at 100 and ending at 1 (zero is omitted)
+			# Get queued tasks, sort by ID, return first result
+			tasks = self.getQueuedTasks(job['jobID'])
+			if tasks:
+				return sorted(tasks, key=itemgetter('taskNo'))[0]
+
+		# for priority in range(100, 0, -1):  # Iterate over range starting at 100 and ending at 1 (zero is omitted)
+
 		# 	elements = self.root.findall("./job/[priority='%s']" %priority) # get all <job> elements with the highest priority
 		# 	if elements is not None:
 		# 		for element in elements:
@@ -195,24 +227,33 @@ class RenderQueue():
 		return None
 
 
-	def dequeueTask(self, jobID, hostID):
-		""" Dequeue the next queued task belonging to the specified job, mark
-			it as 'Working' (in-progress), and return the task ID and the
-			frame range.
-		"""
-		return False, False
-		# self.loadXML(quiet=True) # reload XML data
-		# element = self.root.find("./job[@id='%s']/task/[status='Queued']" %jobID) # get the first <task> element with 'Queued' status
-		# #element = self.root.find("./job[@id='%s']/task" %jobID) # get the first <task> element
-		# if element is not None:
-		# 	#if element.find('status').text is not "Done":
-		# 	element.find('status').text = "Working"
-		# 	element.find('worker').text = str(hostID)
-		# 	self.saveXML()
-		# 	return element.get('id'), element.find('frames').text
+	# def dequeueTask(self, jobID, hostID):
+	# 	""" Dequeue the next queued task belonging to the specified job, mark
+	# 		it as 'Working' (in-progress), and return the task ID and the
+	# 		frame range.
+	# 	"""
+	# 	return False, False
+	# 	# self.loadXML(quiet=True) # reload XML data
+	# 	# element = self.root.find("./job[@id='%s']/task/[status='Queued']" %jobID) # get the first <task> element with 'Queued' status
+	# 	# #element = self.root.find("./job[@id='%s']/task" %jobID) # get the first <task> element
+	# 	# if element is not None:
+	# 	# 	#if element.find('status').text is not "Done":
+	# 	# 	element.find('status').text = "Working"
+	# 	# 	element.find('worker').text = str(hostID)
+	# 	# 	self.saveXML()
+	# 	# 	return element.get('id'), element.find('frames').text
 
-		# else:
-		# 	return False, False
+	# 	# else:
+	# 	# 	return False, False
+
+
+	def dequeueTask(self, jobID, taskID, workerID):
+		"""
+		"""
+		filename = os.path.join(self.db_queued, '%s_%s.json' %(jobID, str(taskID).zfill(4)))
+		dst = os.path.join(self.db_workers, workerID)
+
+		oswrapper.move(filename, dst)
 
 
 	def updateTaskStatus(self, jobID, taskID, progress):
@@ -227,10 +268,14 @@ class RenderQueue():
 		# 		self.saveXML()
 
 
-	def completeTask(self, jobID, taskID, hostID=None, taskTime=0):
+	def completeTask(self, jobID, taskID, worker=None, taskTime=0):
 		""" Mark the specified task as 'Done'.
 		"""
-		pass
+		path = '%s/*/*/%s_%s.json' %(self.db_root, jobID, str(taskID).zfill(4))
+		for filename in glob.glob(path):
+			if 'completed' not in filename:
+				oswrapper.move(filename, self.db_completed)
+
 		# self.loadXML(quiet=True) # reload XML data
 		# element = self.root.find("./job[@id='%s']/task[@id='%s']" %(jobID, taskID)) # get the <task> element
 		# if element is not None:
@@ -240,15 +285,19 @@ class RenderQueue():
 		# 	# 	return
 		# 	else:
 		# 		element.find('status').text = "Done"
-		# 		element.find('worker').text = str(hostID)
+		# 		element.find('worker').text = str(worker)
 		# 		element.find('totalTime').text = str(taskTime)
 		# 		self.saveXML()
 
 
-	def failTask(self, jobID, taskID, hostID=None, taskTime=0):
+	def failTask(self, jobID, taskID, worker=None, taskTime=0):
 		""" Mark the specified task as 'Failed'.
 		"""
-		pass
+		path = '%s/*/*/%s_%s.json' %(self.db_root, jobID, str(taskID).zfill(4))
+		for filename in glob.glob(path):
+			if 'failed' not in filename:
+				oswrapper.move(filename, self.db_failed)
+
 		# self.loadXML(quiet=True) # reload XML data
 		# element = self.root.find("./job[@id='%s']/task[@id='%s']" %(jobID, taskID)) # get the <task> element
 		# if element is not None:
@@ -258,7 +307,7 @@ class RenderQueue():
 		# 	# 	return
 		# 	else:
 		# 		element.find('status').text = "Failed"
-		# 		element.find('worker').text = str(hostID)
+		# 		element.find('worker').text = str(worker)
 		# 		element.find('totalTime').text = str(taskTime)
 		# 		self.saveXML()
 
@@ -266,7 +315,11 @@ class RenderQueue():
 	def requeueTask(self, jobID, taskID):
 		""" Requeue the specified task, mark it as 'Queued'.
 		"""
-		pass
+		path = '%s/*/*/%s_%s.json' %(self.db_root, jobID, str(taskID).zfill(4))
+		for filename in glob.glob(path):
+			if 'queued' not in filename:
+				oswrapper.move(filename, self.db_queued)
+
 		# self.loadXML(quiet=True) # reload XML data
 		# element = self.root.find("./job[@id='%s']/task[@id='%s']" %(jobID, taskID)) # get the <task> element
 		# if element.find('status').text == "Queued": # do nothing if status is 'Queued'
@@ -278,4 +331,109 @@ class RenderQueue():
 		# 	element.find('totalTime').text = ""
 		# 	element.find('worker').text = ""
 		# 	self.saveXML()
+
+
+	def combineTasks(self, jobID, taskIDs):
+		""" Combine the specified tasks.
+		"""
+		print(jobID, taskIDs)
+		if len(taskIDs) < 2:
+			print("Error: Need at least two tasks to combine.")
+			return None
+
+		tasks_to_delete = []
+		frames = []
+		for taskID in taskIDs:
+			filename = os.path.join(self.db_queued, 
+				'%s_%s.json' %(jobID, str(taskID).zfill(4)))
+			with open(filename, 'r') as f:
+				taskdata = json.load(f)
+			frames += sequence.numList(taskdata['frames'])
+			if taskID == taskIDs[0]:  # Use data from first task in list
+				newtaskdata = taskdata
+			else:
+				tasks_to_delete.append(filename)  # Mark other tasks for deletion
+
+		# Sanity check on new frame range
+		try:
+			start, end = sequence.numRange(frames).split("-")
+			start = int(start)
+			end = int(end)
+			assert start<end, "Error: Start frame must be smaller than end frame."
+			newframerange = "%s-%s" %(start, end)
+			print("New frame range: " + newframerange)
+		except:
+			print("Error: Cannot combine tasks - combined frame range must be contiguous.")
+			return None
+
+		# Delete redundant tasks
+		for filename in tasks_to_delete:
+			oswrapper.recurseRemove(filename)
+
+		# Write new task
+		newtaskdata['frames'] = newframerange
+		datafile = os.path.join(self.db_queued, 
+			'%s_%s.json' %(jobID, str(taskIDs[0]).zfill(4)))
+		with open(datafile, 'w') as f:
+			json.dump(newtaskdata, f, indent=4)
+
+		return taskIDs[0]
+
+
+	def newWorker(self, **kwargs):
+		""" Create a new worker.
+		"""
+		workerID = uuid.uuid4().hex  # generate UUID
+		kwargs['id'] = workerID
+
+		# Create worker folder and data file
+		workerdir = os.path.join(self.db_workers, workerID)
+		oswrapper.createDir(workerdir)
+		datafile = os.path.join(workerdir, 'workerinfo.json')
+		with open(datafile, 'w') as f:
+			json.dump(kwargs, f, indent=4)
+
+
+	def getWorkers(self):
+		""" Read workers.
+		"""
+		workers = []
+		path = '%s/*/workerinfo.json' %self.db_workers
+		for filename in glob.glob(path):
+			with open(filename, 'r') as f:
+				try:
+					workers.append(json.load(f))
+				except json.decoder.JSONDecodeError:
+					print("Error reading worker: " + filename)
+		return workers
+
+
+	def deleteWorker(self, workerID):
+		""" Delete a worker from the database.
+		"""
+		path = os.path.join(self.db_workers, workerID)
+		oswrapper.recurseRemove(path)
+		return True
+
+
+	def getWorkerStatus(self, workerID):
+		""" Get the status of the specified worker.
+		"""
+		datafile = os.path.join(self.db_workers, workerID, 'workerinfo.json')
+		with open(datafile, 'r') as f:
+			worker = json.load(f)
+		return worker['status']
+
+
+	def setWorkerStatus(self, workerID, status):
+		""" Set the status of the specified worker.
+		"""
+		datafile = os.path.join(self.db_workers, workerID, 'workerinfo.json')
+		with open(datafile, 'r') as f:
+			worker = json.load(f)
+		if worker['status'] != status:
+			worker['status'] = status
+			print(worker['status'])
+			with open(datafile, 'w') as f:
+				json.dump(worker, f, indent=4)
 

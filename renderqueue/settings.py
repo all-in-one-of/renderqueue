@@ -52,7 +52,7 @@ class SettingsDialog(QtWidgets.QDialog, UI.TemplateUI):
 		             window_title=WINDOW_TITLE, 
 		             ui_file=UI_FILE, 
 		             stylesheet=STYLESHEET, 
-		             xml_data='userprefs.json', 
+		             prefs_file='userprefs.json', 
 		             store_window_geometry=STORE_WINDOW_GEOMETRY)  # re-write as **kwargs ?
 
 		# Set window flags
