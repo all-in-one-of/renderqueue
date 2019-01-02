@@ -107,10 +107,10 @@
              </size>
             </property>
             <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Refresh the render queue view&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Force reload the render queue database and update the view. Note the view is automatically updated every 5 seconds.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Refresh the render queue database&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Force a refresh of the render queue database and update all views.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
             <property name="statusTip">
-             <string>Refresh the render queue view.</string>
+             <string>Refresh the render queue database.</string>
             </property>
             <property name="text">
              <string>Refresh</string>
@@ -142,7 +142,7 @@
              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Settings&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Open the settings dialog.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
             <property name="statusTip">
-             <string>Submit a new render job.</string>
+             <string>Open the settings dialog.</string>
             </property>
             <property name="text">
              <string>Settings</string>
@@ -473,6 +473,56 @@
          </layout>
         </widget>
        </item>
+       <item>
+        <widget class="QFrame" name="worker_frame">
+         <property name="lineWidth">
+          <number>0</number>
+         </property>
+         <layout class="QHBoxLayout" name="task_horizontalLayout_2">
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
+           <number>0</number>
+          </property>
+          <item>
+           <widget class="QToolButton" name="workerControl_toolButton">
+            <property name="minimumSize">
+             <size>
+              <width>64</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>Render</string>
+            </property>
+            <property name="icon">
+             <iconset resource="icons.qrc">
+              <normaloff>:/icons/icons/icon_editor.png</normaloff>:/icons/icons/icon_editor.png</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>32</width>
+              <height>32</height>
+             </size>
+            </property>
+            <property name="popupMode">
+             <enum>QToolButton::InstantPopup</enum>
+            </property>
+            <property name="toolButtonStyle">
+             <enum>Qt::ToolButtonTextUnderIcon</enum>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
       </layout>
      </widget>
     </item>
@@ -481,7 +531,7 @@
       <property name="orientation">
        <enum>Qt::Vertical</enum>
       </property>
-      <widget class="QTreeWidget" name="renderQueue_treeWidget">
+      <widget class="QTreeWidget" name="queue_treeWidget">
        <property name="alternatingRowColors">
         <bool>true</bool>
        </property>
@@ -578,6 +628,9 @@
        <attribute name="headerShowSortIndicator" stdset="0">
         <bool>true</bool>
        </attribute>
+       <attribute name="headerStretchLastSection">
+        <bool>false</bool>
+       </attribute>
        <column>
         <property name="text">
          <string>Worker</string>
@@ -591,6 +644,11 @@
        <column>
         <property name="text">
          <string>Hostname</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>IP Address</string>
         </property>
        </column>
        <column>
@@ -787,7 +845,7 @@
   </action>
   <action name="actionStopWorker">
    <property name="text">
-    <string>Stop</string>
+    <string>Stop immediately</string>
    </property>
   </action>
   <action name="actionSubmit_new_job">

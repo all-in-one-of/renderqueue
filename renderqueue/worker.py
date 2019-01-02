@@ -3,73 +3,133 @@
 # worker.py
 #
 # Mike Bonnington <mjbonnington@gmail.com>
-# (c) 2016-2018
+# (c) 2016-2019
 #
-# Render Worker
+# Render Worker - this module constructs the command(s) to be run by a worker
+# and interfaces with the various plugins.
 
 
-import datetime
-import json
-import logging
-import math
-import os
-import socket
-import sys
-import time
-import uuid
+from Qt import QtCore
 
-from Qt import QtCore, QtGui, QtWidgets
-import icons_rc
-import ui_template as UI
-
-# Import custom modules
-import about
-import oswrapper
-import database
-import outputparser
-import sequence
-#import verbose
+def renderTask(job, task, worker):
+	print(job)
+	print(task)
+	print(worker)
 
 
-class RenderWorker():
-	def __init__(self, parent=None):
-		workerID = uuid.uuid4().hex  # generate UUID
-		kwargs['workerID'] = workerID
+# ----------------------------------------------------------------------------
+# Begin worker thread class
+# ----------------------------------------------------------------------------
 
-		# Write job data file
-		datafile = os.path.join(self.db_workers, '%s.json' %jobID)
-		with open(datafile, 'w') as f:
-			json.dump(kwargs, f, indent=4)
+class WorkerThread(QtCore.QThread):
+	""" Worker thread class.
+	"""
+	printError = QtCore.Signal(str)
+	printMessage = QtCore.Signal(str)
+	printProgress = QtCore.Signal(str)
+	updateProgressBar = QtCore.Signal(int)
+	taskCompleted = QtCore.Signal(tuple)
+
+	def __init__(self, job, task, worker, ignore_errors=True):
+		QtCore.QThread.__init__(self)
+		self.job = job
+		self.task = task
+		self.worker = worker
+		self.ignore_errors = ignore_errors
+		self.files_processed = 0
 
 		# Set up logging (TEST)
 		# task_log_path = oswrapper.absolutePath('$RQ_DATADIR/test.log')
 		# logging.basicConfig(level=logging.DEBUG, filename=task_log_path, filemode="a+",
 		#                     format="%(asctime)-15s %(levelname)-8s %(message)s")
 
-		self.setupUI(window_object=WINDOW_OBJECT, 
-					 window_title=WINDOW_TITLE, 
-					 ui_file=UI_FILE, 
-					 stylesheet=STYLESHEET, 
-					 prefs_file=PREFS_FILE, 
-					 store_window_geometry=STORE_WINDOW_GEOMETRY)  # re-write as **kwargs ?
 
-		# Set window flags
-		self.setWindowFlags(QtCore.Qt.Window)
+	def __del__(self):
+		self.wait()
 
-		# Set other Qt attributes
-		#self.setAttribute(QtCore.Qt.WA_DeleteOnClose, True)
 
-		# Restore widget state
-		# try:
-		# 	self.ui.splitter.restoreState(self.settings.value("splitterSizes")) #.toByteArray())
-		# 	self.ui.renderQueue_treeWidget.header().restoreState(self.settings.value("renderQueueView")) #.toByteArray())
-		# except:
-		# 	pass
+	def run(self):
+		for item in self.tasks:
+			new_task = self._render_task(item)
+			self.taskCompleted.emit(new_task)
 
-		# Instantiate render queue class and load data
-		databaseLocation = self.prefs.getValue('user', 'databaseLocation')
-		self.rq = database.RenderQueue(databaseLocation)
 
+	def _render_task(self, item):
+		""" Perform the rendering operation(s).
+
+			Return a tuple containing the following items:
+			- the index of the task being processed;
+			- the status of the task;
+			- a filename to be processed as a new task.
+		"""
+		errors = 0
+		last_index = 0
+
+		task_id = item.text(0)
+		task_status = item.text(1)
+		# task_count = item.text(2)
+		task_before = item.text(3)
+		task_after = item.text(4)
+		task_path = item.text(5)
+
+		src_fileLs = sequence.expandSeq(task_path, task_before)
+		dst_fileLs = sequence.expandSeq(task_path, task_after)
+
+		# Only go ahead and rename if the operation will make changes
+		# if task_status == "Ready":
+		self.printMessage.emit("%s: Rename '%s' to '%s'" %(task_id, task_before, task_after))
+		self.printMessage.emit("Renaming 0%")
+		#item.setText(1, "Processing")  # causes problems
+
+		for i in range(len(src_fileLs)):
+			success, msg = osOps.rename(src_fileLs[i], dst_fileLs[i], quiet=True)
+			if success:
+				last_index = i
+				progress = (i/len(src_fileLs))*100
+				self.printProgress.emit("Renaming %d%%" %progress)
+			else:
+				errors += 1
+				if not self.ignore_errors:  # Task stopped due to error
+					self.printError.emit(msg)
+					return task_id, "Interrupted", src_fileLs[-1]
+
+			self.files_processed += 1
+			self.updateProgressBar.emit(self.files_processed)
+
+		if errors == 0:  # Task completed successfully
+			self.printProgress.emit("Renaming 100%")
+			return task_id, "Complete", dst_fileLs[i]
+
+		else:  # Task completed with errors, which were ignored
+			if errors == 1:
+				error_str = "1 error"
+			else:
+				error_str = "%d errors" %errors
+			self.printMessage.emit("Task generated %s." %error_str)
+			return task_id, error_str, dst_fileLs[last_index] #src_fileLs[-1]
+
+		# else:  # Task skipped
+		# 	self.printMessage.emit("%s: Rename task skipped." %task_id)
+		# 	return task_id, "Nothing to change", "" #src_fileLs[0]
+
+# ----------------------------------------------------------------------------
+# End worker thread class
+# ============================================================================
+# Run as standalone app
+# ----------------------------------------------------------------------------
+
+if __name__ == "__main__":
+	app = QtWidgets.QApplication(sys.argv)
+
+	myApp = BatchRenameApp()
+	myApp.show()
+	sys.exit(app.exec_())
+
+
+
+
+class RenderWorker():
+	def __init__(self, parent=None):
 		# Create a QProcess object to handle the rendering process
 		# asynchronously
 		self.renderProcess = QtCore.QProcess(self)
@@ -81,15 +141,10 @@ class RenderWorker():
 		self.localhost = socket.gethostname()
 		self.selection = []
 		self.renderOutput = ""
-		#verbose.registerStatusBar(self.ui.statusBar)  # only in standalone?
 
 		# --------------------------------------------------------------------
 		# Connect signals & slots
 		# --------------------------------------------------------------------
-
-		# # Set up context menus for render queue tree widget
-		# self.ui.renderQueue_treeWidget.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-		# self.ui.renderQueue_treeWidget.customContextMenuRequested.connect(self.openContextMenu)
 
 		# Add context menu items to worker control tool button
 		self.ui.workerControl_toolButton.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
@@ -122,40 +177,6 @@ class RenderWorker():
 		# Set local worker as disabled initially
 		self.setWorkerStatus("disabled")  # Store this as a preference or something
 
-		self.updateWorkerView()
-		self.updateToolbarUI()
-
-
-	# def openContextMenu(self, position):
-	# 	""" Display right-click context menu for items in render queue tree
-	# 		view widget.
-	# 	"""
-	# 	level = -1  # Initialise with null value in case of empty queue
-	# 	menu = None
-	# 	indices = self.ui.renderQueue_treeWidget.selectedIndexes()
-	# 	if len(indices) > 0:
-	# 		level = 0
-	# 		index = indices[0]
-	# 		while index.parent().isValid():
-	# 			index = index.parent()
-	# 			level += 1
-
-	# 	if level == 0:  # Job
-	# 		menu = self.ui.menuJob
-	# 	elif level == 1:  # Task
-	# 		menu = self.ui.menuTask
-
-	# 	if menu:
-	# 		menu.exec_(self.ui.renderQueue_treeWidget.viewport().mapToGlobal(position))
-
-
-	# def resizeColumns(self):
-	# 	""" Resize all columns of the specified widget to fit content.
-	# 	"""
-	# 	widget = self.ui.renderQueue_treeWidget
-	# 	for i in range(0, widget.columnCount()):
-	# 		widget.resizeColumnToContents(i)
-
 
 	def updateWorkerView(self):
 		""" Update the information in the worker info area.
@@ -163,11 +184,6 @@ class RenderWorker():
 			to capture its output and display in the UI widget.
 		"""
 		self.ui.workerControl_toolButton.setText("%s (%s)" %(self.localhost, self.workerStatus))
-
-		# try:
-		# 	line = str(self.renderProcess.readAllStandardOutput(), 'utf-8')
-		# except TypeError:  # Python 2.x compatibility
-		# 	line = str(self.renderProcess.readAllStandardOutput())
 
 		if int(sys.version[0]) <= 2:  # Python 2.x compatibility
 			line = str(self.renderProcess.readAllStandardOutput())
@@ -188,7 +204,6 @@ class RenderWorker():
 		self.renderOutput += line
 		self.ui.output_textEdit.setPlainText(self.renderOutput)
 		self.ui.output_textEdit.moveCursor(QtGui.QTextCursor.End)
-
 
 		# Get the render job item or create it if it doesn't exist
 		#workerListItem = self.getQueueItem(self.ui.workers_treeWidget.invisibleRootItem(), jobID)
@@ -353,7 +368,7 @@ class RenderWorker():
 
 
 		# Set rendering status
-#		verbose.print_(cmdStr, 4)
+		# verbose.print_(cmdStr, 4)
 
 		# Fill info fields
 		#self.ui.taskInfo_label.setText("Rendering %s %s from '%s'" %(verbose.pluralise("frame", len(frameList)), frames, self.rq.getValue(jobElement, 'name')))
@@ -425,28 +440,6 @@ class RenderWorker():
 		#self.updateRenderQueueView()
 
 
-	def showEvent(self, event):
-		""" Event handler for when window is shown.
-		"""
-		# Create timers to refresh the view, dequeue tasks, and update elapsed
-		# time readouts every n milliseconds
-		self.timerUpdateView = QtCore.QTimer(self)
-		self.timerUpdateView.timeout.connect(self.updateRenderQueueView)
-		self.timerUpdateView.start(5000)
-
-		self.timerDequeue = QtCore.QTimer(self)
-		self.timerDequeue.timeout.connect(self.dequeue)
-		self.timerDequeue.start(5000)  # Should only happen when worker is enabled
-
-		self.timerUpdateTimer = QtCore.QTimer(self)
-		self.timerUpdateTimer.timeout.connect(self.updateTimers)
-		self.timerUpdateTimer.start(1000)
-
-		#self.updateRenderQueueView()
-		#self.rebuildRenderQueueView()
-		self.updateToolbarUI()
-
-
 	def closeEvent(self, event):
 		""" Event handler for when window is closed.
 		"""
@@ -487,36 +480,4 @@ class RenderWorker():
 
 # ----------------------------------------------------------------------------
 # End main application class
-# ============================================================================
-# Run as standalone app
 # ----------------------------------------------------------------------------
-
-if __name__ == "__main__":
-	app = QtWidgets.QApplication(sys.argv)
-
-	# Apply application style
-	styles = QtWidgets.QStyleFactory.keys()
-	if 'Fusion' in styles:  # Qt5
-		app.setStyle('Fusion')
-	# elif 'Plastique' in styles:
-	# 	app.setStyle('Plastique')  # Qt4
-
-	# # Apply UI style sheet
-	# if STYLESHEET is not None:
-	# 	qss=os.path.join(os.environ['IC_FORMSDIR'], STYLESHEET)
-	# 	with open(qss, "r") as fh:
-	# 		app.setStyleSheet(fh.read())
-
-	# Enable high DPI scaling
-	# try:
-	# 	QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling)
-	# except AttributeError:
-	# 	pass
-
-	# Instantiate main application class
-	rwApp = RenderWorkerApp()
-
-	# Show the application UI
-	rwApp.show()
-	sys.exit(app.exec_())
-

@@ -3,7 +3,7 @@
 # ui_template.py
 #
 # Mike Bonnington <mjbonnington@gmail.com>
-# (c) 2018
+# (c) 2018-2019
 #
 # UI Template - a custom class to act as a template for all windows and
 # dialogs.

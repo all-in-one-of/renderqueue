@@ -3,7 +3,7 @@
 # renderqueue.py
 #
 # Mike Bonnington <mjbonnington@gmail.com>
-# (c) 2016-2018
+# (c) 2016-2019
 #
 # Render Queue Manager
 # A UI for managing a queue of distributed rendering jobs.
@@ -32,6 +32,7 @@ import database
 import outputparser
 import sequence
 #import verbose
+import worker
 
 
 # ----------------------------------------------------------------------------
@@ -39,7 +40,7 @@ import sequence
 # ----------------------------------------------------------------------------
 
 VENDOR = ""
-COPYRIGHT = "(c) 2015-2018"
+COPYRIGHT = "(c) 2015-2019"
 DEVELOPERS = "Mike Bonnington"
 os.environ['RQ_VERSION'] = "0.2.0"
 
@@ -72,6 +73,13 @@ class RenderQueueApp(QtWidgets.QMainWindow, UI.TemplateUI):
 		# logging.basicConfig(level=logging.DEBUG, filename=task_log_path, filemode="a+",
 		#                     format="%(asctime)-15s %(levelname)-8s %(message)s")
 
+		# Define global variables
+		self.time_format = "%Y/%m/%d %H:%M:%S"
+		self.localhost = socket.gethostname()
+		self.ip_address = socket.gethostbyname(self.localhost)
+		self.selection = []
+		self.expandedJobs = {}
+
 		self.setupUI(window_object=WINDOW_OBJECT, 
 					 window_title=WINDOW_TITLE, 
 					 ui_file=UI_FILE, 
@@ -81,14 +89,17 @@ class RenderQueueApp(QtWidgets.QMainWindow, UI.TemplateUI):
 
 		# Set window flags
 		self.setWindowFlags(QtCore.Qt.Window)
+		self.setWindowTitle("%s - %s" %(WINDOW_TITLE, self.localhost.split(".")[0]))
 
 		# Set other Qt attributes
 		#self.setAttribute(QtCore.Qt.WA_DeleteOnClose, True)
 
+		#verbose.registerStatusBar(self.ui.statusBar)  # only in standalone?
+
 		# Restore widget state
 		try:
 			self.ui.splitter.restoreState(self.settings.value("splitterSizes")) #.toByteArray())
-			self.ui.renderQueue_treeWidget.header().restoreState(self.settings.value("renderQueueView")) #.toByteArray())
+			self.ui.queue_treeWidget.header().restoreState(self.settings.value("renderQueueView")) #.toByteArray())
 			self.ui.workers_treeWidget.header().restoreState(self.settings.value("workersView")) #.toByteArray())
 		except:
 			pass
@@ -105,21 +116,13 @@ class RenderQueueApp(QtWidgets.QMainWindow, UI.TemplateUI):
 			self.prefs.write()
 		self.rq = database.RenderQueue(databaseLocation)
 
-		# Define global variables
-		self.timeFormatStr = "%Y/%m/%d %H:%M:%S"
-		self.localhost = socket.gethostname()
-		self.selection = []
-		self.expandedJobs = {}
-		# self.renderOutput = ""
-		#verbose.registerStatusBar(self.ui.statusBar)  # only in standalone?
-
 		# Define standard UI colours
 		self.colBlack         = QtGui.QColor("#333333")  # black
 		self.colWhite         = QtGui.QColor("#ffffff")  # white
 		self.colBorder        = QtGui.QColor("#222222")  # dark grey
 		self.colNormal        = QtGui.QColor("#cccccc")  # light grey
 		self.colActive        = QtGui.QColor(self.prefs.getValue('user', 'colorActive', "#709e32"))
-		self.colInactive      = QtGui.QColor(self.prefs.getValue('user', 'colorInactive', "#666666"))
+		self.colInactive      = QtGui.QColor(self.prefs.getValue('user', 'colorInactive', "#999999"))
 		self.colCompleted     = QtGui.QColor(self.prefs.getValue('user', 'colorSuccess', "#00b2ee"))
 		self.colError         = QtGui.QColor(self.prefs.getValue('user', 'colorWarning', "#bc0000"))
 
@@ -151,11 +154,11 @@ class RenderQueueApp(QtWidgets.QMainWindow, UI.TemplateUI):
 		# Connect signals & slots
 		# --------------------------------------------------------------------
 
-		self.ui.renderQueue_treeWidget.itemSelectionChanged.connect(self.updateSelection)
-		self.ui.renderQueue_treeWidget.expanded.connect(self.storeExpandedJobs)
-		self.ui.renderQueue_treeWidget.collapsed.connect(self.storeExpandedJobs)
-		self.ui.renderQueue_treeWidget.header().sectionResized.connect(lambda logicalIndex, oldSize, newSize: self.updateColumn(logicalIndex, oldSize, newSize))  # Resize progress indicator
-		self.ui.renderQueue_treeWidget.header().sectionClicked.connect(self.sortTasks)
+		self.ui.queue_treeWidget.itemSelectionChanged.connect(self.updateSelection)
+		self.ui.queue_treeWidget.expanded.connect(self.storeExpandedJobs)
+		self.ui.queue_treeWidget.collapsed.connect(self.storeExpandedJobs)
+		self.ui.queue_treeWidget.header().sectionResized.connect(lambda logicalIndex, oldSize, newSize: self.updateColumn(logicalIndex, oldSize, newSize))  # Resize progress indicator
+		self.ui.queue_treeWidget.header().sectionClicked.connect(self.sortTasks)
 
 		# Queue menu & toolbar
 		self.ui.actionSubmit_new_job.triggered.connect(self.launchRenderSubmit)
@@ -199,11 +202,39 @@ class RenderQueueApp(QtWidgets.QMainWindow, UI.TemplateUI):
 		self.ui.actionDeleteWorker.triggered.connect(self.deleteWorker)
 		self.ui.actionDequeue.triggered.connect(self.dequeue)
 
+		# Add context menu items to worker control tool button
+		self.ui.workerControl_toolButton.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
+
+		self.actionWorkerStart = QtWidgets.QAction("Start Worker", None)
+		self.actionWorkerStart.triggered.connect(self.startWorker)
+		self.ui.workerControl_toolButton.addAction(self.actionWorkerStart)
+
+		self.actionWorkerStop = QtWidgets.QAction("Stop Worker", None)
+		self.actionWorkerStop.triggered.connect(self.stopWorker)
+		self.ui.workerControl_toolButton.addAction(self.actionWorkerStop)
+
+		self.actionKillTask = QtWidgets.QAction("Stop Worker Immediately and Kill Current Task", None)
+		# self.actionKillTask.triggered.connect(self.killRenderProcess)
+		self.ui.workerControl_toolButton.addAction(self.actionKillTask)
+
+		self.actionWorkerContinueAfterTask = QtWidgets.QAction("Continue After Current Task Completion", None)
+		self.actionWorkerContinueAfterTask.setCheckable(True)
+		self.ui.workerControl_toolButton.addAction(self.actionWorkerContinueAfterTask)
+
+		self.actionWorkerStopAfterTask = QtWidgets.QAction("Stop Worker After Current Task Completion", None)
+		self.actionWorkerStopAfterTask.setCheckable(True)
+		self.ui.workerControl_toolButton.addAction(self.actionWorkerStopAfterTask)
+
+		workerControlAfterTaskGroup = QtWidgets.QActionGroup(self)
+		workerControlAfterTaskGroup.addAction(self.actionWorkerContinueAfterTask)
+		workerControlAfterTaskGroup.addAction(self.actionWorkerStopAfterTask)
+		self.actionWorkerContinueAfterTask.setChecked(True)
+
 		# Set up context menus for render queue and workers tree widgets
-		self.ui.renderQueue_treeWidget.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-		self.ui.renderQueue_treeWidget.customContextMenuRequested.connect(self.openContextMenu)
+		self.ui.queue_treeWidget.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+		self.ui.queue_treeWidget.customContextMenuRequested.connect(self.openContextMenu)
 		self.ui.workers_treeWidget.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-		self.ui.workers_treeWidget.customContextMenuRequested.connect(self.openWorkerContextMenu)
+		self.ui.workers_treeWidget.customContextMenuRequested.connect(self.openContextMenu)
 
 		self.updateSelection()
 
@@ -258,13 +289,14 @@ Developers: %s
 		aboutDialog.display(image="about_bg.jpg", message=about_msg)
 
 
+	# @QtCore.Slot()
 	def openContextMenu(self, position):
-		""" Display right-click context menu for items in render queue tree
-			view widget.
+		""" Display right-click context menu for items in render queue and
+			worker tree view widgets.
 		"""
 		level = -1  # Initialise with null value in case of empty queue
 		menu = None
-		indices = self.ui.renderQueue_treeWidget.selectedIndexes()
+		indices = self.sender().selectedIndexes()
 		if len(indices) > 0:
 			level = 0
 			index = indices[0]
@@ -272,36 +304,31 @@ Developers: %s
 				index = index.parent()
 				level += 1
 
-		if level == 0:  # Job
-			menu = self.ui.menuJob
-		elif level == 1:  # Task
-			menu = self.ui.menuTask
+		# Select correct menu to display
+		if self.sender() == self.ui.queue_treeWidget:
+			if level == 0:  # Job
+				menu = self.ui.menuJob
+			elif level == 1:  # Task
+				menu = self.ui.menuTask
+		elif self.sender() == self.ui.workers_treeWidget:
+			if level == 0:  # Worker
+				menu = self.ui.menuWorker
 
 		if menu:
-			menu.exec_(self.ui.renderQueue_treeWidget.viewport().mapToGlobal(position))
-
-
-	def openWorkerContextMenu(self, position):
-		""" Display right-click context menu for items in worker tree view
-			widget.
-		"""
-		menu = self.ui.menuWorker
-
-		if menu:
-			menu.exec_(self.ui.workers_treeWidget.viewport().mapToGlobal(position))
+			menu.exec_(self.sender().viewport().mapToGlobal(position))
 
 
 	def resizeColumns(self):
 		""" Resize all columns of the specified widget to fit content.
 		"""
-		widget = self.ui.renderQueue_treeWidget
+		widget = self.ui.queue_treeWidget
 		for i in range(0, widget.columnCount()):
 			widget.resizeColumnToContents(i)
 
 
 	def rebuildQueueView(self):
-		""" Clears and rebuilds the render queue tree view widget, populating
-			it with entries for render jobs and tasks.
+		""" Clears and rebuilds the render queue and worker tree view widgets,
+			populating it with entries for render jobs and tasks.
 		"""
 		# Instantiate render queue class and load data
 		databaseLocation = self.prefs.getValue('user', 'databaseLocation')
@@ -313,17 +340,19 @@ Developers: %s
 		self.colCompleted = QtGui.QColor(self.prefs.getValue('user', 'colorSuccess',  "#00b2ee"))
 		self.colError     = QtGui.QColor(self.prefs.getValue('user', 'colorWarning',  "#bc0000"))
 
-		# Clear tree widget
-		self.ui.renderQueue_treeWidget.clear()
+		# Clear widgets
+		self.ui.queue_treeWidget.clear()
+		self.ui.workers_treeWidget.clear()
 
 		# Populate tree widget with render jobs and tasks
 		self.updateQueueView()
+		self.updateWorkerView()
 
 		# Hide ID column
-		#self.ui.renderQueue_treeWidget.setColumnHidden(1, True)
+		#self.ui.queue_treeWidget.setColumnHidden(1, True)
 
 		# Sort by submit time column - move this somewhere else?
-		#self.ui.renderQueue_treeWidget.sortByColumn(7, QtCore.Qt.DescendingOrder)
+		#self.ui.queue_treeWidget.sortByColumn(7, QtCore.Qt.DescendingOrder)
 
 		#self.updateWorkerView()
 
@@ -336,14 +365,14 @@ Developers: %s
 			TODO: we probably shouldn't be writing to the XML file here, this
 			function should be read only.
 		"""
-			#self.rq.loadXML(quiet=True)  # Reload XML data
+		widget = self.ui.queue_treeWidget
 
 		# Stop the widget from emitting signals
-		self.ui.renderQueue_treeWidget.blockSignals(True)
+		widget.blockSignals(True)
 
 		# Populate tree widget with render jobs
 		jobs = self.rq.getJobs()
-		if jobs is None:
+		if not jobs:
 			return
 		for job in jobs:
 
@@ -351,7 +380,7 @@ Developers: %s
 			jobStatus = "Queued"
 
 			# Get the render job item or create it if it doesn't exist
-			renderJobItem = self.getQueueItem(self.ui.renderQueue_treeWidget.invisibleRootItem(), job['jobID'])
+			renderJobItem = self.getQueueItem(widget.invisibleRootItem(), job['jobID'])
 
 			# Fill columns with data
 			renderJobItem.setText(0, job['jobName'])
@@ -382,7 +411,10 @@ Developers: %s
 				taskID = str(task['taskNo']).zfill(4)  # Must match padding format in database.py
 				taskStatus = task['status']
 				taskTotalTime = 0
-				taskWorker = "None"
+				try:
+					taskWorker = task['worker']
+				except KeyError:
+					taskWorker = "None"
 
 				# Get the render task item or create it if it doesn't exist
 				renderTaskItem = self.getQueueItem(renderJobItem, taskID)
@@ -395,7 +427,7 @@ Developers: %s
 
 				# Calculate progress
 				if task['frames'] == 'Unknown':
-					if taskStatus == "Working":
+					if taskStatus.startswith("Rendering"):
 						inProgressTaskCount += 1
 						inProgressTaskFrameCount = -1
 					if taskStatus == "Done":
@@ -403,7 +435,7 @@ Developers: %s
 						completedTaskFrameCount = -1
 				else:
 					taskFrameCount = len(sequence.numList(task['frames']))
-					if taskStatus == "Working":
+					if taskStatus.startswith("Rendering"):
 						inProgressTaskCount += 1
 						inProgressTaskFrameCount += taskFrameCount
 					if taskStatus == "Done":
@@ -411,12 +443,12 @@ Developers: %s
 						completedTaskFrameCount += taskFrameCount
 
 				# Colour the status text
-				for col in range(self.ui.renderQueue_treeWidget.columnCount()):
+				for col in range(widget.columnCount()):
 					renderTaskItem.setForeground(col, QtGui.QBrush(self.colInactive))
 				# if taskStatus == "Queued": # and taskWorker == self.localhost:
 				# 	#renderTaskItem.setForeground(4, QtGui.QBrush(self.colCompleted))
 				# 	renderTaskItem.setIcon(4, self.nullIcon)
-				# elif taskStatus == "Working": # and taskWorker == self.localhost:
+				# elif taskStatus.startswith("Rendering"): # and taskWorker == self.localhost:
 				# 	#renderTaskItem.setForeground(4, QtGui.QBrush(self.colActive))
 				# 	renderTaskItem.setIcon(4, self.readyIcon)
 				# elif taskStatus == "Done": # and taskWorker == self.localhost:
@@ -438,6 +470,7 @@ Developers: %s
 				renderTaskItem.setText(9, taskWorker)
 
 			renderJobItem.sortChildren(1, 0)  # Tasks are always sorted by ID
+
 			# Calculate job progress and update status
 			colProgress = self.colCompleted.darker()
 			#renderJobItem.setForeground(4, QtGui.QBrush(self.colWhite))
@@ -470,7 +503,10 @@ Developers: %s
 				jobTotalTime = None
 
 			renderJobItem.setText(8, str(jobTotalTime))
-			#renderJobItem.setText(9, "%d %s rendering" %(inProgressTaskCount, verbose.pluralise("worker", inProgressTaskCount)))
+			if inProgressTaskCount:
+				renderJobItem.setText(9, "[%d rendering]" %inProgressTaskCount)
+			else:
+				renderJobItem.setText(9, "")
 			renderJobItem.setText(10, job['comment'])
 
 			# Attempt to restore expanded job items
@@ -480,11 +516,54 @@ Developers: %s
 				pass
 
 		# Re-enable signals
-		self.ui.renderQueue_treeWidget.blockSignals(False)
+		widget.blockSignals(False)
+
+
+	def updateWorkerView(self):
+		""" Update the information in the worker view.
+		"""
+		widget = self.ui.workers_treeWidget
+
+		# Stop the widget from emitting signals
+		widget.blockSignals(True)
+
+		# Populate tree widget with workers
+		workers = self.rq.getWorkers()
+		if not workers:
+			return
+		for worker in workers:
+
+			# Get the worker item or create it if it doesn't exist
+			workerListItem = self.getQueueItem(widget.invisibleRootItem(), worker['id'])
+			# workerListItem = QtWidgets.QTreeWidgetItem(widget.invisibleRootItem())
+			# workerIcon = QtGui.QIcon()
+			# workerIcon.addPixmap(QtGui.QPixmap(self.checkFilePath(icon+".png", searchpath)), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+			# action.setIcon(workerIcon)
+			workerListItem.setIcon(0, self.setSVGIcon('computer-symbolic'))
+
+			# Fill columns with data
+			workerListItem.setText(0, worker['name'])
+			workerListItem.setText(1, worker['id'])
+			workerListItem.setText(2, worker['hostname'])
+			workerListItem.setText(3, worker['ip_address'])
+			workerListItem.setText(4, worker['status'])
+			workerListItem.setText(5, worker['username'])
+			#workerListItem.setText(5, worker['runningTime'])
+			workerListItem.setText(7, worker['pool'])
+			workerListItem.setText(8, worker['comment'])
+
+			# Give remote workers different colour
+			# (could add extra column instead)
+			if worker['ip_address'] != self.ip_address:
+				for col in range(widget.columnCount()):
+					workerListItem.setForeground(col, QtGui.QBrush(self.colInactive))
+
+		# Re-enable signals
+		widget.blockSignals(False)
 
 
 	def getQueueItem(self, parent, itemID=None):
-		""" Return the render queue item identified by 'itemID' belonging to
+		""" Return the tree widget item identified by 'itemID' belonging to
 			'parent'.
 			If it doesn't exist, return a new item.
 			If 'itemID' is not specified, return a list of all the child
@@ -515,8 +594,8 @@ Developers: %s
 		""" Draw a pixmap to represent the progress of a job.
 		"""
 		border = 1
-		width = self.ui.renderQueue_treeWidget.columnWidth(4)
-		height = self.ui.renderQueue_treeWidget.rowHeight(self.ui.renderQueue_treeWidget.indexFromItem(renderJobItem))
+		width = self.ui.queue_treeWidget.columnWidth(4)
+		height = self.ui.queue_treeWidget.rowHeight(self.ui.queue_treeWidget.indexFromItem(renderJobItem))
 		barWidth = width - (border*2)
 		barHeight = height - (border*2)
 		completedRatio = float(completedTaskFrameCount) / float(totalFrameCount)
@@ -553,7 +632,7 @@ Developers: %s
 		#print "Column %s resized from %s to %s pixels" %(logicalIndex, oldSize, newSize)
 
 		if logicalIndex == 4:
-			# renderJobItems = self.getQueueItem(self.ui.renderQueue_treeWidget.invisibleRootItem())
+			# renderJobItems = self.getQueueItem(self.ui.queue_treeWidget.invisibleRootItem())
 			# for renderJobItem in renderJobItems:
 			# 	self.drawJobProgressIndicator(renderJobItem, 0, 0, 100, self.colInactive)
 
@@ -564,7 +643,7 @@ Developers: %s
 	def storeExpandedJobs(self):
 		""" Store the expanded status of all jobs.
 		"""
-		root = self.ui.renderQueue_treeWidget.invisibleRootItem()
+		root = self.ui.queue_treeWidget.invisibleRootItem()
 		for i in range(root.childCount()):
 			jobItem = root.child(i)
 			jobID = jobItem.text(1)
@@ -576,7 +655,7 @@ Developers: %s
 	def sortTasks(self):
 		""" Sort all tasks by ID, regardless of sort column.
 		"""
-		root = self.ui.renderQueue_treeWidget.invisibleRootItem()
+		root = self.ui.queue_treeWidget.invisibleRootItem()
 		child_count = root.childCount()
 		for i in range(child_count):
 			item = root.child(i)
@@ -593,23 +672,26 @@ Developers: %s
 		sameJob = True
 		frames = []
 
-		for item in self.ui.renderQueue_treeWidget.selectedItems():
+		for item in self.ui.queue_treeWidget.selectedItems():
 
 			if item.parent():  # Task is selected
-				currentItem = self.ui.renderQueue_treeWidget.currentItem()
+				currentItem = self.ui.queue_treeWidget.currentItem()
 				if selectionType == "Job":
 					self.selection = []
-					self.ui.renderQueue_treeWidget.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
-					self.ui.renderQueue_treeWidget.clearSelection()
-					self.ui.renderQueue_treeWidget.setCurrentItem(currentItem)
+					self.ui.queue_treeWidget.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
+					self.ui.queue_treeWidget.clearSelection()
+					self.ui.queue_treeWidget.setCurrentItem(currentItem)
 				else:
 					selectionType = "Task"
-					self.ui.renderQueue_treeWidget.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
+					self.ui.queue_treeWidget.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
 					jobTaskID = item.parent().text(1), int(item.text(1))
 					self.selection.append(jobTaskID)
 
 					if jobTaskID[0] == self.selection[0][0]:
-						frames += sequence.numList(item.text(3))
+						try:
+							frames += sequence.numList(item.text(3))
+						except:
+							pass
 					else:
 						sameJob = False
 
@@ -619,15 +701,15 @@ Developers: %s
 					self.ui.menuTask.setEnabled(True)
 
 			else:  # Job is selected
-				currentItem = self.ui.renderQueue_treeWidget.currentItem()
+				currentItem = self.ui.queue_treeWidget.currentItem()
 				if selectionType == "Task":
 					self.selection = []
-					self.ui.renderQueue_treeWidget.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
-					self.ui.renderQueue_treeWidget.clearSelection()
-					self.ui.renderQueue_treeWidget.setCurrentItem(currentItem)
+					self.ui.queue_treeWidget.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
+					self.ui.queue_treeWidget.clearSelection()
+					self.ui.queue_treeWidget.setCurrentItem(currentItem)
 				else:
 					selectionType = "Job"
-					self.ui.renderQueue_treeWidget.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
+					self.ui.queue_treeWidget.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
 					jobTaskID = item.text(1), -1
 					self.selection.append(jobTaskID)
 
@@ -655,7 +737,7 @@ Developers: %s
 				contiguous_frame_range = None
 
 			# Print status message
-			#print(self.ui.renderQueue_treeWidget.currentItem().text(1))
+			#print(self.ui.queue_treeWidget.currentItem().text(1))
 			count = len(self.selection)
 			# if selectionType == "Job":
 			if self.selection[0][1] == -1:
@@ -682,48 +764,12 @@ Developers: %s
 		# 	self.ui.jobSubmit_toolButton.setEnabled(False)
 
 
-	def updateWorkerView(self):
-		""" Update the information in the worker info area.
-			This function is also called by the render process signal in order
-			to capture its output and display in the UI widget.
-		"""
-		# Stop the widget from emitting signals
-		self.ui.workers_treeWidget.blockSignals(True)
-
-		# Populate tree widget with workers
-		workers = self.rq.getWorkers()
-		if workers is None:
-			return
-		for worker in workers:
-
-			# Get the render job item or create it if it doesn't exist
-			workerListItem = self.getQueueItem(self.ui.workers_treeWidget.invisibleRootItem(), worker['id'])
-			# workerListItem = QtWidgets.QTreeWidgetItem(self.ui.workers_treeWidget.invisibleRootItem())
-			# workerIcon = QtGui.QIcon()
-			# workerIcon.addPixmap(QtGui.QPixmap(self.checkFilePath(icon+".png", searchpath)), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-			# action.setIcon(workerIcon)
-			workerListItem.setIcon(0, self.setSVGIcon('computer-symbolic'))
-
-			# Fill columns with data
-			workerListItem.setText(0, worker['name'])
-			workerListItem.setText(1, worker['id'])
-			workerListItem.setText(2, worker['hostname'])
-			workerListItem.setText(3, worker['status'])
-			workerListItem.setText(4, worker['username'])
-			#workerListItem.setText(5, worker['runningTime'])
-			workerListItem.setText(6, worker['pool'])
-			workerListItem.setText(7, worker['comment'])
-
-		# Re-enable signals
-		self.ui.workers_treeWidget.blockSignals(False)
-
-
 	def stopJob(self):
 		""" Stops selected render job(s). All tasks currently rendering will
 			be stopped immediately.
 		"""
 		try:
-			for item in self.ui.renderQueue_treeWidget.selectedItems():
+			for item in self.ui.queue_treeWidget.selectedItems():
 				# If item has no parent then it must be a top level item, and
 				# therefore also a job
 				if not item.parent():
@@ -743,7 +789,7 @@ Developers: %s
 			view.
 		"""
 		try:
-			for item in self.ui.renderQueue_treeWidget.selectedItems():
+			for item in self.ui.queue_treeWidget.selectedItems():
 				# If item has no parent then it must be a top level item, and
 				# therefore also a job
 				if not item.parent():
@@ -751,7 +797,7 @@ Developers: %s
 
 					# Remove item from view
 					if self.rq.deleteJob(jobID):
-						self.ui.renderQueue_treeWidget.takeTopLevelItem(self.ui.renderQueue_treeWidget.indexOfTopLevelItem(item))
+						self.ui.queue_treeWidget.takeTopLevelItem(self.ui.queue_treeWidget.indexOfTopLevelItem(item))
 						#verbose.message("Job ID %s deleted." %jobID)
 					#else:
 					#	verbose.warning("Job ID %s cannot be deleted while in progress." %jobID)
@@ -792,7 +838,7 @@ Developers: %s
 		self.timerUpdateView.stop()  # Don't update the view when dragging the slider
 
 		try:
-			for item in self.ui.renderQueue_treeWidget.selectedItems():
+			for item in self.ui.queue_treeWidget.selectedItems():
 				# If item has no parent then it must be a top level item, and
 				# therefore also a job
 				if not item.parent():
@@ -827,7 +873,7 @@ Developers: %s
 			released, or when we want to set the priority directly.
 		"""
 		try:
-			for item in self.ui.renderQueue_treeWidget.selectedItems():
+			for item in self.ui.queue_treeWidget.selectedItems():
 				# If item has no parent then it must be a top level item, and
 				# therefore also a job
 				if not item.parent():
@@ -848,7 +894,7 @@ Developers: %s
 	# 	""" Resubmit selected job(s) to render queue.
 	# 	"""
 	# 	try:
-	# 		for item in self.ui.renderQueue_treeWidget.selectedItems():
+	# 		for item in self.ui.queue_treeWidget.selectedItems():
 	# 			if not item.parent(): # if item has no parent then it must be a top level item, and therefore also a job
 
 	# 				jobName = self.rq.getValue(item, 'name')
@@ -867,7 +913,7 @@ Developers: %s
 	# 				genericOpts = jobName, jobType, priority, frames, taskSize
 	# 				mayaOpts = mayaScene, mayaProject, mayaFlags, mayaRenderCmd
 
-	# 				self.rq.newJob(genericOpts, mayaOpts, taskList, os.environ['IC_USERNAME'], time.strftime(self.timeFormatStr))
+	# 				self.rq.newJob(genericOpts, mayaOpts, taskList, os.environ['IC_USERNAME'], time.strftime(self.time_format))
 
 	# 	except ValueError:
 	# 		pass
@@ -897,7 +943,7 @@ Developers: %s
 		jobTaskIDs = []  # This will hold a tuple containing (job id, task id)
 
 		try:
-			for item in self.ui.renderQueue_treeWidget.selectedItems():
+			for item in self.ui.queue_treeWidget.selectedItems():
 				# If item has parent then it must be a subitem, and therefore
 				# also a task
 				if item.parent():
@@ -913,6 +959,7 @@ Developers: %s
 					self.rq.failTask(jobTaskID[0], jobTaskID[1], taskTime=0)
 
 			self.updateQueueView()
+			self.updateWorkerView()
 
 		except ValueError:
 			pass
@@ -958,10 +1005,10 @@ Developers: %s
 					print("Idle " + workerID)
 					# self.rq.completeTask(workerID[0], workerID[1], taskTime=0)
 					self.rq.setWorkerStatus(workerID, "Idle")
-				elif status == "Working":
-					print("Working " + workerID)
+				elif status == "Rendering":
+					print("Rendering " + workerID)
 					# self.rq.failTask(workerID[0], workerID[1], taskTime=0)
-					self.rq.setWorkerStatus(workerID, "Working")
+					self.rq.setWorkerStatus(workerID, "Rendering")
 
 			self.updateWorkerView()
 
@@ -981,7 +1028,7 @@ Developers: %s
 		# # frames = []
 
 		# try:
-		# 	for item in self.ui.renderQueue_treeWidget.selectedItems():
+		# 	for item in self.ui.queue_treeWidget.selectedItems():
 		# 		# If item has parent then it must be a subitem, and therefore
 		# 		# also a task
 		# 		if item.parent():
@@ -999,10 +1046,10 @@ Developers: %s
 		# 	# print(sequence.numRange(frames))
 		# 	combinedTaskID = self.rq.combineTasks(jobIDs[0], taskIDs)
 		# 	if combinedTaskID is not None:
-		# 		self.ui.renderQueue_treeWidget.clear()  # Needed to remove deleted tasks
+		# 		self.ui.queue_treeWidget.clear()  # Needed to remove deleted tasks
 		# 		self.updateQueueView()
 		# 		# select new task
-		# 		#self.ui.renderQueue_treeWidget.setCurrentItem(currentItem)
+		# 		#self.ui.queue_treeWidget.setCurrentItem(currentItem)
 
 		# except ValueError:
 		# 	pass
@@ -1013,6 +1060,7 @@ Developers: %s
 		"""
 		worker_args = {}
 		worker_args['hostname'] = self.localhost
+		worker_args['ip_address'] = self.ip_address
 		worker_args['name'] = self.localhost.split(".")[0]
 		worker_args['status'] = "Disabled"
 		worker_args['username'] = os.environ.get('IC_USERNAME', getpass.getuser())
@@ -1025,113 +1073,52 @@ Developers: %s
 
 	def dequeue(self):
 		""" Dequeue a render task from the queue and start rendering.
-			THIS IS ALL A BIT ROPEY ATM
 		"""
-		# if self.workerStatus != "idle":
-		# 	return False
-		# #elif self.workerStatus != "rendering":
-
-		workerIDs = []
+		# workerIDs = []
 
 		self.renderTaskInterrupted = False
 		self.renderTaskErrors = 0
 		self.renderOutput = ""
-		self.startTimeSec = time.time()  # Used for measuring the time spent rendering
-		startTime = time.strftime(self.timeFormatStr)
+		self.startTimeSec = time.time()  # Used to measure the time spent rendering
+		startTime = time.strftime(self.time_format)
 
-		#self.rq.loadXML(quiet=True)  # Reload XML data - this is being done by the dequeuing function
-
-		# Look for a suitable job to render - perhaps check here for a few
-		# easy-to-detect errors, i.e. existence of scene, render command, etc.
-		jobElement = self.rq.dequeueJob()
-		if jobElement is None:
-			#verbose.message("[%s] No jobs to render." %self.localhost)
-			print("[%s] No jobs to render." %self.localhost)
+		# Look for a suitable task to render
+		task = self.rq.getTaskToRender()
+		if task is None:
+			# verbose.message("[%s] No jobs to render." %self.localhost)
+			# print("No suitable tasks to render.")
 			return False
 
-		item = self.ui.workers_treeWidget.selectedItems()[0]
-		workerID = item.text(1)
-		self.rq.dequeueTask(jobElement['jobID'], jobElement['taskNo'], workerID)
-		self.rq.setWorkerStatus(workerID, "Working")
-		# self.renderJobID = jobElement['jobID']
-
-		# Look for tasks to start rendering
-		# self.renderTaskID, frames = self.rq.dequeueTask(self.renderJobID, self.localhost)
-		# if not self.renderTaskID:
-		# 	#verbose.message("[%s] Job ID %s: No tasks to render." %(self.localhost, self.renderJobID))
+		# # Get workers - from JSON
+		# workers = self.rq.getWorkers()
+		# if not workers:
+		# 	print("No workers.")
 		# 	return False
+		# for worker in workers:
+		# 	if worker['ip_address'] == self.ip_address:  # Local workers only
+		# 		if worker['status'] == "Idle":  # Worker is ready
+		# 			# ...
 
-		#verbose.message("[%s] Job ID %s, Task ID %s: Starting render..." %(self.localhost, self.renderJobID, self.renderTaskID))
-		frames = jobElement['frames']
-		if frames == 'Unknown':
-			frameList = frames
-		else:
-			frameList = sequence.numList(frames)
-			startFrame = min(frameList)
-			endFrame = max(frameList)
+		# Get workers - from widget
+		root = self.ui.workers_treeWidget.invisibleRootItem()
+		for i in range(root.childCount()):
+			workerItem = root.child(i)
+			workerID = workerItem.text(1)
+			workerIP = workerItem.text(3)
+			workerStatus = workerItem.text(4)
+			if workerIP == self.ip_address:  # Local workers only
+				if workerStatus == "Idle":  # Worker is ready
+					# ...
+					self.rq.dequeueTask(task['jobID'], task['taskNo'], workerID)
 
-		# jobType = self.rq.getValue(jobElement, 'type')
-		# if jobType == 'Maya':
-		# 	# try:
-		# 	# 	renderCmd = '"%s"' %os.environ['MAYARENDERVERSION'] # store this in XML as maya version may vary with project
-		# 	# except KeyError:
-		# 	# 	print "ERROR: Path to Maya Render command executable not found. This can be set with the environment variable 'MAYARENDERVERSION'."
-		# 	#renderCmd = '"%s"' %os.path.normpath(self.rq.getValue(jobElement, 'mayaRenderCmd'))
-		# 	renderCmd = self.rq.getValue(jobElement, 'mayaRenderCmd')
-		# 	# if not os.path.isfile(renderCmd): # disabled this check 
-		# 	# 	print "ERROR: Maya render command not found: %s" %renderCmd
-		# 	# 	return False
+					print("Starting render: frame(s) %s from %s" %(task['frames'], task['jobID']))
+					result = worker.renderTask(self.rq.getJob(task['jobID']), 
+											   task, 
+											   self.rq.getWorker(workerID))
 
-		# 	sceneName = self.rq.getValue(jobElement, 'mayaScene')
-		# 	# if not os.path.isfile(sceneName): # check scene exists - disabled for now as could cause worker to get stuck in a loop
-		# 	# 	print "ERROR: Scene not found: %s" %sceneName
-		# 	# 	self.rq.requeueTask(self.renderJobID, self.renderTaskID)
-		# 	# 	#self.rq.setStatus(self.renderJobID, "Failed")
-		# 	# 	return False
+					self.updateQueueView()
+					self.updateWorkerView()
 
-		# 	cmdStr = ''
-		# 	args = '-proj "%s"' %self.rq.getValue(jobElement, 'mayaProject')
-
-		# 	mayaFlags = self.rq.getValue(jobElement, 'mayaFlags')
-		# 	if mayaFlags is not None:
-		# 		args += ' %s' %mayaFlags
-
-		# 	# Construct command(s)
-		# 	if frames == 'Unknown':
-		# 		cmdStr = '"%s" %s "%s"' %(renderCmd, args, sceneName)
-		# 	else:
-		# 		cmdStr += '"%s" %s -s %d -e %d "%s"' %(renderCmd, args, int(startFrame), int(endFrame), sceneName)
-
-		# elif jobType == 'Nuke':
-		# 	renderCmd = self.rq.getValue(jobElement, 'nukeRenderCmd')
-		# 	scriptName = self.rq.getValue(jobElement, 'nukeScript')
-
-		# 	cmdStr = ''
-		# 	args = ''
-
-		# 	nukeFlags = self.rq.getValue(jobElement, 'nukeFlags')
-		# 	if nukeFlags is not None:
-		# 		args += ' %s' %nukeFlags
-
-		# 	# Construct command(s)
-		# 	if frames == 'Unknown':
-		# 		cmdStr = '"%s" %s -x "%s"' %(renderCmd, args, scriptName)
-		# 	else:
-		# 		cmdStr += '"%s" %s -F %s -x "%s"' %(renderCmd, args, frames, scriptName)
-
-
-		# Set rendering status
-#		verbose.print_(cmdStr, 4)
-
-		# Fill info fields
-		print("Rendering frame(s) %s from '%s'" %(frames, jobElement['jobID']))
-		#self.ui.taskInfo_label.setText("Rendering %s %s from '%s'" %(verbose.pluralise("frame", len(frameList)), frames, self.rq.getValue(jobElement, 'name')))
-		#self.ui.runningTime_label.setText(startTime)  # change this to display the task running time
-		# self.ui.runningTime_label.setText( str(datetime.timedelta(seconds=0)) )
-
-		# self.setWorkerStatus("Rendering")
-		# self.renderProcess.start(cmdStr)
-		# self.updateRenderQueueView()
 
 
 	def updateTimers(self):
@@ -1154,9 +1141,9 @@ Developers: %s
 		self.timerUpdateView.timeout.connect(self.updateWorkerView)
 		self.timerUpdateView.start(5000)
 
-		# self.timerDequeue = QtCore.QTimer(self)
-		# self.timerDequeue.timeout.connect(self.dequeue)
-		# self.timerDequeue.start(5000)  # Should only happen when worker is enabled
+		self.timerDequeue = QtCore.QTimer(self)
+		self.timerDequeue.timeout.connect(self.dequeue)
+		self.timerDequeue.start(5000)  # Should only happen when worker is enabled
 
 		# self.timerUpdateTimer = QtCore.QTimer(self)
 		# self.timerUpdateTimer.timeout.connect(self.updateTimers)
@@ -1195,13 +1182,13 @@ Developers: %s
 
 		# Stop timers
 		self.timerUpdateView.stop()
-		# self.timerDequeue.stop()
+		self.timerDequeue.stop()
 		# self.timerUpdateTimer.stop()
 
 		# Store window geometry and state of certain widgets
 		self.storeWindow()
 		self.settings.setValue("splitterSizes", self.ui.splitter.saveState())
-		self.settings.setValue("renderQueueView", self.ui.renderQueue_treeWidget.header().saveState())
+		self.settings.setValue("renderQueueView", self.ui.queue_treeWidget.header().saveState())
 		self.settings.setValue("workersView", self.ui.workers_treeWidget.header().saveState())
 
 		QtWidgets.QMainWindow.closeEvent(self, event)
