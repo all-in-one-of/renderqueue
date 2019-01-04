@@ -9,12 +9,101 @@
 # and interfaces with the various plugins.
 
 
+import subprocess
+
 from Qt import QtCore
 
+# Import custom modules
+import oswrapper
+import sequence
+
+
 def renderTask(job, task, worker):
-	print(job)
-	print(task)
-	print(worker)
+	""" This is a temporary function to handle the rendering process.
+	"""
+	# print(job)
+	# print(task)
+	# print(worker)
+
+	#verbose.message("[%s] Job ID %s, Task ID %s: Starting render..." %(self.localhost, self.renderJobID, self.renderTaskID))
+	print("[%s] Job ID %s, Task ID %s: Starting render..." %(worker['name'], job['jobID'], task['taskNo']))
+	if task['frames'] == "Unknown":
+		frameList = task['frames']
+	else:
+		frameList = sequence.numList(task['frames'])
+		startFrame = min(frameList)
+		endFrame = max(frameList)
+
+	if job['jobType'] == "Generic":
+		args = [job['command'], job['flags']]
+		print(args)
+		result, output = oswrapper.execute(args)
+		print(result)
+		print(output)
+
+	elif job['jobType'] == "Maya":
+		# try:
+		# 	renderCmd = '"%s"' %os.environ['MAYARENDERVERSION'] # store this in XML as maya version may vary with project
+		# except KeyError:
+		# 	print "ERROR: Path to Maya Render command executable not found. This can be set with the environment variable 'MAYARENDERVERSION'."
+		#renderCmd = '"%s"' %os.path.normpath(self.rq.getValue(jobElement, 'mayaRenderCmd'))
+		renderCmd = self.rq.getValue(jobElement, 'mayaRenderCmd')
+		# if not os.path.isfile(renderCmd): # disabled this check 
+		# 	print "ERROR: Maya render command not found: %s" %renderCmd
+		# 	return False
+
+		sceneName = self.rq.getValue(jobElement, 'mayaScene')
+		# if not os.path.isfile(sceneName): # check scene exists - disabled for now as could cause worker to get stuck in a loop
+		# 	print "ERROR: Scene not found: %s" %sceneName
+		# 	self.rq.requeueTask(self.renderJobID, self.renderTaskID)
+		# 	#self.rq.setStatus(self.renderJobID, "Failed")
+		# 	return False
+
+		cmdStr = ''
+		args = '-proj "%s"' %self.rq.getValue(jobElement, 'mayaProject')
+
+		mayaFlags = self.rq.getValue(jobElement, 'mayaFlags')
+		if mayaFlags is not None:
+			args += ' %s' %mayaFlags
+
+		# Construct command(s)
+		if task['frames'] == 'Unknown':
+			cmdStr = '"%s" %s "%s"' %(renderCmd, args, sceneName)
+		else:
+			cmdStr += '"%s" %s -s %d -e %d "%s"' %(renderCmd, args, int(startFrame), int(endFrame), sceneName)
+
+	elif job['jobType'] == "Nuke":
+		renderCmd = self.rq.getValue(jobElement, 'nukeRenderCmd')
+		scriptName = self.rq.getValue(jobElement, 'nukeScript')
+
+		cmdStr = ''
+		args = ''
+
+		nukeFlags = self.rq.getValue(jobElement, 'nukeFlags')
+		if nukeFlags is not None:
+			args += ' %s' %nukeFlags
+
+		# Construct command(s)
+		if task['frames'] == 'Unknown':
+			cmdStr = '"%s" %s -x "%s"' %(renderCmd, args, scriptName)
+		else:
+			cmdStr += '"%s" %s -F %s -x "%s"' %(renderCmd, args, task['frames'], scriptName)
+
+
+	# Set rendering status
+	# verbose.print_(cmdStr, 4)
+
+	# # Fill info fields
+	# #self.ui.taskInfo_label.setText("Rendering %s %s from '%s'" %(verbose.pluralise("frame", len(frameList)), frames, self.rq.getValue(jobElement, 'name')))
+	# #self.ui.runningTime_label.setText(startTime)  # change this to display the task running time
+	# self.ui.runningTime_label.setText( str(datetime.timedelta(seconds=0)) )
+
+	# self.setWorkerStatus("rendering")
+	# self.renderProcess.start(cmdStr)
+	# self.updateRenderQueueView()
+
+	return result
+
 
 
 # ----------------------------------------------------------------------------
@@ -24,11 +113,12 @@ def renderTask(job, task, worker):
 class WorkerThread(QtCore.QThread):
 	""" Worker thread class.
 	"""
-	printError = QtCore.Signal(str)
-	printMessage = QtCore.Signal(str)
-	printProgress = QtCore.Signal(str)
-	updateProgressBar = QtCore.Signal(int)
-	taskCompleted = QtCore.Signal(tuple)
+	# printError = QtCore.Signal(str)
+	# printMessage = QtCore.Signal(str)
+	# printProgress = QtCore.Signal(str)
+	# updateProgressBar = QtCore.Signal(int)
+	taskCompleted = QtCore.Signal(str, int)
+	taskFailed = QtCore.Signal(str, int)
 
 	def __init__(self, job, task, worker, ignore_errors=True):
 		QtCore.QThread.__init__(self)
@@ -49,68 +139,39 @@ class WorkerThread(QtCore.QThread):
 
 
 	def run(self):
-		for item in self.tasks:
-			new_task = self._render_task(item)
-			self.taskCompleted.emit(new_task)
+		self._render_task()
 
 
-	def _render_task(self, item):
+	def _render_task(self):
 		""" Perform the rendering operation(s).
-
-			Return a tuple containing the following items:
-			- the index of the task being processed;
-			- the status of the task;
-			- a filename to be processed as a new task.
 		"""
 		errors = 0
-		last_index = 0
 
-		task_id = item.text(0)
-		task_status = item.text(1)
-		# task_count = item.text(2)
-		task_before = item.text(3)
-		task_after = item.text(4)
-		task_path = item.text(5)
+		print("[%s] Job ID %s, Task ID %s: Starting render..." 
+			%(self.worker['name'], self.job['jobID'], self.task['taskNo']))
+		if self.task['frames'] == "Unknown":
+			frameList = self.task['frames']
+		else:
+			frameList = sequence.numList(self.task['frames'])
+			startFrame = min(frameList)
+			endFrame = max(frameList)
 
-		src_fileLs = sequence.expandSeq(task_path, task_before)
-		dst_fileLs = sequence.expandSeq(task_path, task_after)
+		if self.job['jobType'] == "Generic":
+			args = [self.job['command'], self.job['flags']]
+			print(args)
+			result, output = oswrapper.execute(args)
+			print(result)
+			print(output)
+		# elif...
 
-		# Only go ahead and rename if the operation will make changes
-		# if task_status == "Ready":
-		self.printMessage.emit("%s: Rename '%s' to '%s'" %(task_id, task_before, task_after))
-		self.printMessage.emit("Renaming 0%")
-		#item.setText(1, "Processing")  # causes problems
+		if result:
+			self.taskCompleted.emit(self.task['jobID'], self.task['taskNo'])
+			# self.rq.completeTask(task['jobID'], task['taskNo'], taskTime=1)
+		else:
+			self.taskFailed.emit(self.task['jobID'], self.task['taskNo'])
+			# self.rq.failTask(task['jobID'], task['taskNo'], taskTime=1)
 
-		for i in range(len(src_fileLs)):
-			success, msg = osOps.rename(src_fileLs[i], dst_fileLs[i], quiet=True)
-			if success:
-				last_index = i
-				progress = (i/len(src_fileLs))*100
-				self.printProgress.emit("Renaming %d%%" %progress)
-			else:
-				errors += 1
-				if not self.ignore_errors:  # Task stopped due to error
-					self.printError.emit(msg)
-					return task_id, "Interrupted", src_fileLs[-1]
-
-			self.files_processed += 1
-			self.updateProgressBar.emit(self.files_processed)
-
-		if errors == 0:  # Task completed successfully
-			self.printProgress.emit("Renaming 100%")
-			return task_id, "Complete", dst_fileLs[i]
-
-		else:  # Task completed with errors, which were ignored
-			if errors == 1:
-				error_str = "1 error"
-			else:
-				error_str = "%d errors" %errors
-			self.printMessage.emit("Task generated %s." %error_str)
-			return task_id, error_str, dst_fileLs[last_index] #src_fileLs[-1]
-
-		# else:  # Task skipped
-		# 	self.printMessage.emit("%s: Rename task skipped." %task_id)
-		# 	return task_id, "Nothing to change", "" #src_fileLs[0]
+		return result
 
 # ----------------------------------------------------------------------------
 # End worker thread class
@@ -118,12 +179,12 @@ class WorkerThread(QtCore.QThread):
 # Run as standalone app
 # ----------------------------------------------------------------------------
 
-if __name__ == "__main__":
-	app = QtWidgets.QApplication(sys.argv)
+# if __name__ == "__main__":
+# 	app = QtWidgets.QApplication(sys.argv)
 
-	myApp = BatchRenameApp()
-	myApp.show()
-	sys.exit(app.exec_())
+# 	myApp = BatchRenameApp()
+# 	myApp.show()
+# 	sys.exit(app.exec_())
 
 
 

@@ -810,7 +810,7 @@
   </action>
   <action name="actionStopWorker">
    <property name="text">
-    <string>Stop immediately</string>
+    <string>Stop</string>
    </property>
   </action>
   <action name="actionSubmit_new_job">
