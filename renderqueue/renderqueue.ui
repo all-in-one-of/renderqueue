@@ -15,16 +15,7 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout_5">
-    <property name="leftMargin">
-     <number>8</number>
-    </property>
-    <property name="topMargin">
-     <number>8</number>
-    </property>
-    <property name="rightMargin">
-     <number>8</number>
-    </property>
-    <property name="bottomMargin">
+    <property name="margin">
      <number>8</number>
     </property>
     <item>
@@ -36,16 +27,7 @@
        <property name="spacing">
         <number>18</number>
        </property>
-       <property name="leftMargin">
-        <number>0</number>
-       </property>
-       <property name="topMargin">
-        <number>0</number>
-       </property>
-       <property name="rightMargin">
-        <number>0</number>
-       </property>
-       <property name="bottomMargin">
+       <property name="margin">
         <number>0</number>
        </property>
        <item>
@@ -54,16 +36,7 @@
           <number>0</number>
          </property>
          <layout class="QHBoxLayout" name="view_horizontalLayout">
-          <property name="leftMargin">
-           <number>0</number>
-          </property>
-          <property name="topMargin">
-           <number>0</number>
-          </property>
-          <property name="rightMargin">
-           <number>0</number>
-          </property>
-          <property name="bottomMargin">
+          <property name="margin">
            <number>0</number>
           </property>
           <item>
@@ -116,8 +89,9 @@
              <string>Refresh</string>
             </property>
             <property name="icon">
-             <iconset resource="icons.qrc">
-              <normaloff>:/icons/icons/icon_refresh.png</normaloff>:/icons/icons/icon_refresh.png</iconset>
+             <iconset>
+              <normaloff>icons/icon_refresh.png</normaloff>
+              <disabledoff>icons/icon_refresh_disabled.png</disabledoff>icons/icon_refresh.png</iconset>
             </property>
             <property name="iconSize">
              <size>
@@ -148,8 +122,9 @@
              <string>Settings</string>
             </property>
             <property name="icon">
-             <iconset resource="icons.qrc">
-              <normaloff>:/icons/icons/icon_settings.png</normaloff>:/icons/icons/icon_settings.png</iconset>
+             <iconset>
+              <normaloff>icons/icon_settings.png</normaloff>
+              <disabledoff>icons/icon_settings_disabled.png</disabledoff>icons/icon_settings.png</iconset>
             </property>
             <property name="iconSize">
              <size>
@@ -171,16 +146,7 @@
           <number>0</number>
          </property>
          <layout class="QHBoxLayout" name="job_horizontalLayout">
-          <property name="leftMargin">
-           <number>0</number>
-          </property>
-          <property name="topMargin">
-           <number>0</number>
-          </property>
-          <property name="rightMargin">
-           <number>0</number>
-          </property>
-          <property name="bottomMargin">
+          <property name="margin">
            <number>0</number>
           </property>
           <item>
@@ -201,8 +167,9 @@
              <string>Pause</string>
             </property>
             <property name="icon">
-             <iconset resource="icons.qrc">
-              <normaloff>:/icons/icons/icon_pause.png</normaloff>:/icons/icons/icon_pause.png</iconset>
+             <iconset>
+              <normaloff>icons/icon_pause.png</normaloff>
+              <disabledoff>icons/icon_pause_disabled.png</disabledoff>icons/icon_pause.png</iconset>
             </property>
             <property name="iconSize">
              <size>
@@ -233,8 +200,9 @@
              <string>Stop</string>
             </property>
             <property name="icon">
-             <iconset resource="icons.qrc">
-              <normaloff>:/icons/icons/icon_cross.png</normaloff>:/icons/icons/icon_cross.png</iconset>
+             <iconset>
+              <normaloff>icons/icon_stop.png</normaloff>
+              <disabledoff>icons/icon_stop_disabled.png</disabledoff>icons/icon_stop.png</iconset>
             </property>
             <property name="iconSize">
              <size>
@@ -265,8 +233,9 @@
              <string>Delete</string>
             </property>
             <property name="icon">
-             <iconset resource="icons.qrc">
-              <normaloff>:/icons/icons/icon_delete.png</normaloff>:/icons/icons/icon_delete.png</iconset>
+             <iconset>
+              <normaloff>icons/icon_delete.png</normaloff>
+              <disabledoff>icons/icon_delete_disabled.png</disabledoff>icons/icon_delete.png</iconset>
             </property>
             <property name="iconSize">
              <size>
@@ -394,16 +363,7 @@
           <number>0</number>
          </property>
          <layout class="QHBoxLayout" name="task_horizontalLayout">
-          <property name="leftMargin">
-           <number>0</number>
-          </property>
-          <property name="topMargin">
-           <number>0</number>
-          </property>
-          <property name="rightMargin">
-           <number>0</number>
-          </property>
-          <property name="bottomMargin">
+          <property name="margin">
            <number>0</number>
           </property>
           <item>
@@ -424,8 +384,9 @@
              <string>Complete</string>
             </property>
             <property name="icon">
-             <iconset resource="icons.qrc">
-              <normaloff>:/icons/icons/icon_tick.png</normaloff>:/icons/icons/icon_tick.png</iconset>
+             <iconset>
+              <normaloff>icons/icon_tick.png</normaloff>
+              <disabledoff>icons/icon_tick_disabled.png</disabledoff>icons/icon_tick.png</iconset>
             </property>
             <property name="iconSize">
              <size>
@@ -456,8 +417,9 @@
              <string>Requeue</string>
             </property>
             <property name="icon">
-             <iconset resource="icons.qrc">
-              <normaloff>:/icons/icons/icon_resubmit.png</normaloff>:/icons/icons/icon_resubmit.png</iconset>
+             <iconset>
+              <normaloff>icons/icon_resubmit.png</normaloff>
+              <disabledoff>icons/icon_resubmit_disabled.png</disabledoff>icons/icon_resubmit.png</iconset>
             </property>
             <property name="iconSize">
              <size>
@@ -479,16 +441,7 @@
           <number>0</number>
          </property>
          <layout class="QHBoxLayout" name="task_horizontalLayout_2">
-          <property name="leftMargin">
-           <number>0</number>
-          </property>
-          <property name="topMargin">
-           <number>0</number>
-          </property>
-          <property name="rightMargin">
-           <number>0</number>
-          </property>
-          <property name="bottomMargin">
+          <property name="margin">
            <number>0</number>
           </property>
           <item>
@@ -503,8 +456,9 @@
              <string>Render</string>
             </property>
             <property name="icon">
-             <iconset resource="icons.qrc">
-              <normaloff>:/icons/icons/icon_editor.png</normaloff>:/icons/icons/icon_editor.png</iconset>
+             <iconset>
+              <normaloff>icons/icon_computer.png</normaloff>
+              <disabledoff>icons/icon_computer_disabled.png</disabledoff>icons/icon_computer.png</iconset>
             </property>
             <property name="iconSize">
              <size>
@@ -687,7 +641,7 @@
      <x>0</x>
      <y>0</y>
      <width>1024</width>
-     <height>22</height>
+     <height>21</height>
     </rect>
    </property>
    <property name="nativeMenuBar">
@@ -751,8 +705,9 @@
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionPause">
    <property name="icon">
-    <iconset resource="icons.qrc">
-     <normaloff>:/icons/icons/icon_pause.png</normaloff>:/icons/icons/icon_pause.png</iconset>
+    <iconset>
+     <normaloff>icons/icon_pause.png</normaloff>
+     <disabledoff>icons/icon_pause_disabled.png</disabledoff>icons/icon_pause.png</iconset>
    </property>
    <property name="text">
     <string>Pause</string>
@@ -765,8 +720,9 @@
   </action>
   <action name="actionStop">
    <property name="icon">
-    <iconset resource="icons.qrc">
-     <normaloff>:/icons/icons/icon_cross.png</normaloff>:/icons/icons/icon_cross.png</iconset>
+    <iconset>
+     <normaloff>icons/icon_stop.png</normaloff>
+     <disabledoff>icons/icon_stop_disabled.png</disabledoff>icons/icon_stop.png</iconset>
    </property>
    <property name="text">
     <string>Stop</string>
@@ -774,8 +730,9 @@
   </action>
   <action name="actionDelete">
    <property name="icon">
-    <iconset resource="icons.qrc">
-     <normaloff>:/icons/icons/icon_delete.png</normaloff>:/icons/icons/icon_delete.png</iconset>
+    <iconset>
+     <normaloff>icons/icon_delete.png</normaloff>
+     <disabledoff>icons/icon_delete_disabled.png</disabledoff>icons/icon_delete.png</iconset>
    </property>
    <property name="text">
     <string>Delete</string>
@@ -783,8 +740,9 @@
   </action>
   <action name="actionResubmit">
    <property name="icon">
-    <iconset resource="icons.qrc">
-     <normaloff>:/icons/icons/icon_resubmit.png</normaloff>:/icons/icons/icon_resubmit.png</iconset>
+    <iconset>
+     <normaloff>icons/icon_resubmit.png</normaloff>
+     <disabledoff>icons/icon_resubmit_disabled.png</disabledoff>icons/icon_resubmit.png</iconset>
    </property>
    <property name="text">
     <string>Resubmit</string>
@@ -796,14 +754,20 @@
    </property>
   </action>
   <action name="actionEdit">
+   <property name="icon">
+    <iconset>
+     <normaloff>icons/icon_editor.png</normaloff>
+     <disabledoff>icons/icon_editor_disabled.png</disabledoff>icons/icon_editor.png</iconset>
+   </property>
    <property name="text">
     <string>Properties...</string>
    </property>
   </action>
   <action name="actionMark_as_Complete">
    <property name="icon">
-    <iconset resource="icons.qrc">
-     <normaloff>:/icons/icons/icon_tick.png</normaloff>:/icons/icons/icon_tick.png</iconset>
+    <iconset>
+     <normaloff>icons/icon_tick.png</normaloff>
+     <disabledoff>icons/icon_tick_disabled.png</disabledoff>icons/icon_tick.png</iconset>
    </property>
    <property name="text">
     <string>Mark as Complete</string>
@@ -811,8 +775,9 @@
   </action>
   <action name="actionRequeue">
    <property name="icon">
-    <iconset resource="icons.qrc">
-     <normaloff>:/icons/icons/icon_resubmit.png</normaloff>:/icons/icons/icon_resubmit.png</iconset>
+    <iconset>
+     <normaloff>icons/icon_resubmit.png</normaloff>
+     <disabledoff>icons/icon_resubmit_disabled.png</disabledoff>icons/icon_resubmit.png</iconset>
    </property>
    <property name="text">
     <string>Requeue</string>
@@ -859,8 +824,9 @@
   </action>
   <action name="actionRefresh_queue">
    <property name="icon">
-    <iconset resource="icons.qrc">
-     <normaloff>:/icons/icons/icon_refresh.png</normaloff>:/icons/icons/icon_refresh.png</iconset>
+    <iconset>
+     <normaloff>icons/icon_refresh.png</normaloff>
+     <disabledoff>icons/icon_refresh_disabled.png</disabledoff>icons/icon_refresh.png</iconset>
    </property>
    <property name="text">
     <string>Refresh</string>
@@ -893,8 +859,9 @@
   </action>
   <action name="actionSettings">
    <property name="icon">
-    <iconset resource="icons.qrc">
-     <normaloff>:/icons/icons/icon_settings.png</normaloff>:/icons/icons/icon_settings.png</iconset>
+    <iconset>
+     <normaloff>icons/icon_settings.png</normaloff>
+     <disabledoff>icons/icon_settings_disabled.png</disabledoff>icons/icon_settings.png</iconset>
    </property>
    <property name="text">
     <string>Settings...</string>
@@ -912,14 +879,20 @@
   </action>
   <action name="actionMark_as_Failed">
    <property name="icon">
-    <iconset resource="icons.qrc">
-     <normaloff>:/icons/icons/icon_cross.png</normaloff>:/icons/icons/icon_cross.png</iconset>
+    <iconset>
+     <normaloff>icons/icon_cross.png</normaloff>
+     <disabledoff>icons/icon_cross_disabled.png</disabledoff>icons/icon_cross.png</iconset>
    </property>
    <property name="text">
     <string>Mark as Failed</string>
    </property>
   </action>
   <action name="actionWorkerProperties">
+   <property name="icon">
+    <iconset>
+     <normaloff>icons/icon_editor.png</normaloff>
+     <disabledoff>icons/icon_editor_disabled.png</disabledoff>icons/icon_editor.png</iconset>
+   </property>
    <property name="text">
     <string>Properties...</string>
    </property>
@@ -930,11 +903,21 @@
    </property>
   </action>
   <action name="actionNewWorker">
+   <property name="icon">
+    <iconset>
+     <normaloff>icons/icon_computer.png</normaloff>
+     <disabledoff>icons/icon_computer_disabled.png</disabledoff>icons/icon_computer.png</iconset>
+   </property>
    <property name="text">
     <string>New...</string>
    </property>
   </action>
   <action name="actionDeleteWorker">
+   <property name="icon">
+    <iconset>
+     <normaloff>icons/icon_delete.png</normaloff>
+     <disabledoff>icons/icon_delete_disabled.png</disabledoff>icons/icon_delete.png</iconset>
+   </property>
    <property name="text">
     <string>Delete</string>
    </property>

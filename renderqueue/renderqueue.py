@@ -444,19 +444,19 @@ Developers: %s
 
 				# Colour the status text
 				for col in range(widget.columnCount()):
-					renderTaskItem.setForeground(col, QtGui.QBrush(self.colInactive))
-				# if taskStatus == "Queued": # and taskWorker == self.localhost:
-				# 	#renderTaskItem.setForeground(4, QtGui.QBrush(self.colCompleted))
-				# 	renderTaskItem.setIcon(4, self.nullIcon)
-				# elif taskStatus.startswith("Rendering"): # and taskWorker == self.localhost:
-				# 	#renderTaskItem.setForeground(4, QtGui.QBrush(self.colActive))
-				# 	renderTaskItem.setIcon(4, self.readyIcon)
-				# elif taskStatus == "Done": # and taskWorker == self.localhost:
-				# 	#renderTaskItem.setForeground(4, QtGui.QBrush(self.colCompleted))
-				# 	renderTaskItem.setIcon(4, self.doneIcon)
-				# elif taskStatus == "Failed": # and taskWorker == self.localhost:
-				# 	#renderTaskItem.setForeground(4, QtGui.QBrush(self.colCompleted))
-				# 	renderTaskItem.setIcon(4, self.errorIcon)
+					# renderTaskItem.setForeground(col, QtGui.QBrush(self.colInactive))
+					# if taskStatus == "Queued": # and taskWorker == self.localhost:
+					# 	renderTaskItem.setForeground(4, QtGui.QBrush(self.colInactive))
+					# 	# renderTaskItem.setIcon(4, self.nullIcon)
+					if taskStatus.startswith("Rendering"): # and taskWorker == self.localhost:
+						renderTaskItem.setForeground(4, QtGui.QBrush(self.colActive))
+						# renderTaskItem.setIcon(4, self.readyIcon)
+					elif taskStatus == "Done": # and taskWorker == self.localhost:
+						renderTaskItem.setForeground(4, QtGui.QBrush(self.colCompleted))
+						# renderTaskItem.setIcon(4, self.doneIcon)
+					elif taskStatus == "Failed": # and taskWorker == self.localhost:
+						renderTaskItem.setForeground(4, QtGui.QBrush(self.colError))
+						# renderTaskItem.setIcon(4, self.errorIcon)
 
 				# Update timers
 				try:
@@ -472,7 +472,7 @@ Developers: %s
 			renderJobItem.sortChildren(1, 0)  # Tasks are always sorted by ID
 
 			# Calculate job progress and update status
-			colProgress = self.colCompleted.darker()
+			colProgress = self.colCompleted
 			#renderJobItem.setForeground(4, QtGui.QBrush(self.colWhite))
 			if completedTaskFrameCount == 0:
 				if inProgressTaskFrameCount == 0:
@@ -614,9 +614,9 @@ Developers: %s
 		qp.drawRect(0, 0, width, height)
 		qp.setBrush(self.colBlack)
 		qp.drawRect(border, border, barWidth, barHeight)
-		qp.setBrush(self.colActive)
+		qp.setBrush(self.colActive.darker())
 		qp.drawRect(border, border, inProgressLevel, barHeight)
-		qp.setBrush(colProgress)
+		qp.setBrush(colProgress.darker())
 		qp.drawRect(border, border, completedLevel, barHeight)
 		qp.end()
 
