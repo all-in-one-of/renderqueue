@@ -105,7 +105,9 @@ class RenderQueueApp(QtWidgets.QMainWindow, UI.TemplateUI):
 			pass
 
 		# Instantiate render queue class and load data
-		databaseLocation = self.prefs.getValue('user', 'databaseLocation')
+		databaseLocation = oswrapper.translatePath(
+			self.prefs.getValue('user', 'databaseLocation'), 
+			'L:', '/Volumes/Library', '/mnt/Library')
 
 		# If database location is not set or doesn't exist, prompt use to set
 		# the location.
@@ -332,7 +334,10 @@ Developers: %s
 			populating it with entries for render jobs and tasks.
 		"""
 		# Instantiate render queue class and load data
-		databaseLocation = self.prefs.getValue('user', 'databaseLocation')
+		databaseLocation = oswrapper.translatePath(
+			self.prefs.getValue('user', 'databaseLocation'), 
+			'L:', '/Volumes/Library', '/mnt/Library')
+
 		self.rq = database.RenderQueue(databaseLocation)
 
 		# Set custom colours
@@ -458,6 +463,8 @@ Developers: %s
 					elif taskStatus == "Failed": # and taskWorker == self.localhost:
 						renderTaskItem.setForeground(4, QtGui.QBrush(self.colError))
 						# renderTaskItem.setIcon(4, self.errorIcon)
+					else:
+						renderTaskItem.setForeground(4, QtGui.QBrush(self.colNormal))
 
 				# Update timers
 				try:
@@ -1151,7 +1158,9 @@ Developers: %s
 		""" Stop the rename operation.
 		"""
 		print("Aborting render.")
-		self.workerThread.terminate()  # Enclose in try/except?
+		# self.workerThread.terminate()  # Enclose in try/except?
+		self.workerThread.quit()  # Enclose in try/except?
+		self.workerThread.wait()  # Enclose in try/except?
 
 		# self.ui.taskList_treeWidget.resizeColumnToContents(self.header("Status"))
 

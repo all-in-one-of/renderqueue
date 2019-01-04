@@ -9,6 +9,7 @@
 # and interfaces with the various plugins.
 
 
+import platform
 import subprocess
 
 from Qt import QtCore
@@ -16,94 +17,6 @@ from Qt import QtCore
 # Import custom modules
 import oswrapper
 import sequence
-
-
-def renderTask(job, task, worker):
-	""" This is a temporary function to handle the rendering process.
-	"""
-	# print(job)
-	# print(task)
-	# print(worker)
-
-	#verbose.message("[%s] Job ID %s, Task ID %s: Starting render..." %(self.localhost, self.renderJobID, self.renderTaskID))
-	print("[%s] Job ID %s, Task ID %s: Starting render..." %(worker['name'], job['jobID'], task['taskNo']))
-	if task['frames'] == "Unknown":
-		frameList = task['frames']
-	else:
-		frameList = sequence.numList(task['frames'])
-		startFrame = min(frameList)
-		endFrame = max(frameList)
-
-	if job['jobType'] == "Generic":
-		args = [job['command'], job['flags']]
-		print(args)
-		result, output = oswrapper.execute(args)
-		print(result)
-		print(output)
-
-	elif job['jobType'] == "Maya":
-		# try:
-		# 	renderCmd = '"%s"' %os.environ['MAYARENDERVERSION'] # store this in XML as maya version may vary with project
-		# except KeyError:
-		# 	print "ERROR: Path to Maya Render command executable not found. This can be set with the environment variable 'MAYARENDERVERSION'."
-		#renderCmd = '"%s"' %os.path.normpath(self.rq.getValue(jobElement, 'mayaRenderCmd'))
-		renderCmd = self.rq.getValue(jobElement, 'mayaRenderCmd')
-		# if not os.path.isfile(renderCmd): # disabled this check 
-		# 	print "ERROR: Maya render command not found: %s" %renderCmd
-		# 	return False
-
-		sceneName = self.rq.getValue(jobElement, 'mayaScene')
-		# if not os.path.isfile(sceneName): # check scene exists - disabled for now as could cause worker to get stuck in a loop
-		# 	print "ERROR: Scene not found: %s" %sceneName
-		# 	self.rq.requeueTask(self.renderJobID, self.renderTaskID)
-		# 	#self.rq.setStatus(self.renderJobID, "Failed")
-		# 	return False
-
-		cmdStr = ''
-		args = '-proj "%s"' %self.rq.getValue(jobElement, 'mayaProject')
-
-		mayaFlags = self.rq.getValue(jobElement, 'mayaFlags')
-		if mayaFlags is not None:
-			args += ' %s' %mayaFlags
-
-		# Construct command(s)
-		if task['frames'] == 'Unknown':
-			cmdStr = '"%s" %s "%s"' %(renderCmd, args, sceneName)
-		else:
-			cmdStr += '"%s" %s -s %d -e %d "%s"' %(renderCmd, args, int(startFrame), int(endFrame), sceneName)
-
-	elif job['jobType'] == "Nuke":
-		renderCmd = self.rq.getValue(jobElement, 'nukeRenderCmd')
-		scriptName = self.rq.getValue(jobElement, 'nukeScript')
-
-		cmdStr = ''
-		args = ''
-
-		nukeFlags = self.rq.getValue(jobElement, 'nukeFlags')
-		if nukeFlags is not None:
-			args += ' %s' %nukeFlags
-
-		# Construct command(s)
-		if task['frames'] == 'Unknown':
-			cmdStr = '"%s" %s -x "%s"' %(renderCmd, args, scriptName)
-		else:
-			cmdStr += '"%s" %s -F %s -x "%s"' %(renderCmd, args, task['frames'], scriptName)
-
-
-	# Set rendering status
-	# verbose.print_(cmdStr, 4)
-
-	# # Fill info fields
-	# #self.ui.taskInfo_label.setText("Rendering %s %s from '%s'" %(verbose.pluralise("frame", len(frameList)), frames, self.rq.getValue(jobElement, 'name')))
-	# #self.ui.runningTime_label.setText(startTime)  # change this to display the task running time
-	# self.ui.runningTime_label.setText( str(datetime.timedelta(seconds=0)) )
-
-	# self.setWorkerStatus("rendering")
-	# self.renderProcess.start(cmdStr)
-	# self.updateRenderQueueView()
-
-	return result
-
 
 
 # ----------------------------------------------------------------------------
@@ -145,6 +58,7 @@ class WorkerThread(QtCore.QThread):
 	def _render_task(self):
 		""" Perform the rendering operation(s).
 		"""
+		args = []
 		errors = 0
 
 		print("[%s] Job ID %s, Task ID %s: Starting render..." 
@@ -158,11 +72,87 @@ class WorkerThread(QtCore.QThread):
 
 		if self.job['jobType'] == "Generic":
 			args = [self.job['command'], self.job['flags']]
-			print(args)
-			result, output = oswrapper.execute(args)
-			print(result)
-			print(output)
-		# elif...
+
+		elif self.job['jobType'] == "Maya":
+			# try:
+			# 	renderCmd = '"%s"' %os.environ['MAYARENDERVERSION'] # store this in XML as maya version may vary with project
+			# except KeyError:
+			# 	print "ERROR: Path to Maya Render command executable not found. This can be set with the environment variable 'MAYARENDERVERSION'."
+			#renderCmd = '"%s"' %os.path.normpath(self.rq.getValue(jobElement, 'mayaRenderCmd'))
+			#renderCmd = self.rq.getValue(jobElement, 'mayaRenderCmd')
+			# if not os.path.isfile(renderCmd): # disabled this check 
+			# 	print "ERROR: Maya render command not found: %s" %renderCmd
+			# 	return False
+
+			# if not os.path.isfile(self.job['scene']): # check scene exists - disabled for now as could cause worker to get stuck in a loop
+			# 	print "ERROR: Scene not found: %s" %self.job['scene']
+			# 	self.rq.requeueTask(self.renderJobID, self.renderTaskID)
+			# 	#self.rq.setStatus(self.renderJobID, "Failed")
+			# 	return False
+
+			# Set executable (rewrite this to use app paths / versions)
+			if platform.system() == "Windows":
+				args.append('"C:/Program Files/Autodesk/Maya2016/bin/Render.exe"')
+			elif platform.system() == "Darwin":
+				args.append('/Applications/Autodesk/maya2016/Maya.app/Contents/bin/Render')
+			else:
+				args.append('/usr/autodesk/maya2016/bin/Render')
+
+			args.append('-proj')
+			args.append(self.job['mayaProject'])
+
+			if self.job['flags']:
+				args.append(self.job['flags'])
+
+			# if self.job['renderer']:
+			# 	args.append('-r %s' %self.job['flags'])
+
+			if frameList == "Unknown":
+				# cmdStr = '"%s" %s "%s"' %(renderCmd, args, self.job['scene'])
+				pass
+			else:
+				# cmdStr += '"%s" %s -s %d -e %d "%s"' %(renderCmd, args, int(startFrame), int(endFrame), self.job['scene'])
+				args.append('-s')
+				args.append(str(startFrame))
+				args.append('-e')
+				args.append(str(endFrame))
+
+			args.append(self.job['scene'])
+
+		elif self.job['jobType'] == "Nuke":
+			renderCmd = self.rq.getValue(jobElement, 'nukeRenderCmd')
+			scriptName = self.rq.getValue(jobElement, 'nukeScript')
+
+			cmdStr = ''
+			args = ''
+
+			nukeFlags = self.rq.getValue(jobElement, 'nukeFlags')
+			if nukeFlags is not None:
+				args += ' %s' %nukeFlags
+
+			# Construct command(s)
+			if frameList == 'Unknown':
+				cmdStr = '"%s" %s -x "%s"' %(renderCmd, args, scriptName)
+			else:
+				cmdStr += '"%s" %s -F %s -x "%s"' %(renderCmd, args, frameList, scriptName)
+
+	# Set rendering status
+	# verbose.print_(cmdStr, 4)
+
+	# # Fill info fields
+	# #self.ui.taskInfo_label.setText("Rendering %s %s from '%s'" %(verbose.pluralise("frame", len(frameList)), frames, self.rq.getValue(jobElement, 'name')))
+	# #self.ui.runningTime_label.setText(startTime)  # change this to display the task running time
+	# self.ui.runningTime_label.setText( str(datetime.timedelta(seconds=0)) )
+
+	# self.setWorkerStatus("rendering")
+	# self.renderProcess.start(cmdStr)
+	# self.updateRenderQueueView()
+
+		# Execute the command
+		# print("Args: ", args)
+		result, output = oswrapper.execute(args)
+		print("Result: ", result)
+		print("Output: ", output)
 
 		if result:
 			self.taskCompleted.emit(self.task['jobID'], self.task['taskNo'])
@@ -170,7 +160,6 @@ class WorkerThread(QtCore.QThread):
 		else:
 			self.taskFailed.emit(self.task['jobID'], self.task['taskNo'])
 			# self.rq.failTask(task['jobID'], task['taskNo'], taskTime=1)
-
 		return result
 
 # ----------------------------------------------------------------------------
