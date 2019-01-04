@@ -199,6 +199,7 @@ class RenderQueueApp(QtWidgets.QMainWindow, UI.TemplateUI):
 		self.ui.actionNewWorker.triggered.connect(self.newWorker)
 		self.ui.actionStartWorker.triggered.connect(self.startWorker)
 		self.ui.actionStopWorker.triggered.connect(self.stopWorker)
+		self.ui.actionStopWorkerImmediately.triggered.connect(self.cancelRender)
 		self.ui.actionDeleteWorker.triggered.connect(self.deleteWorker)
 		self.ui.actionDequeue.triggered.connect(self.dequeue)
 
@@ -689,7 +690,7 @@ Developers: %s
 
 					if jobTaskID[0] == self.selection[0][0]:
 						try:
-							frames += sequence.numList(item.text(3))
+							frames += sequence.numList(item.text(3), quiet=True)
 						except:
 							pass
 					else:
@@ -1111,14 +1112,48 @@ Developers: %s
 					# ...
 					self.rq.dequeueTask(task['jobID'], task['taskNo'], workerID)
 
-					print("Starting render: frame(s) %s from %s" %(task['frames'], task['jobID']))
-					result = worker.renderTask(self.rq.getJob(task['jobID']), 
-											   task, 
-											   self.rq.getWorker(workerID))
+					job = self.rq.getJob(task['jobID'])
+					node = self.rq.getWorker(workerID)
+					# result = worker.renderTask(job, task, node)
 
+					# if result:
+					# 	self.rq.completeTask(task['jobID'], task['taskNo'], taskTime=1)
+					# else:
+					# 	self.rq.failTask(task['jobID'], task['taskNo'], taskTime=1)
+
+					# Initialise worker thread, connect signals & slots, start processing
+					self.workerThread = worker.WorkerThread(
+						job, task, node, 
+						ignore_errors=True)
+					# self.workerThread.printError.connect(verbose.error)
+					# self.workerThread.printMessage.connect(verbose.message)
+					# self.workerThread.printProgress.connect(verbose.progress)
+					# self.workerThread.updateProgressBar.connect(self.updateProgressBar)
+					# self.workerThread.taskCompleted.connect(self.taskCompleted)
+					self.workerThread.taskCompleted.connect(self.rq.completeTask)
+					self.workerThread.taskFailed.connect(self.rq.failTask)
+					self.workerThread.finished.connect(self.renderFinished)
+					self.workerThread.start()
+
+					# Update views
 					self.updateQueueView()
 					self.updateWorkerView()
 
+
+
+	def renderFinished(self):
+		""" Function to execute when the render operation finishes.
+		"""
+		print("Render finished.")
+
+
+	def cancelRender(self):
+		""" Stop the rename operation.
+		"""
+		print("Aborting render.")
+		self.workerThread.terminate()  # Enclose in try/except?
+
+		# self.ui.taskList_treeWidget.resizeColumnToContents(self.header("Status"))
 
 
 	def updateTimers(self):

@@ -7,7 +7,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
+    <width>406</width>
     <height>512</height>
    </rect>
   </property>
@@ -176,9 +176,9 @@
        <property name="geometry">
         <rect>
          <x>0</x>
-         <y>-101</y>
-         <width>383</width>
-         <height>546</height>
+         <y>0</y>
+         <width>420</width>
+         <height>667</height>
         </rect>
        </property>
        <property name="noBackground" stdset="0">
@@ -293,7 +293,7 @@
                  <string>...</string>
                 </property>
                 <property name="icon">
-                 <iconset resource="rsc.qrc">
+                 <iconset>
                   <normaloff>:/rsc/rsc/icon_folder.png</normaloff>
                   <disabledoff>:/rsc/rsc/icon_folder_disabled.png</disabledoff>:/rsc/rsc/icon_folder.png</iconset>
                 </property>
@@ -470,7 +470,7 @@
                  <string>...</string>
                 </property>
                 <property name="icon">
-                 <iconset resource="rsc.qrc">
+                 <iconset>
                   <normaloff>:/rsc/rsc/icon_folder.png</normaloff>
                   <disabledoff>:/rsc/rsc/icon_folder_disabled.png</disabledoff>:/rsc/rsc/icon_folder.png</iconset>
                 </property>
@@ -540,7 +540,7 @@
                  <string>Get Cameras</string>
                 </property>
                 <property name="icon">
-                 <iconset resource="rsc.qrc">
+                 <iconset>
                   <normaloff>:/rsc/rsc/icon_refresh.png</normaloff>
                   <disabledoff>:/rsc/rsc/icon_refresh_disabled.png</disabledoff>:/rsc/rsc/icon_refresh.png</iconset>
                 </property>
@@ -613,7 +613,7 @@
                  <string>Frame list options</string>
                 </property>
                 <property name="icon">
-                 <iconset resource="rsc.qrc">
+                 <iconset>
                   <normaloff>:/rsc/rsc/icon_settings.png</normaloff>
                   <disabledoff>:/rsc/rsc/icon_settings_disabled.png</disabledoff>:/rsc/rsc/icon_settings.png</iconset>
                 </property>
@@ -826,7 +826,7 @@
                  <string>...</string>
                 </property>
                 <property name="icon">
-                 <iconset resource="rsc.qrc">
+                 <iconset>
                   <normaloff>:/rsc/rsc/icon_folder.png</normaloff>
                   <disabledoff>:/rsc/rsc/icon_folder_disabled.png</disabledoff>:/rsc/rsc/icon_folder.png</iconset>
                 </property>
@@ -899,7 +899,7 @@
                  <string>Options</string>
                 </property>
                 <property name="icon">
-                 <iconset resource="rsc.qrc">
+                 <iconset>
                   <normaloff>:/rsc/rsc/icon_settings.png</normaloff>
                   <disabledoff>:/rsc/rsc/icon_settings_disabled.png</disabledoff>:/rsc/rsc/icon_settings.png</iconset>
                 </property>
@@ -990,7 +990,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QGroupBox" name="frames_groupBox">
+         <widget class="QGroupBox" name="distribution_groupBox">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
             <horstretch>0</horstretch>
@@ -998,7 +998,7 @@
            </sizepolicy>
           </property>
           <property name="title">
-           <string>Frame range</string>
+           <string>Distribution</string>
           </property>
           <property name="checked">
            <bool>false</bool>
@@ -1007,7 +1007,7 @@
            <bool>true</bool>
           </property>
           <property name="xmlCategory" stdset="0">
-           <string>frames</string>
+           <string>distribution</string>
           </property>
           <layout class="QFormLayout" name="frames_formLayout">
            <property name="labelAlignment">
@@ -1097,7 +1097,7 @@
                  <string>Options</string>
                 </property>
                 <property name="icon">
-                 <iconset resource="rsc.qrc">
+                 <iconset>
                   <normaloff>:/rsc/rsc/icon_settings.png</normaloff>
                   <disabledoff>:/rsc/rsc/icon_settings_disabled.png</disabledoff>:/rsc/rsc/icon_settings.png</iconset>
                 </property>
@@ -1413,7 +1413,7 @@
                  <string>Get Pools</string>
                 </property>
                 <property name="icon">
-                 <iconset resource="rsc.qrc">
+                 <iconset>
                   <normaloff>:/rsc/rsc/icon_refresh.png</normaloff>
                   <disabledoff>:/rsc/rsc/icon_refresh_disabled.png</disabledoff>:/rsc/rsc/icon_refresh.png</iconset>
                 </property>
@@ -1483,7 +1483,7 @@
                  <string>Get Groups</string>
                 </property>
                 <property name="icon">
-                 <iconset resource="rsc.qrc">
+                 <iconset>
                   <normaloff>:/rsc/rsc/icon_refresh.png</normaloff>
                   <disabledoff>:/rsc/rsc/icon_refresh_disabled.png</disabledoff>:/rsc/rsc/icon_refresh.png</iconset>
                 </property>
