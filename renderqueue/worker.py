@@ -92,7 +92,7 @@ class WorkerThread(QtCore.QThread):
 
 			# Set executable (rewrite this to use app paths / versions)
 			if platform.system() == "Windows":
-				args.append('"C:/Program Files/Autodesk/Maya2016/bin/Render.exe"')
+				args.append('C:/Program Files/Autodesk/Maya2016/bin/Render.exe')
 			elif platform.system() == "Darwin":
 				args.append('/Applications/Autodesk/maya2016/Maya.app/Contents/bin/Render')
 			else:

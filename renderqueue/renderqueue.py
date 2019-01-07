@@ -119,7 +119,7 @@ class RenderQueueApp(QtWidgets.QMainWindow, UI.TemplateUI):
 		self.rq = database.RenderQueue(databaseLocation)
 
 		# Define standard UI colours
-		self.colBlack         = QtGui.QColor("#333333")  # black
+		self.colBlack         = QtGui.QColor("#272822")  # black
 		self.colWhite         = QtGui.QColor("#ffffff")  # white
 		self.colBorder        = QtGui.QColor("#222222")  # dark grey
 		self.colNormal        = QtGui.QColor("#cccccc")  # light grey
@@ -140,13 +140,17 @@ class RenderQueueApp(QtWidgets.QMainWindow, UI.TemplateUI):
 		# self.errorIcon = QtGui.QIcon()
 		# self.errorIcon.addPixmap(QtGui.QPixmap(oswrapper.absolutePath("$IC_FORMSDIR/rsc/status_icon_error.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
 
-		# Set SVG icons
+		# Set SVG icons (temp)
+		self.ui.actionSubmit_new_job.setIcon(self.iconSet('icon_render'))
+		self.ui.actionEdit.setIcon(self.iconSet('edit'))
 		# self.ui.actionSettings.setIcon(self.setSVGIcon('configure'))
 		# self.ui.actionAbout.setIcon(self.setSVGIcon('help-about'))
 		# self.ui.actionExit.setIcon(self.setSVGIcon('application-exit'))
+		self.ui.jobSubmit_toolButton.setIcon(self.iconSet('icon_render'))
 		# self.ui.refresh_toolButton.setIcon(self.setSVGIcon('view-refresh'))
 		# self.ui.jobPause_toolButton.setIcon(self.setSVGIcon('media-playback-pause'))
 		# self.ui.jobKill_toolButton.setIcon(self.setSVGIcon('paint-none'))
+		self.ui.jobStop_toolButton.setIcon(self.iconSet('icon_stop'))
 		# self.ui.jobDelete_toolButton.setIcon(self.setSVGIcon('edit-delete'))
 		# self.ui.jobResubmit_toolButton.setIcon(self.setSVGIcon('gtk-convert'))
 		# self.ui.taskComplete_toolButton.setIcon(self.setSVGIcon('dialog-ok-apply'))
@@ -477,7 +481,7 @@ Developers: %s
 				renderTaskItem.setText(8, totalTime)
 				renderTaskItem.setText(9, taskWorker)
 
-			renderJobItem.sortChildren(1, 0)  # Tasks are always sorted by ID
+			renderJobItem.sortChildren(1, QtCore.Qt.AscendingOrder)  # Tasks are always sorted by ID
 
 			# Calculate job progress and update status
 			colProgress = self.colCompleted
@@ -542,12 +546,13 @@ Developers: %s
 		for worker in workers:
 
 			# Get the worker item or create it if it doesn't exist
-			workerListItem = self.getQueueItem(widget.invisibleRootItem(), worker['id'])
 			# workerListItem = QtWidgets.QTreeWidgetItem(widget.invisibleRootItem())
+			workerListItem = self.getQueueItem(widget.invisibleRootItem(), worker['id'])
 			# workerIcon = QtGui.QIcon()
 			# workerIcon.addPixmap(QtGui.QPixmap(self.checkFilePath(icon+".png", searchpath)), QtGui.QIcon.Normal, QtGui.QIcon.Off)
 			# action.setIcon(workerIcon)
-			workerListItem.setIcon(0, self.setSVGIcon('computer-symbolic'))
+			#workerListItem.setIcon(0, self.setSVGIcon('computer-symbolic'))
+			workerListItem.setIcon(0, self.iconSet('icon_computer'))
 
 			# Fill columns with data
 			workerListItem.setText(0, worker['name'])
@@ -667,7 +672,7 @@ Developers: %s
 		child_count = root.childCount()
 		for i in range(child_count):
 			item = root.child(i)
-			item.sortChildren(1, 0)  # Tasks are always sorted by ID
+			item.sortChildren(1, QtCore.Qt.AscendingOrder)  # Tasks are always sorted by ID
 
 
 	def updateSelection(self):

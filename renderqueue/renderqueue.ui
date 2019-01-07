@@ -57,8 +57,9 @@
              <string>Submit</string>
             </property>
             <property name="icon">
-             <iconset resource="icons.qrc">
-              <normaloff>:/icons/icons/icon_render.png</normaloff>:/icons/icons/icon_render.png</iconset>
+             <iconset>
+              <normaloff>icons/icon_render.png</normaloff>
+              <disabledoff>icons/icon_render_disabled.png</disabledoff>icons/icon_render.png</iconset>
             </property>
             <property name="iconSize">
              <size>
@@ -201,8 +202,7 @@
             </property>
             <property name="icon">
              <iconset>
-              <normaloff>icons/icon_stop.png</normaloff>
-              <disabledoff>icons/icon_stop_disabled.png</disabledoff>icons/icon_stop.png</iconset>
+              <normaloff>icons/icon_stop.png</normaloff>icons/icon_stop.png</iconset>
             </property>
             <property name="iconSize">
              <size>
@@ -756,8 +756,7 @@
   <action name="actionEdit">
    <property name="icon">
     <iconset>
-     <normaloff>icons/icon_editor.png</normaloff>
-     <disabledoff>icons/icon_editor_disabled.png</disabledoff>icons/icon_editor.png</iconset>
+     <normaloff>icons/edit.png</normaloff>icons/edit.png</iconset>
    </property>
    <property name="text">
     <string>Properties...</string>
@@ -815,7 +814,7 @@
   </action>
   <action name="actionSubmit_new_job">
    <property name="icon">
-    <iconset resource="icons.qrc">
+    <iconset>
      <normaloff>:/icons/icons/icon_render.png</normaloff>:/icons/icons/icon_render.png</iconset>
    </property>
    <property name="text">
@@ -928,8 +927,6 @@
    </property>
   </action>
  </widget>
- <resources>
-  <include location="icons.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>

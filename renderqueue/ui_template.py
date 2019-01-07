@@ -471,30 +471,60 @@ class TemplateUI(object):
 		exec(exec_str)
 
 
+	def iconSet(self, icon_name):
+		""" Return a QIcon using the specified PNG image.
+			Generate pixmaps for normal/disabled/active/selected states.
+		"""
+		icon = QtGui.QIcon()
+		icon.addPixmap(self.setTintedIcon(icon_name, self.col['text']), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+		# icon.addPixmap(self.setTintedIcon(icon_name), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+		icon.addPixmap(self.setTintedIcon(icon_name, self.col['disabled']), QtGui.QIcon.Disabled, QtGui.QIcon.Off)
+		icon.addPixmap(self.setTintedIcon(icon_name, self.col['highlighted-text']), QtGui.QIcon.Active, QtGui.QIcon.Off)
+		icon.addPixmap(self.setTintedIcon(icon_name, self.col['highlighted-text']), QtGui.QIcon.Selected, QtGui.QIcon.Off)
+		return icon
+
+
+	def setTintedIcon(self, icon_name, tint=None):
+		""" Return a QIcon using the specified PNG image.
+			If tint (QColor) is given, tint the image with the given color.
+		"""
+		pixmap = QtGui.QPixmap(self.checkFilePath('icons/%s.png' %icon_name))
+
+		# Initialize painter to draw on a pixmap and set composition mode
+		if tint is not None:
+			painter = QtGui.QPainter()
+			painter.begin(pixmap)
+			painter.setCompositionMode(painter.CompositionMode_SourceIn)
+			painter.setBrush(tint)
+			painter.setPen(tint)
+			painter.drawRect(pixmap.rect())
+			painter.end()
+
+		return pixmap
+		# icon = QtGui.QIcon(pixmap)
+		# return icon
+
+
 	def setSVGIcon(self, icon_name):
-		""" 
+		""" Return a QIcon using the specified SVG image.
 		"""
 		w, h = 64, 64
-		svg_renderer = QtSvg.QSvgRenderer('icons/%s.svg' %icon_name)
+		tint = QtGui.QColor('#ff0000')
+		# svg_renderer = QtSvg.QSvgRenderer('icons/%s.svg' %icon_name)
+		svg_renderer = QtSvg.QSvgRenderer(self.checkFilePath('icons/%s.svg' %icon_name))
 		image = QtGui.QImage(w, h, QtGui.QImage.Format_ARGB32)
 		# Set the ARGB to 0 to prevent rendering artifacts
 		image.fill(0x00000000)
+		# painter = QtGui.QPainter(image)
+		# painter.setCompositionMode(painter.CompositionMode_Overlay)
+		# painter.fillRect(image.rect(), tint) # pixmap
+		# painter.end()
 		svg_renderer.render(QtGui.QPainter(image))
 		pixmap = QtGui.QPixmap.fromImage(image)
-		icon = QtGui.QIcon(pixmap)
 		#widget.setIcon(icon)
 		#widget.setSizeHint(1, QtCore.QSize(w, h))
 
-		# effect = QtWidgets.QGraphicsColorizeEffect(self)
-		# effect.setColor(QtGui.QColor('#ffffff'))
-		# #effect.setStrength(0.6)
-		# pixmap.setGraphicsEffect(effect)
-
-		# painter = QtGui.QPainter(temp)
-		# painter.setCompositionMode(painter.CompositionMode_Overlay)
-		# painter.fillRect(temp.rect(), color)
-		# painter.end()
-		# self.tinted.setPixmap(temp)
+		icon = QtGui.QIcon(pixmap)
 
 		return icon
 

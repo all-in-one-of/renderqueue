@@ -22,16 +22,7 @@
     <property name="spacing">
      <number>0</number>
     </property>
-    <property name="leftMargin">
-     <number>0</number>
-    </property>
-    <property name="topMargin">
-     <number>0</number>
-    </property>
-    <property name="rightMargin">
-     <number>0</number>
-    </property>
-    <property name="bottomMargin">
+    <property name="margin">
      <number>0</number>
     </property>
     <item>
@@ -177,8 +168,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>420</width>
-         <height>667</height>
+         <width>389</width>
+         <height>546</height>
         </rect>
        </property>
        <property name="noBackground" stdset="0">
@@ -227,16 +218,7 @@
            <property name="verticalSpacing">
             <number>4</number>
            </property>
-           <property name="leftMargin">
-            <number>8</number>
-           </property>
-           <property name="topMargin">
-            <number>8</number>
-           </property>
-           <property name="rightMargin">
-            <number>8</number>
-           </property>
-           <property name="bottomMargin">
+           <property name="margin">
             <number>8</number>
            </property>
            <item row="0" column="0">
@@ -262,16 +244,7 @@
               <property name="spacing">
                <number>2</number>
               </property>
-              <property name="leftMargin">
-               <number>0</number>
-              </property>
-              <property name="topMargin">
-               <number>0</number>
-              </property>
-              <property name="rightMargin">
-               <number>0</number>
-              </property>
-              <property name="bottomMargin">
+              <property name="margin">
                <number>0</number>
               </property>
               <item>
@@ -323,16 +296,7 @@
               <property name="spacing">
                <number>2</number>
               </property>
-              <property name="leftMargin">
-               <number>0</number>
-              </property>
-              <property name="topMargin">
-               <number>0</number>
-              </property>
-              <property name="rightMargin">
-               <number>0</number>
-              </property>
-              <property name="bottomMargin">
+              <property name="margin">
                <number>0</number>
               </property>
               <item>
@@ -384,16 +348,7 @@
            <property name="verticalSpacing">
             <number>4</number>
            </property>
-           <property name="leftMargin">
-            <number>8</number>
-           </property>
-           <property name="topMargin">
-            <number>8</number>
-           </property>
-           <property name="rightMargin">
-            <number>8</number>
-           </property>
-           <property name="bottomMargin">
+           <property name="margin">
             <number>8</number>
            </property>
            <item row="0" column="0">
@@ -433,16 +388,7 @@
               <property name="spacing">
                <number>2</number>
               </property>
-              <property name="leftMargin">
-               <number>0</number>
-              </property>
-              <property name="topMargin">
-               <number>0</number>
-              </property>
-              <property name="rightMargin">
-               <number>0</number>
-              </property>
-              <property name="bottomMargin">
+              <property name="margin">
                <number>0</number>
               </property>
               <item>
@@ -500,16 +446,7 @@
               <property name="spacing">
                <number>2</number>
               </property>
-              <property name="leftMargin">
-               <number>0</number>
-              </property>
-              <property name="topMargin">
-               <number>0</number>
-              </property>
-              <property name="rightMargin">
-               <number>0</number>
-              </property>
-              <property name="bottomMargin">
+              <property name="margin">
                <number>0</number>
               </property>
               <item>
@@ -570,16 +507,7 @@
               <property name="spacing">
                <number>2</number>
               </property>
-              <property name="leftMargin">
-               <number>0</number>
-              </property>
-              <property name="topMargin">
-               <number>0</number>
-              </property>
-              <property name="rightMargin">
-               <number>0</number>
-              </property>
-              <property name="bottomMargin">
+              <property name="margin">
                <number>0</number>
               </property>
               <item>
@@ -646,16 +574,7 @@
               <property name="spacing">
                <number>12</number>
               </property>
-              <property name="leftMargin">
-               <number>0</number>
-              </property>
-              <property name="topMargin">
-               <number>0</number>
-              </property>
-              <property name="rightMargin">
-               <number>0</number>
-              </property>
-              <property name="bottomMargin">
+              <property name="margin">
                <number>0</number>
               </property>
               <item>
@@ -754,16 +673,7 @@
            <property name="verticalSpacing">
             <number>4</number>
            </property>
-           <property name="leftMargin">
-            <number>8</number>
-           </property>
-           <property name="topMargin">
-            <number>8</number>
-           </property>
-           <property name="rightMargin">
-            <number>8</number>
-           </property>
-           <property name="bottomMargin">
+           <property name="margin">
             <number>8</number>
            </property>
            <item row="1" column="0">
@@ -789,16 +699,7 @@
               <property name="spacing">
                <number>2</number>
               </property>
-              <property name="leftMargin">
-               <number>0</number>
-              </property>
-              <property name="topMargin">
-               <number>0</number>
-              </property>
-              <property name="rightMargin">
-               <number>0</number>
-              </property>
-              <property name="bottomMargin">
+              <property name="margin">
                <number>0</number>
               </property>
               <item>
@@ -856,16 +757,7 @@
               <property name="spacing">
                <number>2</number>
               </property>
-              <property name="leftMargin">
-               <number>0</number>
-              </property>
-              <property name="topMargin">
-               <number>0</number>
-              </property>
-              <property name="rightMargin">
-               <number>0</number>
-              </property>
-              <property name="bottomMargin">
+              <property name="margin">
                <number>0</number>
               </property>
               <item>
@@ -929,23 +821,14 @@
               <number>0</number>
              </property>
              <layout class="QGridLayout" name="nukeOptions_gridLayout">
-              <property name="leftMargin">
-               <number>0</number>
-              </property>
-              <property name="topMargin">
-               <number>0</number>
-              </property>
-              <property name="rightMargin">
-               <number>0</number>
-              </property>
-              <property name="bottomMargin">
-               <number>0</number>
-              </property>
               <property name="horizontalSpacing">
                <number>12</number>
               </property>
               <property name="verticalSpacing">
                <number>4</number>
+              </property>
+              <property name="margin">
+               <number>0</number>
               </property>
               <item row="0" column="1">
                <widget class="QCheckBox" name="useNukeX_checkBox">
@@ -1019,16 +902,7 @@
            <property name="verticalSpacing">
             <number>4</number>
            </property>
-           <property name="leftMargin">
-            <number>8</number>
-           </property>
-           <property name="topMargin">
-            <number>8</number>
-           </property>
-           <property name="rightMargin">
-            <number>8</number>
-           </property>
-           <property name="bottomMargin">
+           <property name="margin">
             <number>8</number>
            </property>
            <item row="0" column="0">
@@ -1054,16 +928,7 @@
               <property name="spacing">
                <number>2</number>
               </property>
-              <property name="leftMargin">
-               <number>0</number>
-              </property>
-              <property name="topMargin">
-               <number>0</number>
-              </property>
-              <property name="rightMargin">
-               <number>0</number>
-              </property>
-              <property name="bottomMargin">
+              <property name="margin">
                <number>0</number>
               </property>
               <item>
@@ -1098,8 +963,8 @@
                 </property>
                 <property name="icon">
                  <iconset>
-                  <normaloff>:/rsc/rsc/icon_settings.png</normaloff>
-                  <disabledoff>:/rsc/rsc/icon_settings_disabled.png</disabledoff>:/rsc/rsc/icon_settings.png</iconset>
+                  <normaloff>icons/icon_settings.png</normaloff>
+                  <disabledoff>icons/icon_settings_disabled.png</disabledoff>icons/icon_settings.png</iconset>
                 </property>
                 <property name="iconSize">
                  <size>
@@ -1130,16 +995,7 @@
               <property name="spacing">
                <number>6</number>
               </property>
-              <property name="leftMargin">
-               <number>0</number>
-              </property>
-              <property name="topMargin">
-               <number>0</number>
-              </property>
-              <property name="rightMargin">
-               <number>0</number>
-              </property>
-              <property name="bottomMargin">
+              <property name="margin">
                <number>0</number>
               </property>
               <item>
@@ -1219,16 +1075,7 @@
            <property name="verticalSpacing">
             <number>4</number>
            </property>
-           <property name="leftMargin">
-            <number>8</number>
-           </property>
-           <property name="topMargin">
-            <number>8</number>
-           </property>
-           <property name="rightMargin">
-            <number>8</number>
-           </property>
-           <property name="bottomMargin">
+           <property name="margin">
             <number>8</number>
            </property>
            <item row="2" column="0">
@@ -1268,16 +1115,7 @@
               <property name="spacing">
                <number>6</number>
               </property>
-              <property name="leftMargin">
-               <number>0</number>
-              </property>
-              <property name="topMargin">
-               <number>0</number>
-              </property>
-              <property name="rightMargin">
-               <number>0</number>
-              </property>
-              <property name="bottomMargin">
+              <property name="margin">
                <number>0</number>
               </property>
               <item>
@@ -1336,16 +1174,7 @@
               <property name="spacing">
                <number>2</number>
               </property>
-              <property name="leftMargin">
-               <number>0</number>
-              </property>
-              <property name="topMargin">
-               <number>0</number>
-              </property>
-              <property name="rightMargin">
-               <number>0</number>
-              </property>
-              <property name="bottomMargin">
+              <property name="margin">
                <number>0</number>
               </property>
               <item>
@@ -1373,16 +1202,7 @@
               <property name="spacing">
                <number>2</number>
               </property>
-              <property name="leftMargin">
-               <number>0</number>
-              </property>
-              <property name="topMargin">
-               <number>0</number>
-              </property>
-              <property name="rightMargin">
-               <number>0</number>
-              </property>
-              <property name="bottomMargin">
+              <property name="margin">
                <number>0</number>
               </property>
               <item>
@@ -1443,16 +1263,7 @@
               <property name="spacing">
                <number>2</number>
               </property>
-              <property name="leftMargin">
-               <number>0</number>
-              </property>
-              <property name="topMargin">
-               <number>0</number>
-              </property>
-              <property name="rightMargin">
-               <number>0</number>
-              </property>
-              <property name="bottomMargin">
+              <property name="margin">
                <number>0</number>
               </property>
               <item>
@@ -1533,16 +1344,7 @@
        <property name="spacing">
         <number>2</number>
        </property>
-       <property name="leftMargin">
-        <number>6</number>
-       </property>
-       <property name="topMargin">
-        <number>6</number>
-       </property>
-       <property name="rightMargin">
-        <number>6</number>
-       </property>
-       <property name="bottomMargin">
+       <property name="margin">
         <number>6</number>
        </property>
        <item>
