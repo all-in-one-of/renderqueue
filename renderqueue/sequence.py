@@ -69,7 +69,7 @@ def numList(num_range_str, sort=True, quiet=False):
 				if not quiet:
 					#verbose.error("Sequence format is invalid.")
 					print("ERROR: Sequence format is invalid.")
-				return False
+				return None
 
 	# Remove duplicates & sort list
 	if sort:

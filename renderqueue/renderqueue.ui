@@ -57,8 +57,9 @@
              <string>Submit</string>
             </property>
             <property name="icon">
-             <iconset resource="icons.qrc">
-              <normaloff>:/icons/icons/icon_render.png</normaloff>:/icons/icons/icon_render.png</iconset>
+             <iconset>
+              <normaloff>icons/icon_render.png</normaloff>
+              <disabledoff>icons/icon_render_disabled.png</disabledoff>icons/icon_render.png</iconset>
             </property>
             <property name="iconSize">
              <size>
@@ -80,17 +81,18 @@
              </size>
             </property>
             <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Refresh the render queue view&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Force reload the render queue database and update the view. Note the view is automatically updated every 5 seconds.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Refresh the render queue database&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Force a refresh of the render queue database and update all views.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
             <property name="statusTip">
-             <string>Refresh the render queue view.</string>
+             <string>Refresh the render queue database.</string>
             </property>
             <property name="text">
              <string>Refresh</string>
             </property>
             <property name="icon">
-             <iconset resource="icons.qrc">
-              <normaloff>:/icons/icons/icon_refresh.png</normaloff>:/icons/icons/icon_refresh.png</iconset>
+             <iconset>
+              <normaloff>icons/icon_refresh.png</normaloff>
+              <disabledoff>icons/icon_refresh_disabled.png</disabledoff>icons/icon_refresh.png</iconset>
             </property>
             <property name="iconSize">
              <size>
@@ -112,17 +114,18 @@
              </size>
             </property>
             <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Submit a new render job&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Maya and Nuke render jobs are supported.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Settings&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Open the settings dialog.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
             <property name="statusTip">
-             <string>Submit a new render job.</string>
+             <string>Open the settings dialog.</string>
             </property>
             <property name="text">
              <string>Settings</string>
             </property>
             <property name="icon">
-             <iconset resource="icons.qrc">
-              <normaloff>:/icons/icons/icon_settings.png</normaloff>:/icons/icons/icon_settings.png</iconset>
+             <iconset>
+              <normaloff>icons/icon_settings.png</normaloff>
+              <disabledoff>icons/icon_settings_disabled.png</disabledoff>icons/icon_settings.png</iconset>
             </property>
             <property name="iconSize">
              <size>
@@ -156,7 +159,7 @@
              </size>
             </property>
             <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Pause the selected render job(s)&lt;/span&gt;&lt;/p&gt;&lt;p&gt;This is the same as setting the priority to zero. Tasks currently in progress will continue normally, but no more tasks will be rendered until the priority is increased.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Pause the selected render job(s)&lt;/span&gt;&lt;/p&gt;&lt;p&gt;This is the same as setting the priority to zero. Tasks currently rendering will continue normally, but no more tasks will be rendered until the priority is increased.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
             <property name="statusTip">
              <string>Pause the selected render job(s).</string>
@@ -165,8 +168,9 @@
              <string>Pause</string>
             </property>
             <property name="icon">
-             <iconset resource="icons.qrc">
-              <normaloff>:/icons/icons/icon_pause.png</normaloff>:/icons/icons/icon_pause.png</iconset>
+             <iconset>
+              <normaloff>icons/icon_pause.png</normaloff>
+              <disabledoff>icons/icon_pause_disabled.png</disabledoff>icons/icon_pause.png</iconset>
             </property>
             <property name="iconSize">
              <size>
@@ -180,7 +184,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QToolButton" name="jobKill_toolButton">
+           <widget class="QToolButton" name="jobStop_toolButton">
             <property name="minimumSize">
              <size>
               <width>64</width>
@@ -188,17 +192,17 @@
              </size>
             </property>
             <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Kill the selected render job(s)&lt;/span&gt;&lt;/p&gt;&lt;p&gt;All rendering tasks will be stopped immediately.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Stop the selected render job(s)&lt;/span&gt;&lt;/p&gt;&lt;p&gt;All rendering tasks will be stopped immediately.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
             <property name="statusTip">
-             <string>Kill the selected render job(s).</string>
+             <string>Stop the selected render job(s).</string>
             </property>
             <property name="text">
-             <string>Kill</string>
+             <string>Stop</string>
             </property>
             <property name="icon">
-             <iconset resource="icons.qrc">
-              <normaloff>:/icons/icons/icon_cross.png</normaloff>:/icons/icons/icon_cross.png</iconset>
+             <iconset>
+              <normaloff>icons/icon_stop.png</normaloff>icons/icon_stop.png</iconset>
             </property>
             <property name="iconSize">
              <size>
@@ -229,40 +233,9 @@
              <string>Delete</string>
             </property>
             <property name="icon">
-             <iconset resource="icons.qrc">
-              <normaloff>:/icons/icons/icon_delete.png</normaloff>:/icons/icons/icon_delete.png</iconset>
-            </property>
-            <property name="iconSize">
-             <size>
-              <width>32</width>
-              <height>32</height>
-             </size>
-            </property>
-            <property name="toolButtonStyle">
-             <enum>Qt::ToolButtonTextUnderIcon</enum>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QToolButton" name="jobResubmit_toolButton">
-            <property name="minimumSize">
-             <size>
-              <width>64</width>
-              <height>0</height>
-             </size>
-            </property>
-            <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Resubmit the selected render job(s)&lt;/span&gt;&lt;/p&gt;&lt;p&gt;For each job selected, a new job will be created with the same settings and added to the queue.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-            </property>
-            <property name="statusTip">
-             <string>Resubmit the selected render job(s).</string>
-            </property>
-            <property name="text">
-             <string>Resubmit</string>
-            </property>
-            <property name="icon">
-             <iconset resource="icons.qrc">
-              <normaloff>:/icons/icons/icon_resubmit.png</normaloff>:/icons/icons/icon_resubmit.png</iconset>
+             <iconset>
+              <normaloff>icons/icon_delete.png</normaloff>
+              <disabledoff>icons/icon_delete_disabled.png</disabledoff>icons/icon_delete.png</iconset>
             </property>
             <property name="iconSize">
              <size>
@@ -411,8 +384,9 @@
              <string>Complete</string>
             </property>
             <property name="icon">
-             <iconset resource="icons.qrc">
-              <normaloff>:/icons/icons/icon_tick.png</normaloff>:/icons/icons/icon_tick.png</iconset>
+             <iconset>
+              <normaloff>icons/icon_tick.png</normaloff>
+              <disabledoff>icons/icon_tick_disabled.png</disabledoff>icons/icon_tick.png</iconset>
             </property>
             <property name="iconSize">
              <size>
@@ -443,14 +417,57 @@
              <string>Requeue</string>
             </property>
             <property name="icon">
-             <iconset resource="icons.qrc">
-              <normaloff>:/icons/icons/icon_resubmit.png</normaloff>:/icons/icons/icon_resubmit.png</iconset>
+             <iconset>
+              <normaloff>icons/icon_resubmit.png</normaloff>
+              <disabledoff>icons/icon_resubmit_disabled.png</disabledoff>icons/icon_resubmit.png</iconset>
             </property>
             <property name="iconSize">
              <size>
               <width>32</width>
               <height>32</height>
              </size>
+            </property>
+            <property name="toolButtonStyle">
+             <enum>Qt::ToolButtonTextUnderIcon</enum>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QFrame" name="worker_frame">
+         <property name="lineWidth">
+          <number>0</number>
+         </property>
+         <layout class="QHBoxLayout" name="task_horizontalLayout_2">
+          <property name="margin">
+           <number>0</number>
+          </property>
+          <item>
+           <widget class="QToolButton" name="workerControl_toolButton">
+            <property name="minimumSize">
+             <size>
+              <width>64</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>Render</string>
+            </property>
+            <property name="icon">
+             <iconset>
+              <normaloff>icons/icon_computer.png</normaloff>
+              <disabledoff>icons/icon_computer_disabled.png</disabledoff>icons/icon_computer.png</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>32</width>
+              <height>32</height>
+             </size>
+            </property>
+            <property name="popupMode">
+             <enum>QToolButton::InstantPopup</enum>
             </property>
             <property name="toolButtonStyle">
              <enum>Qt::ToolButtonTextUnderIcon</enum>
@@ -468,15 +485,12 @@
       <property name="orientation">
        <enum>Qt::Vertical</enum>
       </property>
-      <widget class="QTreeWidget" name="renderQueue_treeWidget">
+      <widget class="QTreeWidget" name="queue_treeWidget">
        <property name="alternatingRowColors">
         <bool>true</bool>
        </property>
        <property name="selectionMode">
         <enum>QAbstractItemView::ExtendedSelection</enum>
-       </property>
-       <property name="rootIsDecorated">
-        <bool>true</bool>
        </property>
        <property name="uniformRowHeights">
         <bool>true</bool>
@@ -484,16 +498,7 @@
        <property name="sortingEnabled">
         <bool>true</bool>
        </property>
-       <property name="animated">
-        <bool>true</bool>
-       </property>
        <property name="allColumnsShowFocus">
-        <bool>true</bool>
-       </property>
-       <property name="headerHidden">
-        <bool>false</bool>
-       </property>
-       <property name="expandsOnDoubleClick">
         <bool>true</bool>
        </property>
        <attribute name="headerShowSortIndicator" stdset="0">
@@ -555,163 +560,76 @@
         </property>
        </column>
       </widget>
-      <widget class="QTabWidget" name="worker_tabWidget">
-       <property name="currentIndex">
-        <number>1</number>
+      <widget class="QTreeWidget" name="workers_treeWidget">
+       <property name="alternatingRowColors">
+        <bool>true</bool>
        </property>
-       <widget class="QWidget" name="workers_tab">
-        <attribute name="title">
-         <string>Workers</string>
-        </attribute>
-        <layout class="QVBoxLayout" name="verticalLayout">
-         <property name="margin">
-          <number>0</number>
-         </property>
-         <item>
-          <widget class="QTreeWidget" name="workers_treeWidget">
-           <column>
-            <property name="text">
-             <string>Worker</string>
-            </property>
-           </column>
-           <column>
-            <property name="text">
-             <string>Status</string>
-            </property>
-           </column>
-           <column>
-            <property name="text">
-             <string>Running time</string>
-            </property>
-           </column>
-           <column>
-            <property name="text">
-             <string>Pool</string>
-            </property>
-           </column>
-           <column>
-            <property name="text">
-             <string>Priority</string>
-            </property>
-           </column>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-       <widget class="QWidget" name="output_tab">
-        <attribute name="title">
-         <string>Output</string>
-        </attribute>
-        <layout class="QVBoxLayout" name="verticalLayout_4">
-         <property name="spacing">
-          <number>0</number>
-         </property>
-         <property name="margin">
-          <number>0</number>
-         </property>
-         <item>
-          <layout class="QHBoxLayout" name="workerInfo_horizontalLayout">
-           <property name="margin">
-            <number>6</number>
-           </property>
-           <item>
-            <widget class="QToolButton" name="workerControl_toolButton">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="minimumSize">
-              <size>
-               <width>64</width>
-               <height>0</height>
-              </size>
-             </property>
-             <property name="toolTip">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Control the local render slave&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Start and stop the local slave, and control task completion options.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-             </property>
-             <property name="styleSheet">
-              <string notr="true">QToolButton {
-	padding: 1px 12px 2px 1px;
-}
-
-QToolButton:pressed, QToolButton:checked:pressed {
-	padding: 2px 11px 1px 2px;
-}
-
-QToolButton:disabled {
-	color: #ccc;
-}
-</string>
-             </property>
-             <property name="text">
-              <string>hostname</string>
-             </property>
-             <property name="icon">
-              <iconset>
-               <normaloff>:/rsc/rsc/status_icon_null.png</normaloff>
-               <disabledoff>:/rsc/rsc/status_icon_stopped.png</disabledoff>
-               <activeoff>:/rsc/rsc/status_icon_ready.png</activeoff>:/rsc/rsc/status_icon_null.png</iconset>
-             </property>
-             <property name="iconSize">
-              <size>
-               <width>15</width>
-               <height>15</height>
-              </size>
-             </property>
-             <property name="checkable">
-              <bool>true</bool>
-             </property>
-             <property name="popupMode">
-              <enum>QToolButton::InstantPopup</enum>
-             </property>
-             <property name="toolButtonStyle">
-              <enum>Qt::ToolButtonTextBesideIcon</enum>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLabel" name="taskInfo_label">
-             <property name="text">
-              <string>Task info</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLabel" name="runningTime_label">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="text">
-              <string>Running time</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </item>
-         <item>
-          <widget class="QTextEdit" name="output_textEdit">
-           <property name="font">
-            <font>
-             <family>Consolas, Lucidatypewriter, Fixed, monospace</family>
-            </font>
-           </property>
-           <property name="styleSheet">
-            <string notr="true">QTextEdit {
-	font-family: 'Consolas, Lucidatypewriter, Fixed, monospace';
-}</string>
-           </property>
-           <property name="readOnly">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
+       <property name="selectionMode">
+        <enum>QAbstractItemView::ExtendedSelection</enum>
+       </property>
+       <property name="rootIsDecorated">
+        <bool>false</bool>
+       </property>
+       <property name="uniformRowHeights">
+        <bool>true</bool>
+       </property>
+       <property name="sortingEnabled">
+        <bool>true</bool>
+       </property>
+       <property name="allColumnsShowFocus">
+        <bool>true</bool>
+       </property>
+       <attribute name="headerShowSortIndicator" stdset="0">
+        <bool>true</bool>
+       </attribute>
+       <attribute name="headerStretchLastSection">
+        <bool>false</bool>
+       </attribute>
+       <column>
+        <property name="text">
+         <string>Worker</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>ID</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>Hostname</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>IP Address</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>Status</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>User</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>Running time</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>Pool</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>Comment</string>
+        </property>
+       </column>
       </widget>
      </widget>
     </item>
@@ -726,6 +644,9 @@ QToolButton:disabled {
      <height>21</height>
     </rect>
    </property>
+   <property name="nativeMenuBar">
+    <bool>false</bool>
+   </property>
    <widget class="QMenu" name="menuJob">
     <property name="title">
      <string>Job</string>
@@ -733,7 +654,7 @@ QToolButton:disabled {
     <addaction name="actionEdit"/>
     <addaction name="actionPause"/>
     <addaction name="actionResume"/>
-    <addaction name="actionKill"/>
+    <addaction name="actionStop"/>
     <addaction name="actionDelete"/>
     <addaction name="actionResubmit"/>
     <addaction name="actionViewJobLog"/>
@@ -743,6 +664,7 @@ QToolButton:disabled {
      <string>Task</string>
     </property>
     <addaction name="actionMark_as_Complete"/>
+    <addaction name="actionMark_as_Failed"/>
     <addaction name="actionRequeue"/>
     <addaction name="actionCombine"/>
     <addaction name="actionSplit"/>
@@ -752,10 +674,15 @@ QToolButton:disabled {
     <property name="title">
      <string>Worker</string>
     </property>
-    <addaction name="actionStart"/>
-    <addaction name="actionStop_immediately_and_kill_render_task"/>
-    <addaction name="actionStop_when_current_task_is_complete"/>
-    <addaction name="actionStop"/>
+    <addaction name="actionNewWorker"/>
+    <addaction name="actionWorkerProperties"/>
+    <addaction name="actionStartWorker"/>
+    <addaction name="actionStopWorker"/>
+    <addaction name="actionStopWorkerDeferred"/>
+    <addaction name="actionStopWorkerImmediately"/>
+    <addaction name="actionViewWorkerLog"/>
+    <addaction name="actionDeleteWorker"/>
+    <addaction name="actionDequeue"/>
    </widget>
    <widget class="QMenu" name="menuQueue">
     <property name="title">
@@ -778,8 +705,9 @@ QToolButton:disabled {
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionPause">
    <property name="icon">
-    <iconset resource="icons.qrc">
-     <normaloff>:/icons/icons/icon_pause.png</normaloff>:/icons/icons/icon_pause.png</iconset>
+    <iconset>
+     <normaloff>icons/icon_pause.png</normaloff>
+     <disabledoff>icons/icon_pause_disabled.png</disabledoff>icons/icon_pause.png</iconset>
    </property>
    <property name="text">
     <string>Pause</string>
@@ -790,19 +718,21 @@ QToolButton:disabled {
     <string>Resume</string>
    </property>
   </action>
-  <action name="actionKill">
+  <action name="actionStop">
    <property name="icon">
-    <iconset resource="icons.qrc">
-     <normaloff>:/icons/icons/icon_cross.png</normaloff>:/icons/icons/icon_cross.png</iconset>
+    <iconset>
+     <normaloff>icons/icon_stop.png</normaloff>
+     <disabledoff>icons/icon_stop_disabled.png</disabledoff>icons/icon_stop.png</iconset>
    </property>
    <property name="text">
-    <string>Kill</string>
+    <string>Stop</string>
    </property>
   </action>
   <action name="actionDelete">
    <property name="icon">
-    <iconset resource="icons.qrc">
-     <normaloff>:/icons/icons/icon_delete.png</normaloff>:/icons/icons/icon_delete.png</iconset>
+    <iconset>
+     <normaloff>icons/icon_delete.png</normaloff>
+     <disabledoff>icons/icon_delete_disabled.png</disabledoff>icons/icon_delete.png</iconset>
    </property>
    <property name="text">
     <string>Delete</string>
@@ -810,8 +740,9 @@ QToolButton:disabled {
   </action>
   <action name="actionResubmit">
    <property name="icon">
-    <iconset resource="icons.qrc">
-     <normaloff>:/icons/icons/icon_resubmit.png</normaloff>:/icons/icons/icon_resubmit.png</iconset>
+    <iconset>
+     <normaloff>icons/icon_resubmit.png</normaloff>
+     <disabledoff>icons/icon_resubmit_disabled.png</disabledoff>icons/icon_resubmit.png</iconset>
    </property>
    <property name="text">
     <string>Resubmit</string>
@@ -824,17 +755,18 @@ QToolButton:disabled {
   </action>
   <action name="actionEdit">
    <property name="icon">
-    <iconset resource="icons.qrc">
-     <normaloff>:/icons/icons/icon_editor.png</normaloff>:/icons/icons/icon_editor.png</iconset>
+    <iconset>
+     <normaloff>icons/edit.png</normaloff>icons/edit.png</iconset>
    </property>
    <property name="text">
-    <string>Edit...</string>
+    <string>Properties...</string>
    </property>
   </action>
   <action name="actionMark_as_Complete">
    <property name="icon">
-    <iconset resource="icons.qrc">
-     <normaloff>:/icons/icons/icon_tick.png</normaloff>:/icons/icons/icon_tick.png</iconset>
+    <iconset>
+     <normaloff>icons/icon_tick.png</normaloff>
+     <disabledoff>icons/icon_tick_disabled.png</disabledoff>icons/icon_tick.png</iconset>
    </property>
    <property name="text">
     <string>Mark as Complete</string>
@@ -842,8 +774,9 @@ QToolButton:disabled {
   </action>
   <action name="actionRequeue">
    <property name="icon">
-    <iconset resource="icons.qrc">
-     <normaloff>:/icons/icons/icon_resubmit.png</normaloff>:/icons/icons/icon_resubmit.png</iconset>
+    <iconset>
+     <normaloff>icons/icon_resubmit.png</normaloff>
+     <disabledoff>icons/icon_resubmit_disabled.png</disabledoff>icons/icon_resubmit.png</iconset>
    </property>
    <property name="text">
     <string>Requeue</string>
@@ -859,29 +792,29 @@ QToolButton:disabled {
     <string>Split</string>
    </property>
   </action>
-  <action name="actionStart">
+  <action name="actionStartWorker">
    <property name="text">
     <string>Start</string>
    </property>
   </action>
-  <action name="actionStop_immediately_and_kill_render_task">
+  <action name="actionStopWorkerImmediately">
    <property name="text">
     <string>Stop immediately and kill current task</string>
    </property>
   </action>
-  <action name="actionStop_when_current_task_is_complete">
+  <action name="actionStopWorkerDeferred">
    <property name="text">
     <string>Stop when current task is complete</string>
    </property>
   </action>
-  <action name="actionStop">
+  <action name="actionStopWorker">
    <property name="text">
     <string>Stop</string>
    </property>
   </action>
   <action name="actionSubmit_new_job">
    <property name="icon">
-    <iconset resource="icons.qrc">
+    <iconset>
      <normaloff>:/icons/icons/icon_render.png</normaloff>:/icons/icons/icon_render.png</iconset>
    </property>
    <property name="text">
@@ -890,8 +823,9 @@ QToolButton:disabled {
   </action>
   <action name="actionRefresh_queue">
    <property name="icon">
-    <iconset resource="icons.qrc">
-     <normaloff>:/icons/icons/icon_refresh.png</normaloff>:/icons/icons/icon_refresh.png</iconset>
+    <iconset>
+     <normaloff>icons/icon_refresh.png</normaloff>
+     <disabledoff>icons/icon_refresh_disabled.png</disabledoff>icons/icon_refresh.png</iconset>
    </property>
    <property name="text">
     <string>Refresh</string>
@@ -924,8 +858,9 @@ QToolButton:disabled {
   </action>
   <action name="actionSettings">
    <property name="icon">
-    <iconset resource="icons.qrc">
-     <normaloff>:/icons/icons/icon_settings.png</normaloff>:/icons/icons/icon_settings.png</iconset>
+    <iconset>
+     <normaloff>icons/icon_settings.png</normaloff>
+     <disabledoff>icons/icon_settings_disabled.png</disabledoff>icons/icon_settings.png</iconset>
    </property>
    <property name="text">
     <string>Settings...</string>
@@ -941,9 +876,57 @@ QToolButton:disabled {
     <string>About...</string>
    </property>
   </action>
+  <action name="actionMark_as_Failed">
+   <property name="icon">
+    <iconset>
+     <normaloff>icons/icon_cross.png</normaloff>
+     <disabledoff>icons/icon_cross_disabled.png</disabledoff>icons/icon_cross.png</iconset>
+   </property>
+   <property name="text">
+    <string>Mark as Failed</string>
+   </property>
+  </action>
+  <action name="actionWorkerProperties">
+   <property name="icon">
+    <iconset>
+     <normaloff>icons/icon_editor.png</normaloff>
+     <disabledoff>icons/icon_editor_disabled.png</disabledoff>icons/icon_editor.png</iconset>
+   </property>
+   <property name="text">
+    <string>Properties...</string>
+   </property>
+  </action>
+  <action name="actionViewWorkerLog">
+   <property name="text">
+    <string>View worker log...</string>
+   </property>
+  </action>
+  <action name="actionNewWorker">
+   <property name="icon">
+    <iconset>
+     <normaloff>icons/icon_computer.png</normaloff>
+     <disabledoff>icons/icon_computer_disabled.png</disabledoff>icons/icon_computer.png</iconset>
+   </property>
+   <property name="text">
+    <string>New...</string>
+   </property>
+  </action>
+  <action name="actionDeleteWorker">
+   <property name="icon">
+    <iconset>
+     <normaloff>icons/icon_delete.png</normaloff>
+     <disabledoff>icons/icon_delete_disabled.png</disabledoff>icons/icon_delete.png</iconset>
+   </property>
+   <property name="text">
+    <string>Delete</string>
+   </property>
+  </action>
+  <action name="actionDequeue">
+   <property name="text">
+    <string>Dequeue</string>
+   </property>
+  </action>
  </widget>
- <resources>
-  <include location="icons.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>

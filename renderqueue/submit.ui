@@ -7,7 +7,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
+    <width>406</width>
     <height>512</height>
    </rect>
   </property>
@@ -22,16 +22,7 @@
     <property name="spacing">
      <number>0</number>
     </property>
-    <property name="leftMargin">
-     <number>0</number>
-    </property>
-    <property name="topMargin">
-     <number>0</number>
-    </property>
-    <property name="rightMargin">
-     <number>0</number>
-    </property>
-    <property name="bottomMargin">
+    <property name="margin">
      <number>0</number>
     </property>
     <item>
@@ -176,8 +167,8 @@
        <property name="geometry">
         <rect>
          <x>0</x>
-         <y>-101</y>
-         <width>383</width>
+         <y>0</y>
+         <width>389</width>
          <height>546</height>
         </rect>
        </property>
@@ -227,16 +218,7 @@
            <property name="verticalSpacing">
             <number>4</number>
            </property>
-           <property name="leftMargin">
-            <number>8</number>
-           </property>
-           <property name="topMargin">
-            <number>8</number>
-           </property>
-           <property name="rightMargin">
-            <number>8</number>
-           </property>
-           <property name="bottomMargin">
+           <property name="margin">
             <number>8</number>
            </property>
            <item row="0" column="0">
@@ -262,16 +244,7 @@
               <property name="spacing">
                <number>2</number>
               </property>
-              <property name="leftMargin">
-               <number>0</number>
-              </property>
-              <property name="topMargin">
-               <number>0</number>
-              </property>
-              <property name="rightMargin">
-               <number>0</number>
-              </property>
-              <property name="bottomMargin">
+              <property name="margin">
                <number>0</number>
               </property>
               <item>
@@ -293,7 +266,7 @@
                  <string>...</string>
                 </property>
                 <property name="icon">
-                 <iconset resource="rsc.qrc">
+                 <iconset>
                   <normaloff>:/rsc/rsc/icon_folder.png</normaloff>
                   <disabledoff>:/rsc/rsc/icon_folder_disabled.png</disabledoff>:/rsc/rsc/icon_folder.png</iconset>
                 </property>
@@ -323,16 +296,7 @@
               <property name="spacing">
                <number>2</number>
               </property>
-              <property name="leftMargin">
-               <number>0</number>
-              </property>
-              <property name="topMargin">
-               <number>0</number>
-              </property>
-              <property name="rightMargin">
-               <number>0</number>
-              </property>
-              <property name="bottomMargin">
+              <property name="margin">
                <number>0</number>
               </property>
               <item>
@@ -384,16 +348,7 @@
            <property name="verticalSpacing">
             <number>4</number>
            </property>
-           <property name="leftMargin">
-            <number>8</number>
-           </property>
-           <property name="topMargin">
-            <number>8</number>
-           </property>
-           <property name="rightMargin">
-            <number>8</number>
-           </property>
-           <property name="bottomMargin">
+           <property name="margin">
             <number>8</number>
            </property>
            <item row="0" column="0">
@@ -433,16 +388,7 @@
               <property name="spacing">
                <number>2</number>
               </property>
-              <property name="leftMargin">
-               <number>0</number>
-              </property>
-              <property name="topMargin">
-               <number>0</number>
-              </property>
-              <property name="rightMargin">
-               <number>0</number>
-              </property>
-              <property name="bottomMargin">
+              <property name="margin">
                <number>0</number>
               </property>
               <item>
@@ -470,7 +416,7 @@
                  <string>...</string>
                 </property>
                 <property name="icon">
-                 <iconset resource="rsc.qrc">
+                 <iconset>
                   <normaloff>:/rsc/rsc/icon_folder.png</normaloff>
                   <disabledoff>:/rsc/rsc/icon_folder_disabled.png</disabledoff>:/rsc/rsc/icon_folder.png</iconset>
                 </property>
@@ -500,16 +446,7 @@
               <property name="spacing">
                <number>2</number>
               </property>
-              <property name="leftMargin">
-               <number>0</number>
-              </property>
-              <property name="topMargin">
-               <number>0</number>
-              </property>
-              <property name="rightMargin">
-               <number>0</number>
-              </property>
-              <property name="bottomMargin">
+              <property name="margin">
                <number>0</number>
               </property>
               <item>
@@ -540,7 +477,7 @@
                  <string>Get Cameras</string>
                 </property>
                 <property name="icon">
-                 <iconset resource="rsc.qrc">
+                 <iconset>
                   <normaloff>:/rsc/rsc/icon_refresh.png</normaloff>
                   <disabledoff>:/rsc/rsc/icon_refresh_disabled.png</disabledoff>:/rsc/rsc/icon_refresh.png</iconset>
                 </property>
@@ -570,16 +507,7 @@
               <property name="spacing">
                <number>2</number>
               </property>
-              <property name="leftMargin">
-               <number>0</number>
-              </property>
-              <property name="topMargin">
-               <number>0</number>
-              </property>
-              <property name="rightMargin">
-               <number>0</number>
-              </property>
-              <property name="bottomMargin">
+              <property name="margin">
                <number>0</number>
               </property>
               <item>
@@ -613,7 +541,7 @@
                  <string>Frame list options</string>
                 </property>
                 <property name="icon">
-                 <iconset resource="rsc.qrc">
+                 <iconset>
                   <normaloff>:/rsc/rsc/icon_settings.png</normaloff>
                   <disabledoff>:/rsc/rsc/icon_settings_disabled.png</disabledoff>:/rsc/rsc/icon_settings.png</iconset>
                 </property>
@@ -646,16 +574,7 @@
               <property name="spacing">
                <number>12</number>
               </property>
-              <property name="leftMargin">
-               <number>0</number>
-              </property>
-              <property name="topMargin">
-               <number>0</number>
-              </property>
-              <property name="rightMargin">
-               <number>0</number>
-              </property>
-              <property name="bottomMargin">
+              <property name="margin">
                <number>0</number>
               </property>
               <item>
@@ -754,16 +673,7 @@
            <property name="verticalSpacing">
             <number>4</number>
            </property>
-           <property name="leftMargin">
-            <number>8</number>
-           </property>
-           <property name="topMargin">
-            <number>8</number>
-           </property>
-           <property name="rightMargin">
-            <number>8</number>
-           </property>
-           <property name="bottomMargin">
+           <property name="margin">
             <number>8</number>
            </property>
            <item row="1" column="0">
@@ -789,16 +699,7 @@
               <property name="spacing">
                <number>2</number>
               </property>
-              <property name="leftMargin">
-               <number>0</number>
-              </property>
-              <property name="topMargin">
-               <number>0</number>
-              </property>
-              <property name="rightMargin">
-               <number>0</number>
-              </property>
-              <property name="bottomMargin">
+              <property name="margin">
                <number>0</number>
               </property>
               <item>
@@ -826,7 +727,7 @@
                  <string>...</string>
                 </property>
                 <property name="icon">
-                 <iconset resource="rsc.qrc">
+                 <iconset>
                   <normaloff>:/rsc/rsc/icon_folder.png</normaloff>
                   <disabledoff>:/rsc/rsc/icon_folder_disabled.png</disabledoff>:/rsc/rsc/icon_folder.png</iconset>
                 </property>
@@ -856,16 +757,7 @@
               <property name="spacing">
                <number>2</number>
               </property>
-              <property name="leftMargin">
-               <number>0</number>
-              </property>
-              <property name="topMargin">
-               <number>0</number>
-              </property>
-              <property name="rightMargin">
-               <number>0</number>
-              </property>
-              <property name="bottomMargin">
+              <property name="margin">
                <number>0</number>
               </property>
               <item>
@@ -899,7 +791,7 @@
                  <string>Options</string>
                 </property>
                 <property name="icon">
-                 <iconset resource="rsc.qrc">
+                 <iconset>
                   <normaloff>:/rsc/rsc/icon_settings.png</normaloff>
                   <disabledoff>:/rsc/rsc/icon_settings_disabled.png</disabledoff>:/rsc/rsc/icon_settings.png</iconset>
                 </property>
@@ -929,23 +821,14 @@
               <number>0</number>
              </property>
              <layout class="QGridLayout" name="nukeOptions_gridLayout">
-              <property name="leftMargin">
-               <number>0</number>
-              </property>
-              <property name="topMargin">
-               <number>0</number>
-              </property>
-              <property name="rightMargin">
-               <number>0</number>
-              </property>
-              <property name="bottomMargin">
-               <number>0</number>
-              </property>
               <property name="horizontalSpacing">
                <number>12</number>
               </property>
               <property name="verticalSpacing">
                <number>4</number>
+              </property>
+              <property name="margin">
+               <number>0</number>
               </property>
               <item row="0" column="1">
                <widget class="QCheckBox" name="useNukeX_checkBox">
@@ -990,7 +873,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QGroupBox" name="frames_groupBox">
+         <widget class="QGroupBox" name="distribution_groupBox">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
             <horstretch>0</horstretch>
@@ -998,7 +881,7 @@
            </sizepolicy>
           </property>
           <property name="title">
-           <string>Frame range</string>
+           <string>Distribution</string>
           </property>
           <property name="checked">
            <bool>false</bool>
@@ -1007,7 +890,7 @@
            <bool>true</bool>
           </property>
           <property name="xmlCategory" stdset="0">
-           <string>frames</string>
+           <string>distribution</string>
           </property>
           <layout class="QFormLayout" name="frames_formLayout">
            <property name="labelAlignment">
@@ -1019,16 +902,7 @@
            <property name="verticalSpacing">
             <number>4</number>
            </property>
-           <property name="leftMargin">
-            <number>8</number>
-           </property>
-           <property name="topMargin">
-            <number>8</number>
-           </property>
-           <property name="rightMargin">
-            <number>8</number>
-           </property>
-           <property name="bottomMargin">
+           <property name="margin">
             <number>8</number>
            </property>
            <item row="0" column="0">
@@ -1054,16 +928,7 @@
               <property name="spacing">
                <number>2</number>
               </property>
-              <property name="leftMargin">
-               <number>0</number>
-              </property>
-              <property name="topMargin">
-               <number>0</number>
-              </property>
-              <property name="rightMargin">
-               <number>0</number>
-              </property>
-              <property name="bottomMargin">
+              <property name="margin">
                <number>0</number>
               </property>
               <item>
@@ -1097,9 +962,9 @@
                  <string>Options</string>
                 </property>
                 <property name="icon">
-                 <iconset resource="rsc.qrc">
-                  <normaloff>:/rsc/rsc/icon_settings.png</normaloff>
-                  <disabledoff>:/rsc/rsc/icon_settings_disabled.png</disabledoff>:/rsc/rsc/icon_settings.png</iconset>
+                 <iconset>
+                  <normaloff>icons/icon_settings.png</normaloff>
+                  <disabledoff>icons/icon_settings_disabled.png</disabledoff>icons/icon_settings.png</iconset>
                 </property>
                 <property name="iconSize">
                  <size>
@@ -1130,16 +995,7 @@
               <property name="spacing">
                <number>6</number>
               </property>
-              <property name="leftMargin">
-               <number>0</number>
-              </property>
-              <property name="topMargin">
-               <number>0</number>
-              </property>
-              <property name="rightMargin">
-               <number>0</number>
-              </property>
-              <property name="bottomMargin">
+              <property name="margin">
                <number>0</number>
               </property>
               <item>
@@ -1219,16 +1075,7 @@
            <property name="verticalSpacing">
             <number>4</number>
            </property>
-           <property name="leftMargin">
-            <number>8</number>
-           </property>
-           <property name="topMargin">
-            <number>8</number>
-           </property>
-           <property name="rightMargin">
-            <number>8</number>
-           </property>
-           <property name="bottomMargin">
+           <property name="margin">
             <number>8</number>
            </property>
            <item row="2" column="0">
@@ -1268,16 +1115,7 @@
               <property name="spacing">
                <number>6</number>
               </property>
-              <property name="leftMargin">
-               <number>0</number>
-              </property>
-              <property name="topMargin">
-               <number>0</number>
-              </property>
-              <property name="rightMargin">
-               <number>0</number>
-              </property>
-              <property name="bottomMargin">
+              <property name="margin">
                <number>0</number>
               </property>
               <item>
@@ -1336,16 +1174,7 @@
               <property name="spacing">
                <number>2</number>
               </property>
-              <property name="leftMargin">
-               <number>0</number>
-              </property>
-              <property name="topMargin">
-               <number>0</number>
-              </property>
-              <property name="rightMargin">
-               <number>0</number>
-              </property>
-              <property name="bottomMargin">
+              <property name="margin">
                <number>0</number>
               </property>
               <item>
@@ -1373,16 +1202,7 @@
               <property name="spacing">
                <number>2</number>
               </property>
-              <property name="leftMargin">
-               <number>0</number>
-              </property>
-              <property name="topMargin">
-               <number>0</number>
-              </property>
-              <property name="rightMargin">
-               <number>0</number>
-              </property>
-              <property name="bottomMargin">
+              <property name="margin">
                <number>0</number>
               </property>
               <item>
@@ -1413,7 +1233,7 @@
                  <string>Get Pools</string>
                 </property>
                 <property name="icon">
-                 <iconset resource="rsc.qrc">
+                 <iconset>
                   <normaloff>:/rsc/rsc/icon_refresh.png</normaloff>
                   <disabledoff>:/rsc/rsc/icon_refresh_disabled.png</disabledoff>:/rsc/rsc/icon_refresh.png</iconset>
                 </property>
@@ -1443,16 +1263,7 @@
               <property name="spacing">
                <number>2</number>
               </property>
-              <property name="leftMargin">
-               <number>0</number>
-              </property>
-              <property name="topMargin">
-               <number>0</number>
-              </property>
-              <property name="rightMargin">
-               <number>0</number>
-              </property>
-              <property name="bottomMargin">
+              <property name="margin">
                <number>0</number>
               </property>
               <item>
@@ -1483,7 +1294,7 @@
                  <string>Get Groups</string>
                 </property>
                 <property name="icon">
-                 <iconset resource="rsc.qrc">
+                 <iconset>
                   <normaloff>:/rsc/rsc/icon_refresh.png</normaloff>
                   <disabledoff>:/rsc/rsc/icon_refresh_disabled.png</disabledoff>:/rsc/rsc/icon_refresh.png</iconset>
                 </property>
@@ -1533,16 +1344,7 @@
        <property name="spacing">
         <number>2</number>
        </property>
-       <property name="leftMargin">
-        <number>6</number>
-       </property>
-       <property name="topMargin">
-        <number>6</number>
-       </property>
-       <property name="rightMargin">
-        <number>6</number>
-       </property>
-       <property name="bottomMargin">
+       <property name="margin">
         <number>6</number>
        </property>
        <item>

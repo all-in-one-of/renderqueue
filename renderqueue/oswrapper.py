@@ -29,7 +29,7 @@ def execute(args):
 	""" Wrapper to execute a command using subprocess.check_output().
 	"""
 	#verbose.print_(" ".join(arg for arg in args))
-	print(" ".join(arg for arg in args))
+	print(args)
 
 	try:
 		if platform.system() == "Windows":
@@ -263,32 +263,31 @@ def relativePath(absPath, token, tokenFormat='standard'):
 		return os.path.normpath(absPath).replace("\\", "/")
 
 
-# def translatePath(jobPath):
-# 	""" Translate paths for cross-platform support.
-# 	"""
-# 	try:
-# 		jobPathTr = jobPath
-# 		if platform.system() == "Windows":
-# 			if jobPath.startswith(os.environ['FILESYSTEMROOTOSX']):
-# 				jobPathTr = jobPath.replace(os.environ['FILESYSTEMROOTOSX'], os.environ['FILESYSTEMROOTWIN'])
-# 			elif jobPath.startswith(os.environ['FILESYSTEMROOTLINUX']):
-# 				jobPathTr = jobPath.replace(os.environ['FILESYSTEMROOTLINUX'], os.environ['FILESYSTEMROOTWIN'])
-# 		elif platform.system() == "Darwin":
-# 			if jobPath.startswith(os.environ['FILESYSTEMROOTWIN']):
-# 				jobPathTr = jobPath.replace(os.environ['FILESYSTEMROOTWIN'], os.environ['FILESYSTEMROOTOSX'])
-# 			elif jobPath.startswith(os.environ['FILESYSTEMROOTLINUX']):
-# 				jobPathTr = jobPath.replace(os.environ['FILESYSTEMROOTLINUX'], os.environ['FILESYSTEMROOTOSX'])
-# 		else:  # Linux
-# 			if jobPath.startswith(os.environ['FILESYSTEMROOTWIN']):
-# 				jobPathTr = jobPath.replace(os.environ['FILESYSTEMROOTWIN'], os.environ['FILESYSTEMROOTLINUX'])
-# 			elif jobPath.startswith(os.environ['FILESYSTEMROOTOSX']):
-# 				jobPathTr = jobPath.replace(os.environ['FILESYSTEMROOTOSX'], os.environ['FILESYSTEMROOTLINUX'])
+def translatePath(path, rootwin, rootosx, rootlin):
+	""" Translate paths for cross-platform support.
+	"""
+	try:
+		path_tr = path
+		if platform.system() == "Windows":
+			if path.startswith(rootosx):
+				path_tr = path.replace(rootosx, rootwin)
+			elif path.startswith(rootlin):
+				path_tr = path.replace(rootlin, rootwin)
+		elif platform.system() == "Darwin":
+			if path.startswith(rootwin):
+				path_tr = path.replace(rootwin, rootosx)
+			elif path.startswith(rootlin):
+				path_tr = path.replace(rootlin, rootosx)
+		else:  # Linux
+			if path.startswith(rootwin):
+				path_tr = path.replace(rootwin, rootlin)
+			elif path.startswith(rootosx):
+				path_tr = path.replace(rootosx, rootlin)
 
-# 		#print("Performing path translation:\n%s\n%s\n" %(jobPath, absolutePath(jobPathTr)))
-# 		return absolutePath(jobPathTr)
+		return absolutePath(path_tr)
 
-# 	except (KeyError, TypeError):
-# 		return jobPath
+	except (KeyError, TypeError):
+		return path
 
 
 def checkIllegalChars(path, pattern=r'[^\w\.-]'):
