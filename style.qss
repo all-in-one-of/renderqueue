@@ -1539,4 +1539,8 @@ QSlider::handle:disabled {
 	/*border-color: transparent;*/
 }
 
+*[attach="true"] { /* attach tool button to widget */
+	background: rgba(%base%);
+}
+
 /* End Custom Attributes */

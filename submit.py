@@ -41,7 +41,7 @@ except:
 
 # Set window title and object names
 WINDOW_TITLE = "Render Submit"
-WINDOW_OBJECT = "renderSubmitUI"
+WINDOW_OBJECT = "RenderSubmitUI"
 
 # Set the UI and the stylesheet
 UI_FILE = "submit.ui"

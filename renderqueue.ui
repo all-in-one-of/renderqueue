@@ -15,7 +15,16 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout_5">
-    <property name="margin">
+    <property name="leftMargin">
+     <number>8</number>
+    </property>
+    <property name="topMargin">
+     <number>8</number>
+    </property>
+    <property name="rightMargin">
+     <number>8</number>
+    </property>
+    <property name="bottomMargin">
      <number>8</number>
     </property>
     <item>
@@ -27,7 +36,16 @@
        <property name="spacing">
         <number>18</number>
        </property>
-       <property name="margin">
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
         <number>0</number>
        </property>
        <item>
@@ -36,11 +54,20 @@
           <number>0</number>
          </property>
          <layout class="QHBoxLayout" name="view_horizontalLayout">
-          <property name="margin">
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
            <number>0</number>
           </property>
           <item>
-           <widget class="QToolButton" name="jobSubmit_toolButton">
+           <widget class="QToolButton" name="submitJob_toolButton">
             <property name="minimumSize">
              <size>
               <width>64</width>
@@ -147,7 +174,16 @@
           <number>0</number>
          </property>
          <layout class="QHBoxLayout" name="job_horizontalLayout">
-          <property name="margin">
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
            <number>0</number>
           </property>
           <item>
@@ -363,7 +399,16 @@
           <number>0</number>
          </property>
          <layout class="QHBoxLayout" name="task_horizontalLayout">
-          <property name="margin">
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
            <number>0</number>
           </property>
           <item>
@@ -441,7 +486,16 @@
           <number>0</number>
          </property>
          <layout class="QHBoxLayout" name="task_horizontalLayout_2">
-          <property name="margin">
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
            <number>0</number>
           </property>
           <item>
@@ -641,7 +695,7 @@
      <x>0</x>
      <y>0</y>
      <width>1024</width>
-     <height>21</height>
+     <height>19</height>
     </rect>
    </property>
    <property name="nativeMenuBar">
@@ -652,23 +706,26 @@
      <string>Job</string>
     </property>
     <addaction name="actionEdit"/>
+    <addaction name="actionBrowse"/>
+    <addaction name="actionViewJobLog"/>
+    <addaction name="separator"/>
     <addaction name="actionPause"/>
     <addaction name="actionResume"/>
     <addaction name="actionStop"/>
     <addaction name="actionDelete"/>
     <addaction name="actionResubmit"/>
-    <addaction name="actionViewJobLog"/>
    </widget>
    <widget class="QMenu" name="menuTask">
     <property name="title">
      <string>Task</string>
     </property>
-    <addaction name="actionMark_as_Complete"/>
-    <addaction name="actionMark_as_Failed"/>
-    <addaction name="actionRequeue"/>
+    <addaction name="actionViewTaskLog"/>
+    <addaction name="separator"/>
+    <addaction name="actionCompleteTask"/>
+    <addaction name="actionFailTask"/>
+    <addaction name="actionRequeueTask"/>
     <addaction name="actionCombine"/>
     <addaction name="actionSplit"/>
-    <addaction name="actionViewTaskLog"/>
    </widget>
    <widget class="QMenu" name="menuWorker">
     <property name="title">
@@ -676,20 +733,23 @@
     </property>
     <addaction name="actionNewWorker"/>
     <addaction name="actionWorkerProperties"/>
+    <addaction name="actionRemote"/>
+    <addaction name="actionDeleteWorker"/>
+    <addaction name="actionViewWorkerLog"/>
+    <addaction name="separator"/>
     <addaction name="actionStartWorker"/>
     <addaction name="actionStopWorker"/>
-    <addaction name="actionStopWorkerDeferred"/>
-    <addaction name="actionStopWorkerImmediately"/>
-    <addaction name="actionViewWorkerLog"/>
-    <addaction name="actionDeleteWorker"/>
+    <addaction name="actionStopWorkerAfterTask"/>
+    <addaction name="actionContinueAfterTask"/>
+    <addaction name="separator"/>
     <addaction name="actionDequeue"/>
    </widget>
    <widget class="QMenu" name="menuQueue">
     <property name="title">
      <string>Queue</string>
     </property>
-    <addaction name="actionSubmit_new_job"/>
-    <addaction name="actionRefresh_queue"/>
+    <addaction name="actionSubmitJob"/>
+    <addaction name="actionRefresh"/>
     <addaction name="actionReset_view"/>
     <addaction name="actionResize_columns"/>
     <addaction name="separator"/>
@@ -704,11 +764,6 @@
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionPause">
-   <property name="icon">
-    <iconset>
-     <normaloff>icons/icon_pause.png</normaloff>
-     <disabledoff>icons/icon_pause_disabled.png</disabledoff>icons/icon_pause.png</iconset>
-   </property>
    <property name="text">
     <string>Pause</string>
    </property>
@@ -719,65 +774,31 @@
    </property>
   </action>
   <action name="actionStop">
-   <property name="icon">
-    <iconset>
-     <normaloff>icons/icon_stop.png</normaloff>
-     <disabledoff>icons/icon_stop_disabled.png</disabledoff>icons/icon_stop.png</iconset>
-   </property>
    <property name="text">
     <string>Stop</string>
    </property>
   </action>
   <action name="actionDelete">
-   <property name="icon">
-    <iconset>
-     <normaloff>icons/icon_delete.png</normaloff>
-     <disabledoff>icons/icon_delete_disabled.png</disabledoff>icons/icon_delete.png</iconset>
-   </property>
    <property name="text">
     <string>Delete</string>
    </property>
   </action>
   <action name="actionResubmit">
-   <property name="icon">
-    <iconset>
-     <normaloff>icons/icon_resubmit.png</normaloff>
-     <disabledoff>icons/icon_resubmit_disabled.png</disabledoff>icons/icon_resubmit.png</iconset>
-   </property>
    <property name="text">
     <string>Resubmit</string>
    </property>
   </action>
-  <action name="actionSubmit">
-   <property name="text">
-    <string>Submit</string>
-   </property>
-  </action>
   <action name="actionEdit">
-   <property name="icon">
-    <iconset>
-     <normaloff>icons/edit.png</normaloff>icons/edit.png</iconset>
-   </property>
    <property name="text">
     <string>Properties...</string>
    </property>
   </action>
-  <action name="actionMark_as_Complete">
-   <property name="icon">
-    <iconset>
-     <normaloff>icons/icon_tick.png</normaloff>
-     <disabledoff>icons/icon_tick_disabled.png</disabledoff>icons/icon_tick.png</iconset>
-   </property>
+  <action name="actionCompleteTask">
    <property name="text">
     <string>Mark as Complete</string>
    </property>
   </action>
-  <action name="actionRequeue">
-   <property name="icon">
-    <iconset>
-     <normaloff>icons/icon_resubmit.png</normaloff>
-     <disabledoff>icons/icon_resubmit_disabled.png</disabledoff>icons/icon_resubmit.png</iconset>
-   </property>
+  <action name="actionRequeueTask">
    <property name="text">
     <string>Requeue</string>
    </property>
@@ -797,14 +818,20 @@
     <string>Start</string>
    </property>
   </action>
-  <action name="actionStopWorkerImmediately">
+  <action name="actionContinueAfterTask">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
-    <string>Stop immediately and kill current task</string>
+    <string>Continue after current task completion</string>
    </property>
   </action>
-  <action name="actionStopWorkerDeferred">
+  <action name="actionStopWorkerAfterTask">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
-    <string>Stop when current task is complete</string>
+    <string>Stop after current task completion</string>
    </property>
   </action>
   <action name="actionStopWorker">
@@ -812,21 +839,12 @@
     <string>Stop</string>
    </property>
   </action>
-  <action name="actionSubmit_new_job">
-   <property name="icon">
-    <iconset>
-     <normaloff>:/icons/icons/icon_render.png</normaloff>:/icons/icons/icon_render.png</iconset>
-   </property>
+  <action name="actionSubmitJob">
    <property name="text">
     <string>Submit new job...</string>
    </property>
   </action>
-  <action name="actionRefresh_queue">
-   <property name="icon">
-    <iconset>
-     <normaloff>icons/icon_refresh.png</normaloff>
-     <disabledoff>icons/icon_refresh_disabled.png</disabledoff>icons/icon_refresh.png</iconset>
-   </property>
+  <action name="actionRefresh">
    <property name="text">
     <string>Refresh</string>
    </property>
@@ -857,41 +875,21 @@
    </property>
   </action>
   <action name="actionSettings">
-   <property name="icon">
-    <iconset>
-     <normaloff>icons/icon_settings.png</normaloff>
-     <disabledoff>icons/icon_settings_disabled.png</disabledoff>icons/icon_settings.png</iconset>
-   </property>
    <property name="text">
     <string>Settings...</string>
    </property>
   </action>
   <action name="actionAbout">
-   <property name="icon">
-    <iconset>
-     <normaloff>:/rsc/rsc/icon_info.png</normaloff>
-     <disabledoff>:/rsc/rsc/icon_info_disabled.png</disabledoff>:/rsc/rsc/icon_info.png</iconset>
-   </property>
    <property name="text">
     <string>About...</string>
    </property>
   </action>
-  <action name="actionMark_as_Failed">
-   <property name="icon">
-    <iconset>
-     <normaloff>icons/icon_cross.png</normaloff>
-     <disabledoff>icons/icon_cross_disabled.png</disabledoff>icons/icon_cross.png</iconset>
-   </property>
+  <action name="actionFailTask">
    <property name="text">
     <string>Mark as Failed</string>
    </property>
   </action>
   <action name="actionWorkerProperties">
-   <property name="icon">
-    <iconset>
-     <normaloff>icons/icon_editor.png</normaloff>
-     <disabledoff>icons/icon_editor_disabled.png</disabledoff>icons/icon_editor.png</iconset>
-   </property>
    <property name="text">
     <string>Properties...</string>
    </property>
@@ -902,21 +900,11 @@
    </property>
   </action>
   <action name="actionNewWorker">
-   <property name="icon">
-    <iconset>
-     <normaloff>icons/icon_computer.png</normaloff>
-     <disabledoff>icons/icon_computer_disabled.png</disabledoff>icons/icon_computer.png</iconset>
-   </property>
    <property name="text">
     <string>New...</string>
    </property>
   </action>
   <action name="actionDeleteWorker">
-   <property name="icon">
-    <iconset>
-     <normaloff>icons/icon_delete.png</normaloff>
-     <disabledoff>icons/icon_delete_disabled.png</disabledoff>icons/icon_delete.png</iconset>
-   </property>
    <property name="text">
     <string>Delete</string>
    </property>
@@ -924,6 +912,16 @@
   <action name="actionDequeue">
    <property name="text">
     <string>Dequeue</string>
+   </property>
+  </action>
+  <action name="actionBrowse">
+   <property name="text">
+    <string>Browse output...</string>
+   </property>
+  </action>
+  <action name="actionRemote">
+   <property name="text">
+    <string>Connect to remote desktop... </string>
    </property>
   </action>
  </widget>

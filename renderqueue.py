@@ -140,21 +140,9 @@ class RenderQueueApp(QtWidgets.QMainWindow, UI.TemplateUI):
 		# self.errorIcon = QtGui.QIcon()
 		# self.errorIcon.addPixmap(QtGui.QPixmap(oswrapper.absolutePath("$IC_FORMSDIR/rsc/status_icon_error.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
 
-		# Set icons (temp)
-		self.ui.actionSubmit_new_job.setIcon(self.iconSet('icon_render'))
-		self.ui.actionEdit.setIcon(self.iconSet('edit'))
-		# self.ui.actionSettings.setIcon(self.setSVGIcon('configure'))
-		# self.ui.actionAbout.setIcon(self.setSVGIcon('help-about'))
-		# self.ui.actionExit.setIcon(self.setSVGIcon('application-exit'))
-		self.ui.jobSubmit_toolButton.setIcon(self.iconSet('icon_render'))
-		# self.ui.refresh_toolButton.setIcon(self.setSVGIcon('view-refresh'))
-		# self.ui.jobPause_toolButton.setIcon(self.setSVGIcon('media-playback-pause'))
-		# self.ui.jobKill_toolButton.setIcon(self.setSVGIcon('paint-none'))
-		self.ui.jobStop_toolButton.setIcon(self.iconSet('icon_stop'))
-		# self.ui.jobDelete_toolButton.setIcon(self.setSVGIcon('edit-delete'))
-		# self.ui.jobResubmit_toolButton.setIcon(self.setSVGIcon('gtk-convert'))
-		# self.ui.taskComplete_toolButton.setIcon(self.setSVGIcon('dialog-ok-apply'))
-		# self.ui.taskRequeue_toolButton.setIcon(self.setSVGIcon('gtk-convert'))
+		# Disable some actions until properly implemented (temp)
+		self.ui.actionRemote.setEnabled(False)
+		self.ui.actionSplit.setEnabled(False)
 
 		# --------------------------------------------------------------------
 		# Connect signals & slots
@@ -167,75 +155,130 @@ class RenderQueueApp(QtWidgets.QMainWindow, UI.TemplateUI):
 		self.ui.queue_treeWidget.header().sectionClicked.connect(self.sortTasks)
 
 		# Queue menu & toolbar
-		self.ui.actionSubmit_new_job.triggered.connect(self.launchRenderSubmit)
-		self.ui.actionRefresh_queue.triggered.connect(self.rebuildQueueView)
-		self.ui.actionResize_columns.triggered.connect(self.resizeColumns)
-		self.ui.actionSettings.triggered.connect(self.openSettings)
-		self.ui.actionAbout.triggered.connect(self.about)
-		self.ui.actionExit.triggered.connect(self.close)
+		self.ui.actionSubmitJob.triggered.connect(self.launchRenderSubmit)
+		self.ui.actionSubmitJob.setIcon(self.iconSet('document-new.svg'))
+		self.ui.submitJob_toolButton.clicked.connect(self.launchRenderSubmit)
+		self.ui.submitJob_toolButton.setIcon(self.iconSet('document-new.svg'))
 
-		self.ui.jobSubmit_toolButton.clicked.connect(self.launchRenderSubmit)
+		self.ui.actionRefresh.triggered.connect(self.rebuildQueueView)
+		self.ui.actionRefresh.setIcon(self.iconSet('view-refresh.svg'))
 		self.ui.refresh_toolButton.clicked.connect(self.rebuildQueueView)
+		self.ui.refresh_toolButton.setIcon(self.iconSet('view-refresh.svg'))
+
+		self.ui.actionResize_columns.triggered.connect(self.resizeColumns)
+
+		self.ui.actionSettings.triggered.connect(self.openSettings)
+		self.ui.actionSettings.setIcon(self.iconSet('configure.svg'))
 		self.ui.settings_toolButton.clicked.connect(self.openSettings)
+		self.ui.settings_toolButton.setIcon(self.iconSet('configure.svg'))
+
+		self.ui.actionAbout.triggered.connect(self.about)
+		self.ui.actionAbout.setIcon(self.iconSet('help-about.svg'))
+
+		self.ui.actionExit.triggered.connect(self.close)
+		self.ui.actionExit.setIcon(self.iconSet('application-exit.svg'))
 
 		# Job menu & toolbar
 		#self.ui.actionEdit.triggered.connect(self.editJob)  # not yet implemented
+
+		self.ui.actionBrowse.triggered.connect(self.launchRenderBrowser)
+		self.ui.actionBrowse.setIcon(self.iconSet('view-preview.svg'))
+
+		self.ui.actionEdit.setIcon(self.iconSet('edit'))
+
 		self.ui.actionPause.triggered.connect(lambda *args: self.changePriority(0, absolute=True))  # this lambda function is what's causing the multiple windows issue, no idea why though
-		#self.ui.actionResume.triggered.connect(lambda *args: self.changePriority(0, absolute=True))  # this lambda function is what's causing the multiple windows issue, no idea why though
-		self.ui.actionStop.triggered.connect(self.stopJob)
-		self.ui.actionDelete.triggered.connect(self.deleteJob)
-		#self.ui.actionResubmit.triggered.connect(self.resubmitJob)  # not yet implemented
+		self.ui.actionPause.setIcon(self.iconSet('media-playback-pause.svg'))
 		self.ui.jobPause_toolButton.clicked.connect(lambda *args: self.changePriority(0, absolute=True))  # this lambda function is what's causing the multiple windows issue, no idea why though
+		self.ui.jobPause_toolButton.setIcon(self.iconSet('media-playback-pause.svg'))
+
+		self.ui.actionResume.setIcon(self.iconSet('media-playback-start.svg'))
+		#self.ui.actionResume.triggered.connect(lambda *args: self.changePriority(0, absolute=True))  # this lambda function is what's causing the multiple windows issue, no idea why though
+
+		self.ui.actionStop.triggered.connect(self.stopJob)
+		self.ui.actionStop.setIcon(self.iconSet('process-stop.svg'))
 		self.ui.jobStop_toolButton.clicked.connect(self.stopJob)
+		self.ui.jobStop_toolButton.setIcon(self.iconSet('process-stop.svg'))
+
+		self.ui.actionDelete.triggered.connect(self.deleteJob)
+		self.ui.actionDelete.setIcon(self.iconSet('edit-delete.svg'))
 		self.ui.jobDelete_toolButton.clicked.connect(self.deleteJob)
+		self.ui.jobDelete_toolButton.setIcon(self.iconSet('edit-delete.svg'))
+
+		#self.ui.actionResubmit.triggered.connect(self.resubmitJob)  # not yet implemented
+		self.ui.actionResubmit.setIcon(self.iconSet('resubmit.png'))
 		#self.ui.jobResubmit_toolButton.clicked.connect(self.resubmitJob)  # not yet implemented
+		#self.ui.jobResubmit_toolButton.setIcon(self.iconSet('gtk-convert'))
+
 		self.ui.jobPriority_slider.sliderMoved.connect(lambda value: self.changePriority(value)) # this lambda function is what's causing the multiple windows issue, no idea why though
 		self.ui.jobPriority_slider.sliderReleased.connect(self.updatePriority)
 
 		# Task menu & toolbar
-		self.ui.actionMark_as_Complete.triggered.connect(self.completeTask)
-		self.ui.actionMark_as_Failed.triggered.connect(self.failTask)
-		self.ui.actionRequeue.triggered.connect(self.requeueTask)
-		self.ui.actionCombine.triggered.connect(self.combineTasks)  # not yet implemented
-		#self.ui.actionSplit_task.triggered.connect(self.splitTasks)  # not yet implemented
+		self.ui.actionCompleteTask.triggered.connect(self.completeTask)
+		self.ui.actionCompleteTask.setIcon(self.iconSet('dialog-ok-apply.svg'))
 		self.ui.taskComplete_toolButton.clicked.connect(self.completeTask)
+		self.ui.taskComplete_toolButton.setIcon(self.iconSet('dialog-ok-apply.svg'))
+
+		self.ui.actionFailTask.triggered.connect(self.failTask)
+		self.ui.actionFailTask.setIcon(self.iconSet('paint-none.svg'))
+
+		self.ui.actionRequeueTask.triggered.connect(self.requeueTask)
+		self.ui.actionRequeueTask.setIcon(self.iconSet('gtk-convert.svg'))
 		self.ui.taskRequeue_toolButton.clicked.connect(self.requeueTask)
+		self.ui.taskRequeue_toolButton.setIcon(self.iconSet('gtk-convert.svg'))
+
+		#self.ui.actionCombine.triggered.connect(self.combineTasks)  # not yet implemented
+
+		#self.ui.actionSplit_task.triggered.connect(self.splitTasks)  # not yet implemented
 
 		# Worker menu & toolbar
 		self.ui.actionNewWorker.triggered.connect(self.newWorker)
+		self.ui.actionNewWorker.setIcon(self.iconSet('list-add.svg'))
+
 		self.ui.actionStartWorker.triggered.connect(self.startWorker)
+		self.ui.actionStartWorker.setIcon(self.iconSet('media-playback-start.svg'))
+
 		self.ui.actionStopWorker.triggered.connect(self.stopWorker)
-		self.ui.actionStopWorkerImmediately.triggered.connect(self.cancelRender)
+		self.ui.actionStopWorker.setIcon(self.iconSet('media-playback-stop.svg'))
+
+		#self.ui.actionStopWorkerImmediately.triggered.connect(self.cancelRender)
+		#self.ui.actionStopWorkerImmediately.setIcon(self.iconSet('paint-none.svg'))
+
 		self.ui.actionDeleteWorker.triggered.connect(self.deleteWorker)
+		self.ui.actionDeleteWorker.setIcon(self.iconSet('edit-delete.svg'))
+
+		self.ui.actionRemote.triggered.connect(self.rdesktop)
+		self.ui.actionRemote.setIcon(self.iconSet('computer.png'))
+
 		self.ui.actionDequeue.triggered.connect(self.dequeue)
 
 		# Add context menu items to worker control tool button
-		self.ui.workerControl_toolButton.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
+		# self.ui.workerControl_toolButton.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
+		self.ui.workerControl_toolButton.setIcon(self.iconSet('computer.png'))
 
-		self.actionWorkerStart = QtWidgets.QAction("Start Worker", None)
-		self.actionWorkerStart.triggered.connect(self.startWorker)
-		self.ui.workerControl_toolButton.addAction(self.actionWorkerStart)
+		# self.actionWorkerStart = QtWidgets.QAction("Start Worker", None)
+		# self.actionWorkerStart.triggered.connect(self.startWorker)
+		# self.ui.workerControl_toolButton.addAction(self.actionWorkerStart)
 
-		self.actionWorkerStop = QtWidgets.QAction("Stop Worker", None)
-		self.actionWorkerStop.triggered.connect(self.stopWorker)
-		self.ui.workerControl_toolButton.addAction(self.actionWorkerStop)
+		# self.actionWorkerStop = QtWidgets.QAction("Stop Worker", None)
+		# self.actionWorkerStop.triggered.connect(self.stopWorker)
+		# self.ui.workerControl_toolButton.addAction(self.actionWorkerStop)
 
-		self.actionKillTask = QtWidgets.QAction("Stop Worker Immediately and Kill Current Task", None)
-		# self.actionKillTask.triggered.connect(self.killRenderProcess)
-		self.ui.workerControl_toolButton.addAction(self.actionKillTask)
+		# self.actionKillTask = QtWidgets.QAction("Stop Worker Immediately and Kill Current Task", None)
+		# # self.actionKillTask.triggered.connect(self.killRenderProcess)
+		# self.ui.workerControl_toolButton.addAction(self.actionKillTask)
 
-		self.actionWorkerContinueAfterTask = QtWidgets.QAction("Continue After Current Task Completion", None)
-		self.actionWorkerContinueAfterTask.setCheckable(True)
-		self.ui.workerControl_toolButton.addAction(self.actionWorkerContinueAfterTask)
+		# self.actionWorkerContinueAfterTask = QtWidgets.QAction("Continue after current task completion", None)
+		# self.actionWorkerContinueAfterTask.setCheckable(True)
+		# self.ui.workerControl_toolButton.addAction(self.actionWorkerContinueAfterTask)
 
-		self.actionWorkerStopAfterTask = QtWidgets.QAction("Stop Worker After Current Task Completion", None)
-		self.actionWorkerStopAfterTask.setCheckable(True)
-		self.ui.workerControl_toolButton.addAction(self.actionWorkerStopAfterTask)
+		# self.actionWorkerStopAfterTask = QtWidgets.QAction("Stop after current task completion", None)
+		# self.actionWorkerStopAfterTask.setCheckable(True)
+		# self.ui.workerControl_toolButton.addAction(self.actionWorkerStopAfterTask)
 
 		workerControlAfterTaskGroup = QtWidgets.QActionGroup(self)
-		workerControlAfterTaskGroup.addAction(self.actionWorkerContinueAfterTask)
-		workerControlAfterTaskGroup.addAction(self.actionWorkerStopAfterTask)
-		self.actionWorkerContinueAfterTask.setChecked(True)
+		workerControlAfterTaskGroup.addAction(self.actionContinueAfterTask)
+		workerControlAfterTaskGroup.addAction(self.actionStopWorkerAfterTask)
+		self.actionContinueAfterTask.setChecked(True)
 
 		# Set up context menus for render queue and workers tree widgets
 		self.ui.queue_treeWidget.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
@@ -257,6 +300,38 @@ class RenderQueueApp(QtWidgets.QMainWindow, UI.TemplateUI):
 			self.renderSubmitUI.display()
 
 
+	def launchRenderBrowser(self):
+		""" Launch Render Browser window.
+			Some horrible hackery going on here
+		"""
+		try:
+			for item in self.ui.queue_treeWidget.selectedItems():
+				# If item has no parent then it must be a top level item, and
+				# therefore also a job
+				if not item.parent():
+					jobID = item.text(1)
+					job = self.rq.getJob(jobID)
+					output = job['output']
+					mayaproj = job['mayaProject']
+					frameRange = item.text(3)
+
+		except ValueError:
+			pass
+
+		os.environ['MAYADIR'] = mayaproj
+		directory = oswrapper.absolutePath(output[''][0])
+		directory = os.path.split(directory)[:-1][0]
+		print(directory)
+
+		import browser
+		try:
+			self.renderBrowserUI.display()
+		except AttributeError:
+			self.renderBrowserUI = browser.RenderBrowserUI(parent=self)
+			self.renderBrowserUI.display(
+				directory=directory, frameRange=frameRange)
+
+
 	def openSettings(self):
 		""" Open settings dialog.
 		"""
@@ -272,6 +347,21 @@ class RenderQueueApp(QtWidgets.QMainWindow, UI.TemplateUI):
 		if result:
 			self.prefs.read()
 			self.rebuildQueueView()
+
+
+	def rdesktop(self):
+		""" Connect to remote desktop (currently linux only).
+		"""
+		try:
+			for item in self.ui.workers_treeWidget.selectedItems():
+				ip = item.text(3)
+				cmd = 'rdesktop -g 1920x1200 -x 0x80 -a 32 -u %s -KD %s' %(os.environ.get('IC_USERNAME', getpass.getuser()), ip)
+				#os.system('rdesktop -g 1920x1200 -x 0x80 -a 32 -u vfx -p vfx -KD %s' %ip)
+				print(cmd)
+				os.system(cmd)
+
+		except ValueError:
+			pass
 
 
 	def about(self):
@@ -463,6 +553,7 @@ Developers: %s
 						# renderTaskItem.setIcon(4, self.readyIcon)
 					elif taskStatus == "Done": # and taskWorker == self.localhost:
 						renderTaskItem.setForeground(4, QtGui.QBrush(self.colCompleted))
+						#renderTaskItem.setIcon(4, self.iconSet('dialog-ok-apply.svg'))
 						# renderTaskItem.setIcon(4, self.doneIcon)
 					elif taskStatus == "Failed": # and taskWorker == self.localhost:
 						renderTaskItem.setForeground(4, QtGui.QBrush(self.colError))
@@ -552,7 +643,7 @@ Developers: %s
 			# workerIcon.addPixmap(QtGui.QPixmap(self.checkFilePath(icon+".png", searchpath)), QtGui.QIcon.Normal, QtGui.QIcon.Off)
 			# action.setIcon(workerIcon)
 			#workerListItem.setIcon(0, self.setSVGIcon('computer-symbolic'))
-			workerListItem.setIcon(0, self.iconSet('icon_computer'))
+			workerListItem.setIcon(0, self.iconSet('computer.png'))
 
 			# Fill columns with data
 			workerListItem.setText(0, worker['name'])
@@ -772,9 +863,9 @@ Developers: %s
 		# Disable submit button if shot is not set (temporary)
 		# try:
 		# 	os.environ['SHOT']
-		# 	self.ui.jobSubmit_toolButton.setEnabled(True)
+		# 	self.ui.submitJob_toolButton.setEnabled(True)
 		# except KeyError:
-		# 	self.ui.jobSubmit_toolButton.setEnabled(False)
+		# 	self.ui.submitJob_toolButton.setEnabled(False)
 
 
 	def stopJob(self):
