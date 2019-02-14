@@ -147,7 +147,8 @@ class RenderBrowserUI(QtWidgets.QMainWindow, UI.TemplateUI):
 		#renderPath = self.renderPath
 		self.ui.renderBrowser_treeWidget.clear()
 		renderPath = self.ui.path_lineEdit.text()
-		if renderPath:
+		# if renderPath:
+		if os.path.isdir(renderPath):
 			renderLayerDirs = []
 
 			# Get subdirectories
