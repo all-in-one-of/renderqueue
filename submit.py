@@ -139,10 +139,12 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 		self.expertMode = False
 
 
-	def display(self, frameRange=None, layers=None, flags=None):
+	def display(self, jobtype=None, scene=None, frameRange=None, layers=None, flags=None):
 		""" Display the window.
 		"""
 		self.returnValue = False
+
+		print(jobtype, scene)
 
 		# Read user prefs config file - if it doesn't exist it will be created
 		#userPrefs.read()
@@ -168,15 +170,23 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 		# Set job type from Icarus environment when possible
 		if UI.ENVIRONMENT == "STANDALONE":
 			#self.jobType = userPrefs.query('rendersubmit', 'lastrenderjobtype', default=self.ui.jobType_comboBox.currentText())
-			self.jobType = self.ui.jobType_comboBox.currentText() # TEMP HACK
+			if jobtype:
+				self.jobType = jobtype
+			else:
+				self.jobType = self.ui.jobType_comboBox.currentText() # TEMP HACK
 			self.ui.jobType_comboBox.setCurrentIndex(self.ui.jobType_comboBox.findText(self.jobType))
+			if scene:
+				if self.jobType == 'Maya':
+					self.ui.mayaScene_comboBox.addItem(scene)
+				elif self.jobType == 'Nuke':
+					self.ui.nukeScript_comboBox.addItem(scene)
 			self.ui.camera_label.setEnabled(False)
 			self.ui.camera_comboBox.setEnabled(False)
 			self.ui.getCameras_toolButton.setEnabled(False)
 			self.ui.layerOptions_toolButton.setEnabled(False)
 			self.ui.writeNodeOptions_toolButton.setEnabled(False)
 			self.setJobType()
-			self.setSceneList()
+			#self.setSceneList()
 
 		elif UI.ENVIRONMENT == "MAYA":
 			self.jobType = "Maya"

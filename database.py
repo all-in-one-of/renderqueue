@@ -11,6 +11,8 @@
 import glob
 import json
 import os
+import re
+import time
 import uuid
 
 # Import custom modules
@@ -165,6 +167,12 @@ class RenderQueue():
 			return None
 
 
+	def getJobDatafile(self, jobID):
+		""" Return the path to the specified job's JSON data file.
+		"""
+		return os.path.join(self.db_jobs, '%s.json' %jobID)
+
+
 	def getTasks(self, jobID):
 		""" Read tasks for a specified job.
 		"""
@@ -249,15 +257,6 @@ class RenderQueue():
 		return None
 
 
-	def dequeueTask(self, jobID, taskID, workerID):
-		"""
-		"""
-		filename = os.path.join(self.db_queued, '%s_%s.json' %(jobID, str(taskID).zfill(4)))
-		dst = os.path.join(self.db_workers, workerID)
-
-		oswrapper.move(filename, dst)
-
-
 	def updateTaskStatus(self, jobID, taskID, progress):
 		""" Update task progress.
 		"""
@@ -270,12 +269,34 @@ class RenderQueue():
 		# 		self.saveXML()
 
 
+	def dequeueTask(self, jobID, taskID, workerID):
+		"""
+		"""
+		#self.startTimeSec = time.time()  # Used to measure the time spent rendering
+		#startTime = time.strftime(self.time_format)
+
+		filename = os.path.join(self.db_queued, '%s_%s.json' %(jobID, str(taskID).zfill(4)))
+		task = self.read(filename)
+		task['startTime'] = time.time()
+		task.pop('endTime', None)
+		self.write(task, filename)
+
+		dst = os.path.join(self.db_workers, workerID)
+
+		oswrapper.move(filename, dst)
+
+
 	def completeTask(self, jobID, taskID, worker=None, taskTime=0):
 		""" Mark the specified task as 'Done'.
 		"""
 		path = '%s/*/*/%s_%s.json' %(self.db_root, jobID, str(taskID).zfill(4))
 		for filename in glob.glob(path):
 			if 'completed' not in filename:
+				task = self.read(filename)
+				if 'endTime' not in task:
+					task['endTime'] = time.time()
+				self.write(task, filename)
+
 				oswrapper.move(filename, self.db_completed)
 
 		# self.loadXML(quiet=True) # reload XML data
@@ -298,6 +319,11 @@ class RenderQueue():
 		path = '%s/*/*/%s_%s.json' %(self.db_root, jobID, str(taskID).zfill(4))
 		for filename in glob.glob(path):
 			if 'failed' not in filename:
+				task = self.read(filename)
+				if 'endTime' not in task:
+					task['endTime'] = time.time()
+				self.write(task, filename)
+
 				oswrapper.move(filename, self.db_failed)
 
 		# self.loadXML(quiet=True) # reload XML data
@@ -320,6 +346,11 @@ class RenderQueue():
 		path = '%s/*/*/%s_%s.json' %(self.db_root, jobID, str(taskID).zfill(4))
 		for filename in glob.glob(path):
 			if 'queued' not in filename:
+				task = self.read(filename)
+				task.pop('startTime', None)
+				task.pop('endTime', None)
+				self.write(task, filename)
+
 				oswrapper.move(filename, self.db_queued)
 
 		# self.loadXML(quiet=True) # reload XML data
@@ -388,6 +419,31 @@ class RenderQueue():
 		workerID = uuid.uuid4().hex  # Generate UUID
 		kwargs['id'] = workerID
 
+		# Check name is unique...
+		# Look for numeric suffix in brackets, replace with n hashes
+		name_ls = []
+		for name in self.getWorkerNames():
+			suffix_pattern = re.compile(r" \([0-9]*\)$")
+			suffix = re.findall(suffix_pattern, name)
+			if suffix:
+				num_suffix = re.findall(r"\d+", str(suffix))
+				num_suffix = int(num_suffix[0])
+			else:
+				num_suffix = 0
+
+			hashes = "#" * num_suffix
+			new_name = re.sub(suffix_pattern, hashes, name)
+			name_ls.append(new_name)
+
+		# Keep appending hashes until name is unique
+		name = kwargs['name']
+		while name in name_ls:
+			name += "#"
+
+		# Replace hashes with number
+		num_suffix = name.count('#')
+		kwargs['name'] = re.sub(r"\#+$", " (%d)" %num_suffix, name)
+
 		# Create worker folder and data file
 		workerdir = os.path.join(self.db_workers, workerID)
 		oswrapper.createDir(workerdir)
@@ -421,11 +477,30 @@ class RenderQueue():
 		return workers
 
 
+	def getWorkerNames(self):
+		""" Return a list of worker names in the database.
+		"""
+		workerNames = []
+		# Read data from each worker entry
+		path = '%s/*/workerinfo.json' %self.db_workers
+		for filename in glob.glob(path):
+			worker = self.read(filename)
+			workerNames.append(worker['name'])
+
+		return workerNames
+
+
 	def getWorker(self, workerID):
 		""" Get a specific worker.
 		"""
 		filename = os.path.join(self.db_workers, workerID, 'workerinfo.json')
 		return self.read(filename)
+
+
+	def getWorkerDatafile(self, workerID):
+		""" Return the path to the specified worker's JSON data file.
+		"""
+		return os.path.join(self.db_workers, workerID, 'workerinfo.json')
 
 
 	def deleteWorker(self, workerID):
@@ -451,6 +526,6 @@ class RenderQueue():
 		worker = self.read(datafile)
 		if worker['status'] != status:
 			worker['status'] = status
-			print(worker['status'])
+			#print(worker['status'])
 			self.write(worker, datafile)
 

@@ -179,12 +179,14 @@ class RenderQueueApp(QtWidgets.QMainWindow, UI.TemplateUI):
 		self.ui.actionExit.setIcon(self.iconSet('application-exit.svg'))
 
 		# Job menu & toolbar
-		#self.ui.actionEdit.triggered.connect(self.editJob)  # not yet implemented
+		self.ui.actionEditJob.triggered.connect(self.editJob)
+		self.ui.actionEditJob.setIcon(self.iconSet('edit.svg'))
 
 		self.ui.actionBrowse.triggered.connect(self.launchRenderBrowser)
 		self.ui.actionBrowse.setIcon(self.iconSet('view-preview.svg'))
 
-		self.ui.actionEdit.setIcon(self.iconSet('edit'))
+		# self.ui.actionViewJobLog.triggered.connect(self.viewJobLog)  # not yet implemented
+		# self.ui.actionViewJobLog.setIcon(self.iconSet('log.svg'))
 
 		self.ui.actionPause.triggered.connect(lambda *args: self.changePriority(0, absolute=True))  # this lambda function is what's causing the multiple windows issue, no idea why though
 		self.ui.actionPause.setIcon(self.iconSet('media-playback-pause.svg'))
@@ -213,6 +215,9 @@ class RenderQueueApp(QtWidgets.QMainWindow, UI.TemplateUI):
 		self.ui.jobPriority_slider.sliderReleased.connect(self.updatePriority)
 
 		# Task menu & toolbar
+		# self.ui.actionViewTaskLog.triggered.connect(self.viewTaskLog)  # not yet implemented
+		# self.ui.actionViewTaskLog.setIcon(self.iconSet('log.svg'))
+
 		self.ui.actionCompleteTask.triggered.connect(self.completeTask)
 		self.ui.actionCompleteTask.setIcon(self.iconSet('dialog-ok-apply.svg'))
 		self.ui.taskComplete_toolButton.clicked.connect(self.completeTask)
@@ -234,6 +239,9 @@ class RenderQueueApp(QtWidgets.QMainWindow, UI.TemplateUI):
 		self.ui.actionNewWorker.triggered.connect(self.newWorker)
 		self.ui.actionNewWorker.setIcon(self.iconSet('list-add.svg'))
 
+		self.ui.actionEditWorker.triggered.connect(self.editWorker)
+		self.ui.actionEditWorker.setIcon(self.iconSet('edit.svg'))
+
 		self.ui.actionStartWorker.triggered.connect(self.startWorker)
 		self.ui.actionStartWorker.setIcon(self.iconSet('media-playback-start.svg'))
 
@@ -245,6 +253,9 @@ class RenderQueueApp(QtWidgets.QMainWindow, UI.TemplateUI):
 
 		self.ui.actionDeleteWorker.triggered.connect(self.deleteWorker)
 		self.ui.actionDeleteWorker.setIcon(self.iconSet('edit-delete.svg'))
+
+		# self.ui.actionViewWorkerLog.triggered.connect(self.viewWorkerLog)  # not yet implemented
+		# self.ui.actionViewWorkerLog.setIcon(self.iconSet('log.svg'))
 
 		self.ui.actionRemote.triggered.connect(self.rdesktop)
 		self.ui.actionRemote.setIcon(self.iconSet('computer.png'))
@@ -289,15 +300,15 @@ class RenderQueueApp(QtWidgets.QMainWindow, UI.TemplateUI):
 		self.updateSelection()
 
 
-	def launchRenderSubmit(self):
+	def launchRenderSubmit(self, **kwargs):
 		""" Launch Render Submitter window.
 		"""
 		import submit
 		try:
-			self.renderSubmitUI.display()
+			self.renderSubmitUI.display(**kwargs)
 		except AttributeError:
 			self.renderSubmitUI = submit.RenderSubmitUI(parent=self)
-			self.renderSubmitUI.display()
+			self.renderSubmitUI.display(**kwargs)
 
 
 	def launchRenderBrowser(self):
@@ -484,6 +495,7 @@ Developers: %s
 
 			# Fill columns with data
 			renderJobItem.setText(0, job['jobName'])
+			renderJobItem.setIcon(0, self.iconSet('app_icon_%s.png' %job['jobType'].lower()))
 			renderJobItem.setText(1, job['jobID'])
 			renderJobItem.setText(2, job['jobType'])
 			renderJobItem.setText(3, job['frames'])
@@ -510,7 +522,16 @@ Developers: %s
 				# Get values from XML
 				taskID = str(task['taskNo']).zfill(4)  # Must match padding format in database.py
 				taskStatus = task['status']
-				taskTotalTime = 0
+
+				# Calculate elapsed time
+				try:
+					taskTotalTime = task['endTime'] - task['startTime']
+				except KeyError:
+					try:
+						taskTotalTime = time.time() - task['startTime']
+					except KeyError:
+						taskTotalTime = 0
+
 				try:
 					taskWorker = task['worker']
 				except KeyError:
@@ -915,18 +936,55 @@ Developers: %s
 	def deleteWorker(self):
 		""" Removes selected worker(s) from the database and updates the view.
 		"""
+		if self.promptDialog("Are you sure?", "Delete worker(s)"):
+			try:
+				for item in self.ui.workers_treeWidget.selectedItems():
+					workerID = item.text(1)
+
+					# Remove item from view
+					if self.rq.deleteWorker(workerID):
+						self.ui.workers_treeWidget.takeTopLevelItem(self.ui.workers_treeWidget.indexOfTopLevelItem(item))
+					# 	verbose.message("Job ID %s deleted." %jobID)
+					# else:
+					# 	verbose.warning("Job ID %s cannot be deleted while in progress." %jobID)
+
+				#self.updateQueueView()
+
+			except ValueError:
+				pass
+
+
+
+	def editJob(self):
+		""" Edit selected render job(s).
+			Currently just opens a text editor to edit the JSON file, in lieu
+			of a proper editor UI (currently linux only).
+		"""
+		try:
+			for item in self.ui.queue_treeWidget.selectedItems():
+				# If item has no parent then it must be a top level item, and
+				# therefore also a job
+				if not item.parent():
+					jobID = item.text(1)
+					os.system('xdg-open %s' %self.rq.getJobDatafile(jobID))
+
+			#self.updateWorkerView()
+
+		except ValueError:
+			pass
+
+
+	def editWorker(self):
+		""" Edit selected worker(s).
+			Currently just opens a text editor to edit the JSON file, in lieu
+			of a proper editor UI (currently linux only).
+		"""
 		try:
 			for item in self.ui.workers_treeWidget.selectedItems():
 				workerID = item.text(1)
+				os.system('xdg-open %s' %self.rq.getWorkerDatafile(workerID))
 
-				# Remove item from view
-				if self.rq.deleteWorker(workerID):
-					self.ui.workers_treeWidget.takeTopLevelItem(self.ui.workers_treeWidget.indexOfTopLevelItem(item))
-					#verbose.message("Job ID %s deleted." %jobID)
-				#else:
-				#	verbose.warning("Job ID %s cannot be deleted while in progress." %jobID)
-
-			#self.updateQueueView()
+			#self.updateWorkerView()
 
 		except ValueError:
 			pass
@@ -1102,15 +1160,15 @@ Developers: %s
 
 			for workerID in workerIDs:
 				if status == "Disabled":
-					print("Disabled " + workerID)
+					#print("Disabled " + workerID)
 					# self.rq.requeueTask(workerID[0], workerID[1])
 					self.rq.setWorkerStatus(workerID, "Disabled")
 				elif status == "Idle":
-					print("Idle " + workerID)
+					#print("Idle " + workerID)
 					# self.rq.completeTask(workerID[0], workerID[1], taskTime=0)
 					self.rq.setWorkerStatus(workerID, "Idle")
 				elif status == "Rendering":
-					print("Rendering " + workerID)
+					#print("Rendering " + workerID)
 					# self.rq.failTask(workerID[0], workerID[1], taskTime=0)
 					self.rq.setWorkerStatus(workerID, "Rendering")
 
@@ -1183,8 +1241,8 @@ Developers: %s
 		self.renderTaskInterrupted = False
 		self.renderTaskErrors = 0
 		self.renderOutput = ""
-		self.startTimeSec = time.time()  # Used to measure the time spent rendering
-		startTime = time.strftime(self.time_format)
+		# self.startTimeSec = time.time()  # Used to measure the time spent rendering
+		# startTime = time.strftime(self.time_format)
 
 		# Look for a suitable task to render
 		task = self.rq.getTaskToRender()
@@ -1269,6 +1327,49 @@ Developers: %s
 		# 	elapsedTimeSec = time.time() - self.startTimeSec
 		# 	self.ui.runningTime_label.setText( str(datetime.timedelta(seconds=int(elapsedTimeSec))) )
 		# 	# this could also update the appropriate render queue tree widget item, if I can figure out how to do that
+
+
+	def dragEnterEvent(self, e):
+		if e.mimeData().hasUrls:
+			e.accept()
+		else:
+			e.ignore()
+
+
+	def dragMoveEvent(self, e):
+		if e.mimeData().hasUrls:
+			e.accept()
+		else:
+			e.ignore()
+
+
+	def dropEvent(self, e):
+		""" Event handler for files dropped on to the widget.
+		"""
+		if e.mimeData().hasUrls:
+			e.setDropAction(QtCore.Qt.CopyAction)
+			e.accept()
+			for url in e.mimeData().urls():
+				# # Workaround for macOS dragging and dropping
+				# if os.environ['IC_RUNNING_OS'] == "MacOS":
+				# 	fname = str(NSURL.URLWithString_(str(url.toString())).filePathURL().path())
+				# else:
+				# 	fname = str(url.toLocalFile())
+				fname = str(url.toLocalFile())
+
+			#self.fname = fname
+			#verbose.print_("Dropped '%s' on to window." %fname)
+			print("Dropped '%s' on to window." %fname)
+			if os.path.isdir(fname):
+				pass
+			elif os.path.isfile(fname):
+				filetype = os.path.splitext(fname)[1]
+				if filetype in ['.ma', '.mb']:  # Maya files
+					self.launchRenderSubmit(jobtype='Maya', scene=fname)
+				if filetype in ['.nk', ]:  # Nuke files
+					self.launchRenderSubmit(jobtype='Nuke', scene=fname)
+		else:
+			e.ignore()
 
 
 	def showEvent(self, event):

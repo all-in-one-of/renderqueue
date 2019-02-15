@@ -92,11 +92,11 @@ class WorkerThread(QtCore.QThread):
 
 			# Set executable (rewrite this to use app paths / versions)
 			if platform.system() == "Windows":
-				args.append('C:/Program Files/Autodesk/Maya2016/bin/Render.exe')
+				args.append('C:/Program Files/Autodesk/Maya2018/bin/Render.exe')
 			elif platform.system() == "Darwin":
-				args.append('/Applications/Autodesk/maya2016/Maya.app/Contents/bin/Render')
+				args.append('/Applications/Autodesk/maya2018/Maya.app/Contents/bin/Render')
 			else:
-				args.append('/usr/autodesk/maya2016/bin/Render')
+				args.append('/usr/autodesk/maya2018/bin/Render')
 
 			args.append('-proj')
 			args.append(self.job['mayaProject'])
@@ -120,21 +120,41 @@ class WorkerThread(QtCore.QThread):
 			args.append(self.job['scene'])
 
 		elif self.job['jobType'] == "Nuke":
-			renderCmd = self.rq.getValue(jobElement, 'nukeRenderCmd')
-			scriptName = self.rq.getValue(jobElement, 'nukeScript')
+			# renderCmd = self.rq.getValue(jobElement, 'nukeRenderCmd')
+			# scriptName = self.rq.getValue(jobElement, 'nukeScript')
 
-			cmdStr = ''
-			args = ''
+			# cmdStr = ''
+			# args = ''
 
-			nukeFlags = self.rq.getValue(jobElement, 'nukeFlags')
-			if nukeFlags is not None:
-				args += ' %s' %nukeFlags
+			# nukeFlags = self.rq.getValue(jobElement, 'nukeFlags')
+			# if nukeFlags is not None:
+			# 	args += ' %s' %nukeFlags
 
-			# Construct command(s)
-			if frameList == 'Unknown':
-				cmdStr = '"%s" %s -x "%s"' %(renderCmd, args, scriptName)
+			# # Construct command(s)
+			# if frameList == 'Unknown':
+			# 	cmdStr = '"%s" %s -x "%s"' %(renderCmd, args, scriptName)
+			# else:
+			# 	cmdStr += '"%s" %s -F %s -x "%s"' %(renderCmd, args, frameList, scriptName)
+
+			# Set executable (rewrite this to use app paths / versions)
+			if platform.system() == "Windows":
+				args.append('C:/Program Files/Nuke10.0v3/Nuke10.0.exe')
+			elif platform.system() == "Darwin":
+				args.append('/Applications/Nuke10.0v3/Nuke10.0v3.app/Contents/MacOS/Nuke10.0v3')
 			else:
-				cmdStr += '"%s" %s -F %s -x "%s"' %(renderCmd, args, frameList, scriptName)
+				args.append('/usr/local/bin/nuke')
+
+			if self.job['flags']:
+				args.append(self.job['flags'])
+
+			if frameList == "Unknown":
+				pass
+			else:
+				args.append('-F')
+				args.append(self.task['frames'])
+
+			args.append('-x')
+			args.append(self.job['scene'])
 
 	# Set rendering status
 	# verbose.print_(cmdStr, 4)

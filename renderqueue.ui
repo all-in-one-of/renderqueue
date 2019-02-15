@@ -10,6 +10,9 @@
     <height>576</height>
    </rect>
   </property>
+  <property name="acceptDrops">
+   <bool>true</bool>
+  </property>
   <property name="windowTitle">
    <string>Render Queue</string>
   </property>
@@ -500,6 +503,9 @@
           </property>
           <item>
            <widget class="QToolButton" name="workerControl_toolButton">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <property name="minimumSize">
              <size>
               <width>64</width>
@@ -507,7 +513,7 @@
              </size>
             </property>
             <property name="text">
-             <string>Render</string>
+             <string>Worker</string>
             </property>
             <property name="icon">
              <iconset>
@@ -540,6 +546,9 @@
        <enum>Qt::Vertical</enum>
       </property>
       <widget class="QTreeWidget" name="queue_treeWidget">
+       <property name="acceptDrops">
+        <bool>true</bool>
+       </property>
        <property name="alternatingRowColors">
         <bool>true</bool>
        </property>
@@ -705,7 +714,7 @@
     <property name="title">
      <string>Job</string>
     </property>
-    <addaction name="actionEdit"/>
+    <addaction name="actionEditJob"/>
     <addaction name="actionBrowse"/>
     <addaction name="actionViewJobLog"/>
     <addaction name="separator"/>
@@ -732,7 +741,7 @@
      <string>Worker</string>
     </property>
     <addaction name="actionNewWorker"/>
-    <addaction name="actionWorkerProperties"/>
+    <addaction name="actionEditWorker"/>
     <addaction name="actionRemote"/>
     <addaction name="actionDeleteWorker"/>
     <addaction name="actionViewWorkerLog"/>
@@ -788,9 +797,9 @@
     <string>Resubmit</string>
    </property>
   </action>
-  <action name="actionEdit">
+  <action name="actionEditJob">
    <property name="text">
-    <string>Properties...</string>
+    <string>Edit...</string>
    </property>
   </action>
   <action name="actionCompleteTask">
@@ -889,9 +898,9 @@
     <string>Mark as Failed</string>
    </property>
   </action>
-  <action name="actionWorkerProperties">
+  <action name="actionEditWorker">
    <property name="text">
-    <string>Properties...</string>
+    <string>Edit...</string>
    </property>
   </action>
   <action name="actionViewWorkerLog">

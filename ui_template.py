@@ -185,16 +185,20 @@ class TemplateUI(object):
 	def promptDialog(self, message, title="Message", conf=False, modal=True):
 		""" Opens a message box dialog.
 		"""
-		msgBox = QtWidgets.QMessageBox(parent=self)
-		msgBox.setWindowTitle(title)
-		msgBox.setText(title)
-		msgBox.setInformativeText(message)
+		message_box = QtWidgets.QMessageBox(parent=self)
+		message_box.setWindowTitle(title)
+		message_box.setText(title)
+		message_box.setInformativeText(message)
 		if conf:
-			msgBox.setStandardButtons(QtWidgets.QMessageBox.Ok)
+			message_box.setStandardButtons(QtWidgets.QMessageBox.Ok)
 		else:
-			msgBox.setStandardButtons(QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel)
-		msgBox.setDefaultButton(QtWidgets.QMessageBox.Ok);
-		return msgBox.exec_()
+			message_box.setStandardButtons(QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel)
+		message_box.setDefaultButton(QtWidgets.QMessageBox.Ok);
+
+		if message_box.exec_() == message_box.Cancel:
+			return False
+		else:
+			return True
 
 
 	def fileDialog(self, startingDir, fileFilter='All files (*.*)'):
@@ -473,7 +477,10 @@ class TemplateUI(object):
 
 	def iconSet(self, icon_name, tintNormal=True):
 		""" Return a QIcon using the specified image.
-			Generate pixmaps for normal/disabled/active/selected states.
+			Generate tinted pixmaps for normal/disabled/active/selected
+			states.
+			tintNormal (bool): whether to tint the normal state icon or leave
+			it as-is.
 		"""
 		icon = QtGui.QIcon()
 		if tintNormal:
@@ -511,60 +518,6 @@ class TemplateUI(object):
 			painter.end()
 
 		return pixmap
-
-
-	# def iconSetSVG(self, icon_name):
-	# 	""" Return a QIcon using the specified SVG image.
-	# 		Generate pixmaps for normal/disabled/active/selected states.
-	# 	"""
-	# 	icon = QtGui.QIcon()
-	# 	icon.addPixmap(self.setTintedIconSVG(icon_name, self.col['text']), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-	# 	# icon.addPixmap(self.setTintedIconSVG(icon_name), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-	# 	icon.addPixmap(self.setTintedIconSVG(icon_name, self.col['disabled']), QtGui.QIcon.Disabled, QtGui.QIcon.Off)
-	# 	icon.addPixmap(self.setTintedIconSVG(icon_name, self.col['highlighted-text']), QtGui.QIcon.Active, QtGui.QIcon.Off)
-	# 	icon.addPixmap(self.setTintedIconSVG(icon_name, self.col['highlighted-text']), QtGui.QIcon.Selected, QtGui.QIcon.Off)
-	# 	return icon
-
-
-	# def setTintedIconSVG(self, icon_name, tint=None):
-	# 	""" Return a QIcon using the specified PNG image.
-	# 		If tint (QColor) is given, tint the image with the given color.
-	# 	"""
-	# 	w, h = 64, 64
-	# 	svg_renderer = QtSvg.QSvgRenderer(self.checkFilePath('icons/%s.svg' %icon_name))
-	# 	image = QtGui.QImage(w, h, QtGui.QImage.Format_ARGB32)
-	# 	image.fill(0x00000000) # Set the ARGB to 0 to prevent rendering artifacts
-	# 	svg_renderer.render(QtGui.QPainter(image))
-	# 	pixmap = QtGui.QPixmap.fromImage(image)
-
-	# 	# Initialize painter to draw on a pixmap and set composition mode
-	# 	if tint is not None:
-	# 		painter = QtGui.QPainter()
-	# 		painter.begin(pixmap)
-	# 		painter.setCompositionMode(painter.CompositionMode_SourceIn)
-	# 		painter.setBrush(tint)
-	# 		painter.setPen(tint)
-	# 		painter.drawRect(pixmap.rect())
-	# 		painter.end()
-
-	# 	return pixmap
-	# 	# icon = QtGui.QIcon(pixmap)
-	# 	# return icon
-
-
-	# def setSVGIcon(self, icon_name):
-	# 	""" Return a QIcon using the specified SVG image.
-	# 	"""
-	# 	w, h = 64, 64
-	# 	svg_renderer = QtSvg.QSvgRenderer(self.checkFilePath('icons/%s.svg' %icon_name))
-	# 	image = QtGui.QImage(w, h, QtGui.QImage.Format_ARGB32)
-	# 	image.fill(0x00000000) # Set the ARGB to 0 to prevent rendering artifacts
-	# 	svg_renderer.render(QtGui.QPainter(image))
-	# 	pixmap = QtGui.QPixmap.fromImage(image)
-
-	# 	icon = QtGui.QIcon(pixmap)
-
-	# 	return icon
 
 
 	def toggleExpertWidgets(self, isExpertMode, parentObject):
