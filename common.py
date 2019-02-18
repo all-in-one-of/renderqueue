@@ -3,7 +3,7 @@
 # render_common.py
 #
 # Mike Bonnington <mjbonnington@gmail.com>
-# (c) 2016-2018
+# (c) 2016-2019
 #
 # This module contains some common functions for the rendering modules.
 
@@ -11,7 +11,7 @@
 import os
 
 # Import custom modules
-#import osOps
+import oswrapper
 
 
 def settings_file(scene, suffix=""):
@@ -21,13 +21,14 @@ def settings_file(scene, suffix=""):
 	if os.path.isfile(scene):
 		sceneDir, sceneFile = os.path.split(scene)
 		# settingsDir = os.path.join(sceneDir, os.environ['IC_METADATA'])
-		# settingsFile = osOps.sanitize(sceneFile, replace='_') + suffix
+		settingsFile = oswrapper.sanitize(sceneFile, replace='_') + suffix
 
 		# # Create settings directory if it doesn't exist
 		# if not os.path.isdir(settingsDir):
-		# 	osOps.createDir(settingsDir)
+		# 	oswrapper.createDir(settingsDir)
 
 		# return os.path.join(settingsDir, settingsFile)
+		return os.path.join('/var/tmp', settingsFile)  # temp - linux only
 
 	else:
 		return False

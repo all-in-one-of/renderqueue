@@ -42,7 +42,7 @@ import worker
 VENDOR = ""
 COPYRIGHT = "(c) 2015-2019"
 DEVELOPERS = "Mike Bonnington"
-os.environ['RQ_VERSION'] = "0.2.0"
+os.environ['RQ_VERSION'] = "0.2.1"
 
 # Set window title and object names
 WINDOW_TITLE = "Render Queue"
@@ -53,7 +53,7 @@ UI_FILE = 'renderqueue.ui'
 STYLESHEET = 'style.qss'  # Set to None to use the parent app's stylesheet
 
 # Other options
-PREFS_FILE = 'userprefs.json'
+PREFS_FILE = 'config/userprefs.json'
 STORE_WINDOW_GEOMETRY = True
 
 
@@ -329,14 +329,17 @@ class RenderQueueApp(QtWidgets.QMainWindow, UI.TemplateUI):
 		except ValueError:
 			pass
 
+		# hackery to get this functional...
 		os.environ['MAYADIR'] = mayaproj
-		directory = oswrapper.absolutePath(output[''][0])
-		directory = os.path.split(directory)[:-1][0]
+		for key in output.keys():
+			directory = oswrapper.absolutePath(output[key][0])
+			directory = os.path.split(directory)[:-1][0]
 		print(directory)
 
 		import browser
 		try:
-			self.renderBrowserUI.display()
+			self.renderBrowserUI.display(
+				directory=directory, frameRange=frameRange)
 		except AttributeError:
 			self.renderBrowserUI = browser.RenderBrowserUI(parent=self)
 			self.renderBrowserUI.display(
@@ -351,7 +354,7 @@ class RenderQueueApp(QtWidgets.QMainWindow, UI.TemplateUI):
 		result = self.settingsEditor.display(settingsType=WINDOW_TITLE, 
 		                                     categoryLs=['user', 'database'], 
 		                                     startPanel=None, 
-		                                     datafile='userprefs.json', 
+		                                     datafile='config/userprefs.json', 
 		                                     inherit=None, 
 		                                     autoFill=False)
 
@@ -378,9 +381,14 @@ class RenderQueueApp(QtWidgets.QMainWindow, UI.TemplateUI):
 	def about(self):
 		""" Show about dialog.
 		"""
-		info_str = ""
+		info_ls = []
+		sep = " | "
 		for key, value in self.getInfo().items():
-			info_str += "{} {}\n".format(key, value)
+			if key in ['Environment', 'OS']:
+				pass
+			else:
+				info_ls.append("{} {} ".format(key, value))
+		info_str = sep.join(info_ls)
 
 		about_msg = """
 %s
@@ -394,7 +402,7 @@ Developers: %s
 	  DEVELOPERS, COPYRIGHT, VENDOR, info_str)
 
 		aboutDialog = about.AboutDialog(parent=self)
-		aboutDialog.display(image="about_bg.jpg", message=about_msg)
+		aboutDialog.display(image='config/splash/scott-goodwill-408543-unsplash.jpg', message=about_msg)
 
 
 	# @QtCore.Slot()
@@ -1442,6 +1450,9 @@ Developers: %s
 
 if __name__ == "__main__":
 	app = QtWidgets.QApplication(sys.argv)
+
+	# Add missing image format plugins (only needed for PyQt4 on Linux?)
+	QtWidgets.QApplication.addLibraryPath(os.getcwd())
 
 	# Apply 'Fusion' application style for Qt5
 	styles = QtWidgets.QStyleFactory.keys()

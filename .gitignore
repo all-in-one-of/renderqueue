@@ -23,5 +23,6 @@ Thumbs.db
 *.tar
 *.zip
 
-#Data files
+#Data files, configs and databases
 *.json
+rq_database

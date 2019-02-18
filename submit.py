@@ -85,6 +85,19 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 		self.shortcutExpertMode.setKey('Ctrl+Shift+E')
 		self.shortcutExpertMode.activated.connect(self.toggleExpertMode)
 
+		# Set icons (temp)
+		self.ui.commandBrowse_toolButton.setIcon(self.iconSet('folder-open-symbolic.svg'))
+		self.ui.mayaSceneBrowse_toolButton.setIcon(self.iconSet('folder-open-symbolic.svg'))
+		self.ui.nukeScriptBrowse_toolButton.setIcon(self.iconSet('folder-open-symbolic.svg'))
+
+		self.ui.getCameras_toolButton.setIcon(self.iconSet('view-refresh.svg'))
+		self.ui.getPools_toolButton.setIcon(self.iconSet('view-refresh.svg'))
+		self.ui.getGroups_toolButton.setIcon(self.iconSet('view-refresh.svg'))
+
+		self.ui.frameListOptions_toolButton.setIcon(self.iconSet('configure.svg'))
+		self.ui.layerOptions_toolButton.setIcon(self.iconSet('configure.svg'))
+		self.ui.writeNodeOptions_toolButton.setIcon(self.iconSet('configure.svg'))
+
 		# Connect signals & slots
 		self.ui.submitTo_comboBox.currentIndexChanged.connect(self.setQueueManagerFromComboBox)
 		self.ui.jobType_comboBox.currentIndexChanged.connect(self.setJobTypeFromComboBox)
@@ -144,7 +157,7 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 		"""
 		self.returnValue = False
 
-		print(jobtype, scene)
+		#print(jobtype, scene)
 
 		# Read user prefs config file - if it doesn't exist it will be created
 		#userPrefs.read()
@@ -284,10 +297,10 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 			comboBox = self.ui.nukeScript_comboBox
 		scene = self.makePathAbsolute(comboBox.currentText()).replace("\\", "/")
 
-		self.xmlData = common.settings_file(scene, suffix="_icSubmissionData.xml")
-		if self.xmlData:
-			self.xd.loadXML(self.xmlData, use_template=False)
-			self.setupWidgets(self.ui, updateOnly=True)
+		# self.xmlData = common.settings_file(scene, suffix="_icSubmissionData.xml")
+		# if self.xmlData:
+		# 	self.xd.loadXML(self.xmlData, use_template=False)
+		# 	self.setupWidgets(self.ui, updateOnly=True)
 
 
 	# @QtCore.Slot()
@@ -1035,8 +1048,11 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 		renderCmd = ""
 
 		# Instantiate render queue class, load data, and create new job
-		rq = self.parent.rq  # If running from Render Queue
-		#rq = database.RenderQueue()
+		try:
+			rq = self.parent.rq  # If running from Render Queue
+		except:
+			databaseLocation = '/mnt/anubis/PersonalJobs/999925_Mike_Bonnington/test/rq_database'  # temp assignment
+			rq = database.RenderQueue(databaseLocation)
 		#rq.loadXML(os.path.join(os.environ['IC_CONFIGDIR'], 'renderQueue.xml'), use_template=False)
 
 		try:

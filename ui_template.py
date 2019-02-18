@@ -137,22 +137,23 @@ class TemplateUI(object):
 			# Use QSettings to store window geometry and state.
 			# (Restore state may cause issues with PyQt5)
 			#if os.environ['IC_ENV'] == 'STANDALONE':
-			print("Restoring window geometry for '%s'." %self.objectName())
-			try:
-				self.settings = QtCore.QSettings(VENDOR, window_title)
-				self.restoreGeometry(self.settings.value("geometry", ""))
-				# self.restoreState(self.settings.value("windowState", ""))
-			except:
+			if ENVIRONMENT == 'STANDALONE':
+				print("Restoring window geometry for '%s'." %self.objectName())
+				try:
+					self.settings = QtCore.QSettings(VENDOR, window_title)
+					self.restoreGeometry(self.settings.value("geometry", ""))
+					# self.restoreState(self.settings.value("windowState", ""))
+				except:
+					pass
+
+			# Makes Maya perform magic which makes the window stay on top in
+			# OS X and Linux. As an added bonus, it'll make Maya remember the
+			# window position.
+			elif ENVIRONMENT == 'MAYA':
+				self.setProperty("saveWindowPref", True)
+
+			elif ENVIRONMENT == 'NUKE':
 				pass
-
-			# # Makes Maya perform magic which makes the window stay on top in
-			# # OS X and Linux. As an added bonus, it'll make Maya remember the
-			# # window position.
-			# elif os.environ['IC_ENV'] == 'MAYA':
-			# 	self.setProperty("saveWindowPref", True)
-
-			# elif os.environ['IC_ENV'] == 'NUKE':
-			# 	pass
 
 		# else:
 		# 	# Move to centre of active screen
@@ -952,15 +953,15 @@ class TemplateUI(object):
 		""" Store window geometry and state.
 			(Save state may cause issues with PyQt5)
 		"""
-		#if ENVIRONMENT == 'STANDALONE':
-		if self.store_window_geometry:
-			#if os.environ['IC_ENV'] == 'STANDALONE':
-			print("Storing window geometry for '%s'." %self.objectName())
-			try:
-				self.settings.setValue("geometry", self.saveGeometry())
-				# self.settings.setValue("windowState", self.saveState())
-			except:
-				pass
+		#if os.environ['IC_ENV'] == 'STANDALONE':
+		if ENVIRONMENT == 'STANDALONE':
+			if self.store_window_geometry:
+				print("Storing window geometry for '%s'." %self.objectName())
+				try:
+					self.settings.setValue("geometry", self.saveGeometry())
+					# self.settings.setValue("windowState", self.saveState())
+				except:
+					pass
 
 
 	# def showEvent(self, event):

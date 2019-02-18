@@ -7,7 +7,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>406</width>
+    <width>448</width>
     <height>512</height>
    </rect>
   </property>
@@ -22,7 +22,16 @@
     <property name="spacing">
      <number>0</number>
     </property>
-    <property name="margin">
+    <property name="leftMargin">
+     <number>0</number>
+    </property>
+    <property name="topMargin">
+     <number>0</number>
+    </property>
+    <property name="rightMargin">
+     <number>0</number>
+    </property>
+    <property name="bottomMargin">
      <number>0</number>
     </property>
     <item>
@@ -32,13 +41,13 @@
       </property>
       <layout class="QGridLayout" name="header_gridLayout">
        <property name="leftMargin">
-        <number>12</number>
+        <number>6</number>
        </property>
        <property name="topMargin">
         <number>6</number>
        </property>
        <property name="rightMargin">
-        <number>12</number>
+        <number>6</number>
        </property>
        <property name="bottomMargin">
         <number>6</number>
@@ -47,6 +56,19 @@
         <number>4</number>
        </property>
        <item row="0" column="1">
+        <spacer name="header_horizontalSpacer0">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>12</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="0" column="3">
         <widget class="QComboBox" name="submitTo_comboBox">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
@@ -66,7 +88,7 @@
          </item>
         </widget>
        </item>
-       <item row="0" column="3">
+       <item row="0" column="5">
         <widget class="QLabel" name="jobType_label">
          <property name="text">
           <string>Job type:</string>
@@ -76,17 +98,7 @@
          </property>
         </widget>
        </item>
-       <item row="0" column="0">
-        <widget class="QLabel" name="submitTo_label">
-         <property name="text">
-          <string>Submit to:</string>
-         </property>
-         <property name="buddy">
-          <cstring>submitTo_comboBox</cstring>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="4">
+       <item row="0" column="6">
         <widget class="QComboBox" name="jobType_comboBox">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
@@ -111,20 +123,20 @@
          </item>
         </widget>
        </item>
-       <item row="0" column="5">
+       <item row="0" column="7">
         <spacer name="header_horizontalSpacer2">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
          <property name="sizeHint" stdset="0">
           <size>
-           <width>40</width>
+           <width>12</width>
            <height>20</height>
           </size>
          </property>
         </spacer>
        </item>
-       <item row="0" column="2">
+       <item row="0" column="4">
         <spacer name="header_horizontalSpacer1">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
@@ -139,6 +151,16 @@
           </size>
          </property>
         </spacer>
+       </item>
+       <item row="0" column="2">
+        <widget class="QLabel" name="submitTo_label">
+         <property name="text">
+          <string>Submit to:</string>
+         </property>
+         <property name="buddy">
+          <cstring>submitTo_comboBox</cstring>
+         </property>
+        </widget>
        </item>
       </layout>
      </widget>
@@ -168,8 +190,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>389</width>
-         <height>546</height>
+         <width>435</width>
+         <height>605</height>
         </rect>
        </property>
        <property name="noBackground" stdset="0">
@@ -218,7 +240,16 @@
            <property name="verticalSpacing">
             <number>4</number>
            </property>
-           <property name="margin">
+           <property name="leftMargin">
+            <number>8</number>
+           </property>
+           <property name="topMargin">
+            <number>8</number>
+           </property>
+           <property name="rightMargin">
+            <number>8</number>
+           </property>
+           <property name="bottomMargin">
             <number>8</number>
            </property>
            <item row="0" column="0">
@@ -242,9 +273,18 @@
              </property>
              <layout class="QHBoxLayout" name="command_horizontalLayout">
               <property name="spacing">
-               <number>2</number>
+               <number>0</number>
               </property>
-              <property name="margin">
+              <property name="leftMargin">
+               <number>0</number>
+              </property>
+              <property name="topMargin">
+               <number>0</number>
+              </property>
+              <property name="rightMargin">
+               <number>0</number>
+              </property>
+              <property name="bottomMargin">
                <number>0</number>
               </property>
               <item>
@@ -265,11 +305,6 @@
                 <property name="text">
                  <string>...</string>
                 </property>
-                <property name="icon">
-                 <iconset>
-                  <normaloff>:/rsc/rsc/icon_folder.png</normaloff>
-                  <disabledoff>:/rsc/rsc/icon_folder_disabled.png</disabledoff>:/rsc/rsc/icon_folder.png</iconset>
-                </property>
                 <property name="iconSize">
                  <size>
                   <width>15</width>
@@ -281,6 +316,9 @@
                 </property>
                 <property name="noBackground" stdset="0">
                  <bool>false</bool>
+                </property>
+                <property name="attach" stdset="0">
+                 <bool>true</bool>
                 </property>
                </widget>
               </item>
@@ -294,9 +332,18 @@
              </property>
              <layout class="QHBoxLayout" name="flags_horizontalLayout">
               <property name="spacing">
-               <number>2</number>
+               <number>4</number>
               </property>
-              <property name="margin">
+              <property name="leftMargin">
+               <number>0</number>
+              </property>
+              <property name="topMargin">
+               <number>0</number>
+              </property>
+              <property name="rightMargin">
+               <number>0</number>
+              </property>
+              <property name="bottomMargin">
                <number>0</number>
               </property>
               <item>
@@ -348,7 +395,16 @@
            <property name="verticalSpacing">
             <number>4</number>
            </property>
-           <property name="margin">
+           <property name="leftMargin">
+            <number>8</number>
+           </property>
+           <property name="topMargin">
+            <number>8</number>
+           </property>
+           <property name="rightMargin">
+            <number>8</number>
+           </property>
+           <property name="bottomMargin">
             <number>8</number>
            </property>
            <item row="0" column="0">
@@ -386,9 +442,18 @@
              </property>
              <layout class="QHBoxLayout" name="mayaScene_horizontalLayout">
               <property name="spacing">
-               <number>2</number>
+               <number>4</number>
               </property>
-              <property name="margin">
+              <property name="leftMargin">
+               <number>0</number>
+              </property>
+              <property name="topMargin">
+               <number>0</number>
+              </property>
+              <property name="rightMargin">
+               <number>0</number>
+              </property>
+              <property name="bottomMargin">
                <number>0</number>
               </property>
               <item>
@@ -415,11 +480,6 @@
                 <property name="text">
                  <string>...</string>
                 </property>
-                <property name="icon">
-                 <iconset>
-                  <normaloff>:/rsc/rsc/icon_folder.png</normaloff>
-                  <disabledoff>:/rsc/rsc/icon_folder_disabled.png</disabledoff>:/rsc/rsc/icon_folder.png</iconset>
-                </property>
                 <property name="iconSize">
                  <size>
                   <width>15</width>
@@ -444,9 +504,18 @@
              </property>
              <layout class="QHBoxLayout" name="camera_horizontalLayout">
               <property name="spacing">
-               <number>2</number>
+               <number>4</number>
               </property>
-              <property name="margin">
+              <property name="leftMargin">
+               <number>0</number>
+              </property>
+              <property name="topMargin">
+               <number>0</number>
+              </property>
+              <property name="rightMargin">
+               <number>0</number>
+              </property>
+              <property name="bottomMargin">
                <number>0</number>
               </property>
               <item>
@@ -474,12 +543,7 @@
                  <string>Get camaras from Maya</string>
                 </property>
                 <property name="text">
-                 <string>Get Cameras</string>
-                </property>
-                <property name="icon">
-                 <iconset>
-                  <normaloff>:/rsc/rsc/icon_refresh.png</normaloff>
-                  <disabledoff>:/rsc/rsc/icon_refresh_disabled.png</disabledoff>:/rsc/rsc/icon_refresh.png</iconset>
+                 <string>Get</string>
                 </property>
                 <property name="iconSize">
                  <size>
@@ -505,9 +569,18 @@
              </property>
              <layout class="QHBoxLayout" name="layers_horizontalLayout">
               <property name="spacing">
-               <number>2</number>
+               <number>0</number>
               </property>
-              <property name="margin">
+              <property name="leftMargin">
+               <number>0</number>
+              </property>
+              <property name="topMargin">
+               <number>0</number>
+              </property>
+              <property name="rightMargin">
+               <number>0</number>
+              </property>
+              <property name="bottomMargin">
                <number>0</number>
               </property>
               <item>
@@ -528,22 +601,11 @@
               </item>
               <item>
                <widget class="QToolButton" name="layerOptions_toolButton">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
                 <property name="toolTip">
                  <string>Render layer options</string>
                 </property>
                 <property name="text">
-                 <string>Frame list options</string>
-                </property>
-                <property name="icon">
-                 <iconset>
-                  <normaloff>:/rsc/rsc/icon_settings.png</normaloff>
-                  <disabledoff>:/rsc/rsc/icon_settings_disabled.png</disabledoff>:/rsc/rsc/icon_settings.png</iconset>
+                 <string>Options</string>
                 </property>
                 <property name="iconSize">
                  <size>
@@ -560,6 +622,9 @@
                 <property name="noBackground" stdset="0">
                  <bool>false</bool>
                 </property>
+                <property name="attach" stdset="0">
+                 <bool>true</bool>
+                </property>
                </widget>
               </item>
              </layout>
@@ -574,7 +639,16 @@
               <property name="spacing">
                <number>12</number>
               </property>
-              <property name="margin">
+              <property name="leftMargin">
+               <number>0</number>
+              </property>
+              <property name="topMargin">
+               <number>0</number>
+              </property>
+              <property name="rightMargin">
+               <number>0</number>
+              </property>
+              <property name="bottomMargin">
                <number>0</number>
               </property>
               <item>
@@ -673,7 +747,16 @@
            <property name="verticalSpacing">
             <number>4</number>
            </property>
-           <property name="margin">
+           <property name="leftMargin">
+            <number>8</number>
+           </property>
+           <property name="topMargin">
+            <number>8</number>
+           </property>
+           <property name="rightMargin">
+            <number>8</number>
+           </property>
+           <property name="bottomMargin">
             <number>8</number>
            </property>
            <item row="1" column="0">
@@ -697,9 +780,18 @@
              </property>
              <layout class="QHBoxLayout" name="nukeScript_horizontalLayout">
               <property name="spacing">
-               <number>2</number>
+               <number>4</number>
               </property>
-              <property name="margin">
+              <property name="leftMargin">
+               <number>0</number>
+              </property>
+              <property name="topMargin">
+               <number>0</number>
+              </property>
+              <property name="rightMargin">
+               <number>0</number>
+              </property>
+              <property name="bottomMargin">
                <number>0</number>
               </property>
               <item>
@@ -726,11 +818,6 @@
                 <property name="text">
                  <string>...</string>
                 </property>
-                <property name="icon">
-                 <iconset>
-                  <normaloff>:/rsc/rsc/icon_folder.png</normaloff>
-                  <disabledoff>:/rsc/rsc/icon_folder_disabled.png</disabledoff>:/rsc/rsc/icon_folder.png</iconset>
-                </property>
                 <property name="iconSize">
                  <size>
                   <width>15</width>
@@ -755,9 +842,18 @@
              </property>
              <layout class="QHBoxLayout" name="writeNodes_horizontalLayout">
               <property name="spacing">
-               <number>2</number>
+               <number>0</number>
               </property>
-              <property name="margin">
+              <property name="leftMargin">
+               <number>0</number>
+              </property>
+              <property name="topMargin">
+               <number>0</number>
+              </property>
+              <property name="rightMargin">
+               <number>0</number>
+              </property>
+              <property name="bottomMargin">
                <number>0</number>
               </property>
               <item>
@@ -778,22 +874,11 @@
               </item>
               <item>
                <widget class="QToolButton" name="writeNodeOptions_toolButton">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
                 <property name="toolTip">
                  <string>Write node options</string>
                 </property>
                 <property name="text">
                  <string>Options</string>
-                </property>
-                <property name="icon">
-                 <iconset>
-                  <normaloff>:/rsc/rsc/icon_settings.png</normaloff>
-                  <disabledoff>:/rsc/rsc/icon_settings_disabled.png</disabledoff>:/rsc/rsc/icon_settings.png</iconset>
                 </property>
                 <property name="iconSize">
                  <size>
@@ -810,6 +895,9 @@
                 <property name="noBackground" stdset="0">
                  <bool>false</bool>
                 </property>
+                <property name="attach" stdset="0">
+                 <bool>true</bool>
+                </property>
                </widget>
               </item>
              </layout>
@@ -821,14 +909,23 @@
               <number>0</number>
              </property>
              <layout class="QGridLayout" name="nukeOptions_gridLayout">
+              <property name="leftMargin">
+               <number>0</number>
+              </property>
+              <property name="topMargin">
+               <number>0</number>
+              </property>
+              <property name="rightMargin">
+               <number>0</number>
+              </property>
+              <property name="bottomMargin">
+               <number>0</number>
+              </property>
               <property name="horizontalSpacing">
                <number>12</number>
               </property>
               <property name="verticalSpacing">
                <number>4</number>
-              </property>
-              <property name="margin">
-               <number>0</number>
               </property>
               <item row="0" column="1">
                <widget class="QCheckBox" name="useNukeX_checkBox">
@@ -902,7 +999,16 @@
            <property name="verticalSpacing">
             <number>4</number>
            </property>
-           <property name="margin">
+           <property name="leftMargin">
+            <number>8</number>
+           </property>
+           <property name="topMargin">
+            <number>8</number>
+           </property>
+           <property name="rightMargin">
+            <number>8</number>
+           </property>
+           <property name="bottomMargin">
             <number>8</number>
            </property>
            <item row="0" column="0">
@@ -926,9 +1032,18 @@
              </property>
              <layout class="QHBoxLayout" name="frames_horizontalLayout">
               <property name="spacing">
-               <number>2</number>
+               <number>0</number>
               </property>
-              <property name="margin">
+              <property name="leftMargin">
+               <number>0</number>
+              </property>
+              <property name="topMargin">
+               <number>0</number>
+              </property>
+              <property name="rightMargin">
+               <number>0</number>
+              </property>
+              <property name="bottomMargin">
                <number>0</number>
               </property>
               <item>
@@ -949,22 +1064,11 @@
               </item>
               <item>
                <widget class="QToolButton" name="frameListOptions_toolButton">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
                 <property name="toolTip">
                  <string>Frame list options</string>
                 </property>
                 <property name="text">
                  <string>Options</string>
-                </property>
-                <property name="icon">
-                 <iconset>
-                  <normaloff>icons/icon_settings.png</normaloff>
-                  <disabledoff>icons/icon_settings_disabled.png</disabledoff>icons/icon_settings.png</iconset>
                 </property>
                 <property name="iconSize">
                  <size>
@@ -981,6 +1085,9 @@
                 <property name="noBackground" stdset="0">
                  <bool>false</bool>
                 </property>
+                <property name="attach" stdset="0">
+                 <bool>true</bool>
+                </property>
                </widget>
               </item>
              </layout>
@@ -995,7 +1102,16 @@
               <property name="spacing">
                <number>6</number>
               </property>
-              <property name="margin">
+              <property name="leftMargin">
+               <number>0</number>
+              </property>
+              <property name="topMargin">
+               <number>0</number>
+              </property>
+              <property name="rightMargin">
+               <number>0</number>
+              </property>
+              <property name="bottomMargin">
                <number>0</number>
               </property>
               <item>
@@ -1075,7 +1191,16 @@
            <property name="verticalSpacing">
             <number>4</number>
            </property>
-           <property name="margin">
+           <property name="leftMargin">
+            <number>8</number>
+           </property>
+           <property name="topMargin">
+            <number>8</number>
+           </property>
+           <property name="rightMargin">
+            <number>8</number>
+           </property>
+           <property name="bottomMargin">
             <number>8</number>
            </property>
            <item row="2" column="0">
@@ -1115,7 +1240,16 @@
               <property name="spacing">
                <number>6</number>
               </property>
-              <property name="margin">
+              <property name="leftMargin">
+               <number>0</number>
+              </property>
+              <property name="topMargin">
+               <number>0</number>
+              </property>
+              <property name="rightMargin">
+               <number>0</number>
+              </property>
+              <property name="bottomMargin">
                <number>0</number>
               </property>
               <item>
@@ -1174,7 +1308,16 @@
               <property name="spacing">
                <number>2</number>
               </property>
-              <property name="margin">
+              <property name="leftMargin">
+               <number>0</number>
+              </property>
+              <property name="topMargin">
+               <number>0</number>
+              </property>
+              <property name="rightMargin">
+               <number>0</number>
+              </property>
+              <property name="bottomMargin">
                <number>0</number>
               </property>
               <item>
@@ -1200,9 +1343,18 @@
              </property>
              <layout class="QHBoxLayout" name="pool_horizontalLayout">
               <property name="spacing">
-               <number>2</number>
+               <number>4</number>
               </property>
-              <property name="margin">
+              <property name="leftMargin">
+               <number>0</number>
+              </property>
+              <property name="topMargin">
+               <number>0</number>
+              </property>
+              <property name="rightMargin">
+               <number>0</number>
+              </property>
+              <property name="bottomMargin">
                <number>0</number>
               </property>
               <item>
@@ -1230,12 +1382,7 @@
                  <string>Get pools from Deadline</string>
                 </property>
                 <property name="text">
-                 <string>Get Pools</string>
-                </property>
-                <property name="icon">
-                 <iconset>
-                  <normaloff>:/rsc/rsc/icon_refresh.png</normaloff>
-                  <disabledoff>:/rsc/rsc/icon_refresh_disabled.png</disabledoff>:/rsc/rsc/icon_refresh.png</iconset>
+                 <string>Get</string>
                 </property>
                 <property name="iconSize">
                  <size>
@@ -1261,9 +1408,18 @@
              </property>
              <layout class="QHBoxLayout" name="group_horizontalLayout">
               <property name="spacing">
-               <number>2</number>
+               <number>4</number>
               </property>
-              <property name="margin">
+              <property name="leftMargin">
+               <number>0</number>
+              </property>
+              <property name="topMargin">
+               <number>0</number>
+              </property>
+              <property name="rightMargin">
+               <number>0</number>
+              </property>
+              <property name="bottomMargin">
                <number>0</number>
               </property>
               <item>
@@ -1291,12 +1447,7 @@
                  <string>Get groups from Deadline</string>
                 </property>
                 <property name="text">
-                 <string>Get Groups</string>
-                </property>
-                <property name="icon">
-                 <iconset>
-                  <normaloff>:/rsc/rsc/icon_refresh.png</normaloff>
-                  <disabledoff>:/rsc/rsc/icon_refresh_disabled.png</disabledoff>:/rsc/rsc/icon_refresh.png</iconset>
+                 <string>Get</string>
                 </property>
                 <property name="iconSize">
                  <size>
@@ -1344,7 +1495,16 @@
        <property name="spacing">
         <number>2</number>
        </property>
-       <property name="margin">
+       <property name="leftMargin">
+        <number>6</number>
+       </property>
+       <property name="topMargin">
+        <number>6</number>
+       </property>
+       <property name="rightMargin">
+        <number>6</number>
+       </property>
+       <property name="bottomMargin">
         <number>6</number>
        </property>
        <item>

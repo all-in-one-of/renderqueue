@@ -535,7 +535,7 @@ QGroupBox[expandable="true"] {
 	/*margin-top: 20px;*/
 	padding: 0;
 	border: 0;
-	border-top: 20px solid rgba(%menu-bg%);
+	border-top: 20px solid rgba(%button%);
 	border-top-left-radius: 0;
 	border-top-right-radius: 0;
 	/*border-bottom-left-radius: 2px;
@@ -555,7 +555,7 @@ QGroupBox[expandable="true"]::title {
 	border-radius: 0;
 	/*subcontrol-origin: margin;
 	subcontrol-position: top center;*/
-	background: rgba(%menu-bg%);
+	background: rgba(%button%);
 }
 
 QGroupBox[expandable="true"]::indicator {
@@ -936,13 +936,13 @@ QToolButton:disabled {
 	background: transparent;
 }
 
-QToolButton[popupMode="MenuButtonPopup"] { /* only for MenuButtonPopup */
+/*QToolButton[popupMode="MenuButtonPopup"] {
 	padding-right: 16px;
 }
 
-QToolButton[popupMode="InstantPopup"] { /* only for InstantPopup */
+QToolButton[popupMode="InstantPopup"] {
 	padding-right: 16px;
-}
+}*/
 
 /* The subcontrols below are used only in the MenuButtonPopup mode */
 QToolButton::menu-button {
@@ -1539,7 +1539,8 @@ QSlider::handle:disabled {
 	/*border-color: transparent;*/
 }
 
-*[attach="true"] { /* attach tool button to widget */
+*[attach="true"], 
+*:disabled[attach="true"] { /* attach tool button to widget */
 	background: rgba(%base%);
 }
 

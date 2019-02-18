@@ -3,7 +3,7 @@
 # submit_deadline.py
 #
 # Mike Bonnington <mjbonnington@gmail.com>
-# (c) 2016-2018
+# (c) 2016-2019
 #
 # Render Submitter (Deadline)
 # This module contains functions specifically for submitting jobs to Deadline.
@@ -54,7 +54,7 @@ def generate_job_info_file(**kwargs):
 		jobInfoFileSuffix = "_%s_deadlineJobInfo.txt" %kwargs['renderLayer']
 	else:
 		jobInfoFileSuffix = "_deadlineJobInfo.txt"
-	jobInfoFile = render_common.settings_file(kwargs['scene'], suffix=jobInfoFileSuffix)
+	jobInfoFile = common.settings_file(kwargs['scene'], suffix=jobInfoFileSuffix)
 
 	with open(jobInfoFile, 'w') as fh:
 		fh.write("Plugin=%s\n" %kwargs['plugin'])
@@ -90,11 +90,15 @@ def generate_job_info_file(**kwargs):
 			#verbose.warning("Could not determine render output path(s).")
 			print("Warning: Could not determine render output path(s).")
 
-		for i, envVar in enumerate(kwargs['envVars']):
-			fh.write("EnvironmentKeyValue%d=%s=%s\n" %(i, envVar, os.environ[envVar]))
+		for i, key in enumerate(kwargs['envVars']):
+			try:
+				fh.write("EnvironmentKeyValue%d=%s=%s\n" %(i, key, os.environ[key]))
+			except KeyError:
+				print("Warning: environment variable '%s' not set." %key)
+				pass
 
-		fh.write("ExtraInfo0=%s\n" %os.environ['JOB'])
-		fh.write("ExtraInfo1=%s\n" %os.environ['SHOT'])
+		# fh.write("ExtraInfo0=%s\n" %os.environ['JOB'])
+		# fh.write("ExtraInfo1=%s\n" %os.environ['SHOT'])
 
 	return jobInfoFile
 
@@ -107,7 +111,7 @@ def generate_plugin_info_file(**kwargs):
 	else:
 		pluginInfoFileSuffix = "_deadlinePluginInfo.txt"
 
-	pluginInfoFile = render_common.settings_file(kwargs['scene'], suffix=pluginInfoFileSuffix)
+	pluginInfoFile = common.settings_file(kwargs['scene'], suffix=pluginInfoFileSuffix)
 	with open(pluginInfoFile, 'w') as fh:
 
 		# Command Line -------------------------------------------------------
@@ -153,7 +157,7 @@ def generate_batch_file(scene, jobInfoFileList, pluginInfoFileList):
 	""" Generate batch job submission file given corresponding lists of job
 		and plugin info files.
 	"""
-	batchSubmissionFile = render_common.settings_file(scene, suffix="_deadlineBatchArgs.txt")
+	batchSubmissionFile = common.settings_file(scene, suffix="_deadlineBatchArgs.txt")
 	with open(batchSubmissionFile, 'w') as fh:
 		fh.write("-SubmitMultipleJobs\n")
 		for i in range(len(jobInfoFileList)):
@@ -204,12 +208,12 @@ def submit_job(**kwargs):
 				result_msg = "Successfully submitted %d job(s) to Deadline." %num_jobs
 
 			# Delete submission info files
-			if int(os.environ['IC_VERBOSITY']) < 4:
-				for jobInfoFile in jobInfoFileList:
-					oswrapper.recurseRemove(jobInfoFile)
-				for pluginInfoFile in pluginInfoFileList:
-					oswrapper.recurseRemove(pluginInfoFile)
-				oswrapper.recurseRemove(batchSubmissionFile)
+			# if int(os.environ['IC_VERBOSITY']) < 4:
+			# 	for jobInfoFile in jobInfoFileList:
+			# 		oswrapper.recurseRemove(jobInfoFile)
+			# 	for pluginInfoFile in pluginInfoFileList:
+			# 		oswrapper.recurseRemove(pluginInfoFile)
+			# 	oswrapper.recurseRemove(batchSubmissionFile)
 
 		else:  # Single job submission ---------------------------------------
 			# Generate submission info files
@@ -223,9 +227,9 @@ def submit_job(**kwargs):
 				result_msg = "Successfully submitted job to Deadline."
 
 			# Delete submission info files
-			if int(os.environ['IC_VERBOSITY']) < 4:
-				oswrapper.recurseRemove(jobInfoFile)
-				oswrapper.recurseRemove(pluginInfoFile)
+			# if int(os.environ['IC_VERBOSITY']) < 4:
+			# 	oswrapper.recurseRemove(jobInfoFile)
+			# 	oswrapper.recurseRemove(pluginInfoFile)
 
 		if cmd_result:
 			result = True
