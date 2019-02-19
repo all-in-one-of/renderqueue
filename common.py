@@ -8,10 +8,27 @@
 # This module contains some common functions for the rendering modules.
 
 
+import logging
 import os
 
 # Import custom modules
 import oswrapper
+
+
+formatter = logging.Formatter("%(asctime)-15s %(levelname)-8s %(message)s")
+
+
+def setup_logger(name, log_file, level=logging.INFO):
+	""" Function to create and setup multiple loggers.
+	"""
+	handler = logging.FileHandler(log_file)
+	handler.setFormatter(formatter)
+
+	logger = logging.getLogger(name)
+	logger.setLevel(level)
+	logger.addHandler(handler)
+
+	return logger
 
 
 def settings_file(scene, suffix=""):
@@ -32,3 +49,4 @@ def settings_file(scene, suffix=""):
 
 	else:
 		return False
+

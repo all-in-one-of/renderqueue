@@ -28,9 +28,6 @@ CREATE_NO_WINDOW = 0x08000000
 def execute(args):
 	""" Wrapper to execute a command using subprocess.check_output().
 	"""
-	#verbose.print_(" ".join(arg for arg in args))
-	print(args)
-
 	try:
 		if platform.system() == "Windows":
 			output = subprocess.check_output(args, creationflags=CREATE_NO_WINDOW)
@@ -52,7 +49,6 @@ def createDir(path):
 
 	if os.path.isdir(path):
 		#verbose.print_("Directory already exists: %s" %path)
-		print("Directory already exists: %s" %path)
 		pass
 
 	else:
@@ -66,12 +62,10 @@ def createDir(path):
 					setHidden(path)
 
 			#verbose.print_('mkdir "%s"' %path)  # This causes an error if user config dir doesn't exist
-			print('mkdir "%s"' %path)
 			return path
 
 		except:
 			#verbose.error("Cannot create directory: %s" %path)
-			print("ERROR: Cannot create directory: %s" %path)
 			return False
 
 
@@ -105,25 +99,37 @@ def createDir(path):
 # 	return dst
 
 
-def recurseRemove(path):
+def remove(path, quiet=False):
 	""" Removes files or folders recursively.
-		Could be rewritten to use shutil.rmtree?
 	"""
 	path = os.path.normpath(path)
 
-	if platform.system() == "Windows":
-		if os.path.isdir(path):
-			cmdStr = 'rmdir %s /s /q' %path
-		else:
-			cmdStr = 'del %s /f /q' %path
-	else:
-		cmdStr = 'rm -rf %s' %path
+	try:
+		if os.path.isfile(path):
+			os.remove(path)
+		elif os.path.isdir(path):
+			shutil.rmtree(path)
+		return True, path
+	except:
+		exc_type, exc_value, exc_traceback = sys.exc_info()
+		msg = traceback.format_exception_only(exc_type, exc_value)[0]
+		if not quiet:
+			#verbose.error(msg)
+			print(msg)
+		return False, msg
 
-	#verbose.print_(cmdStr, 4)
-	print(cmdStr)
-	os.system(cmdStr)
+	# if platform.system() == "Windows":
+	# 	if os.path.isdir(path):
+	# 		cmdStr = 'rmdir %s /s /q' %path
+	# 	else:
+	# 		cmdStr = 'del %s /f /q' %path
+	# else:
+	# 	cmdStr = 'rm -rf %s' %path
 
-	return path
+	# #verbose.print_(cmdStr, 4)
+	# os.system(cmdStr)
+
+	# return path
 
 
 def rename(source, destination, quiet=False):
@@ -133,8 +139,8 @@ def rename(source, destination, quiet=False):
 	dst = os.path.normpath(destination)
 
 	if not quiet:
+		pass
 		#verbose.print_('rename "%s" -> "%s"' %(src, dst))
-		print('rename "%s" -> "%s"' %(src, dst))
 	try:
 		os.rename(src, dst)
 		return True, dst
@@ -154,8 +160,8 @@ def copy(source, destination, quiet=False):
 	dst = os.path.normpath(destination)
 
 	if not quiet:
+		pass
 		#verbose.print_('copy "%s" -> "%s"' %(src, dst))
-		print('copy "%s" -> "%s"' %(src, dst))
 	try:
 		shutil.copyfile(src, dst)
 		return True, dst
@@ -168,25 +174,21 @@ def copy(source, destination, quiet=False):
 		return False, msg
 
 
-def move(source, destination, quiet=False):
+def move(source, destination):
 	""" Move a file or folder.
 	"""
 	src = os.path.normpath(source)
 	dst = os.path.normpath(destination)
 
-	if not quiet:
-		#verbose.print_('copy "%s" -> "%s"' %(src, dst))
-		print('move "%s" -> "%s"' %(src, dst))
 	try:
 		shutil.move(src, dst)
-		return True, dst
+		return True
 	except:
 		exc_type, exc_value, exc_traceback = sys.exc_info()
 		msg = traceback.format_exception_only(exc_type, exc_value)[0]
-		if not quiet:
-			#verbose.error(msg)
-			print(msg)
-		return False, msg
+		#verbose.error(msg)
+		print(msg)
+		return False
 
 
 def copyDirContents(source, destination, umask='000'):
@@ -204,7 +206,6 @@ def copyDirContents(source, destination, umask='000'):
 		cmdStr = 'cp -rf "%s" "%s"' %(src, dst)
 
 	#verbose.print_(cmdStr, 4)
-	print(cmdStr)
 	os.system(cmdStr)
 
 

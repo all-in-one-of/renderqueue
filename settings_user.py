@@ -3,7 +3,7 @@
 # settings_user.py
 #
 # Mike Bonnington <mjbonnington@gmail.com>
-# (c) 2018
+# (c) 2018-2019
 #
 # User settings handler.
 
@@ -27,6 +27,7 @@ class helper():
 		self.bdl = lambda: self.browseDatabaseLocation()
 		self.ssc = lambda: self.setSystemColors()
 
+		frame.locationBrowse_toolButton.setIcon(parent.iconSet('folder-open-symbolic.svg'))
 		frame.locationBrowse_toolButton.clicked.connect(self.bdl)
 		frame.useSystemColors_checkBox.toggled.connect(self.ssc)
 		frame.uiBrightness_slider.valueChanged.connect(parent.setUIBrightness)

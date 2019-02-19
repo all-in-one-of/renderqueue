@@ -4,7 +4,7 @@
 #
 # Mike Bonnington <mjbonnington@gmail.com>
 # Benjamin Parry <ben.parry@gps-ldn.com>
-# (c) 2015-2018
+# (c) 2015-2019
 #
 # These functions convert formatted sequences to lists and vice-versa.
 

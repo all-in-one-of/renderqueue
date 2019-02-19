@@ -3,7 +3,7 @@
 # about.py
 #
 # Mike Bonnington <mjbonnington@gmail.com>
-# (c) 2015-2018
+# (c) 2015-2019
 #
 # Pop-up 'About' dialog / splash screen.
 

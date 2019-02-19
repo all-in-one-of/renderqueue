@@ -14,7 +14,7 @@
 import datetime
 import getpass
 import json
-import logging
+#import logging
 import math
 import os
 import socket
@@ -215,7 +215,7 @@ class RenderQueueApp(QtWidgets.QMainWindow, UI.TemplateUI):
 		self.ui.jobPriority_slider.sliderReleased.connect(self.updatePriority)
 
 		# Task menu & toolbar
-		# self.ui.actionViewTaskLog.triggered.connect(self.viewTaskLog)  # not yet implemented
+		self.ui.actionViewTaskLog.triggered.connect(self.viewTaskLog)  # not yet implemented
 		# self.ui.actionViewTaskLog.setIcon(self.iconSet('log.svg'))
 
 		self.ui.actionCompleteTask.triggered.connect(self.completeTask)
@@ -398,8 +398,7 @@ Developers: %s
 %s %s
 
 %s
-""" %(WINDOW_TITLE, os.environ['RQ_VERSION'], 
-	  DEVELOPERS, COPYRIGHT, VENDOR, info_str)
+""" %(WINDOW_TITLE, os.environ['RQ_VERSION'], DEVELOPERS, COPYRIGHT, VENDOR, info_str)
 
 		aboutDialog = about.AboutDialog(parent=self)
 		aboutDialog.display(image='config/splash/scott-goodwill-408543-unsplash.jpg', message=about_msg)
@@ -1089,6 +1088,22 @@ Developers: %s
 	# 		pass
 
 
+	def viewTaskLog(self):
+		""" View the log for the selected task(s).
+		"""
+		try:
+			for item in self.ui.queue_treeWidget.selectedItems():
+				# If item has parent then it must be a subitem, and therefore
+				# also a task
+				if item.parent():
+					jobID = item.parent().text(1)
+					taskID = int(item.text(1))
+					os.system('xdg-open %s' %self.rq.getTaskLog(jobID, taskID))
+
+		except ValueError:
+			pass
+
+
 	def completeTask(self):
 		""" Mark the selected task as completed.
 		"""
@@ -1168,15 +1183,12 @@ Developers: %s
 
 			for workerID in workerIDs:
 				if status == "Disabled":
-					#print("Disabled " + workerID)
 					# self.rq.requeueTask(workerID[0], workerID[1])
 					self.rq.setWorkerStatus(workerID, "Disabled")
 				elif status == "Idle":
-					#print("Idle " + workerID)
 					# self.rq.completeTask(workerID[0], workerID[1], taskTime=0)
 					self.rq.setWorkerStatus(workerID, "Idle")
 				elif status == "Rendering":
-					#print("Rendering " + workerID)
 					# self.rq.failTask(workerID[0], workerID[1], taskTime=0)
 					self.rq.setWorkerStatus(workerID, "Rendering")
 
@@ -1291,8 +1303,10 @@ Developers: %s
 					# 	self.rq.failTask(task['jobID'], task['taskNo'], taskTime=1)
 
 					# Initialise worker thread, connect signals & slots, start processing
+					logfile = os.path.join(self.rq.db_logs, '%s_%s.log' %(task['jobID'], str(task['taskNo']).zfill(4)))
+					#print(logfile)
 					self.workerThread = worker.WorkerThread(
-						job, task, node, 
+						job, task, node, logfile, 
 						ignore_errors=True)
 					# self.workerThread.printError.connect(verbose.error)
 					# self.workerThread.printMessage.connect(verbose.message)
@@ -1367,7 +1381,6 @@ Developers: %s
 
 			#self.fname = fname
 			#verbose.print_("Dropped '%s' on to window." %fname)
-			print("Dropped '%s' on to window." %fname)
 			if os.path.isdir(fname):
 				pass
 			elif os.path.isfile(fname):

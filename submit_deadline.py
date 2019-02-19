@@ -210,10 +210,10 @@ def submit_job(**kwargs):
 			# Delete submission info files
 			# if int(os.environ['IC_VERBOSITY']) < 4:
 			# 	for jobInfoFile in jobInfoFileList:
-			# 		oswrapper.recurseRemove(jobInfoFile)
+			# 		oswrapper.remove(jobInfoFile)
 			# 	for pluginInfoFile in pluginInfoFileList:
-			# 		oswrapper.recurseRemove(pluginInfoFile)
-			# 	oswrapper.recurseRemove(batchSubmissionFile)
+			# 		oswrapper.remove(pluginInfoFile)
+			# 	oswrapper.remove(batchSubmissionFile)
 
 		else:  # Single job submission ---------------------------------------
 			# Generate submission info files
@@ -228,8 +228,8 @@ def submit_job(**kwargs):
 
 			# Delete submission info files
 			# if int(os.environ['IC_VERBOSITY']) < 4:
-			# 	oswrapper.recurseRemove(jobInfoFile)
-			# 	oswrapper.recurseRemove(pluginInfoFile)
+			# 	oswrapper.remove(jobInfoFile)
+			# 	oswrapper.remove(pluginInfoFile)
 
 		if cmd_result:
 			result = True
