@@ -717,21 +717,22 @@ QTreeView::branch {
 	border-image: none;
 }
 
-/*QTreeView::branch:selected {
-	background-color: #000;
-}*/
-
-QTreeView::branch:has-siblings:!adjoins-item {
-	image: url(:/images/vline.png);
+QTreeView::branch:selected {
+	background: rgba(%highlight%);
 }
 
-QTreeView::branch:has-siblings:adjoins-item {
+QTreeView::branch:has-siblings:!adjoins-item {
+	/*image: url(:/images/vline.png);*/
+	image: none;
+}
+
+/*QTreeView::branch:has-siblings:adjoins-item {
 	image: url(:/images/branch-more.png);
 }
 
 QTreeView::branch:!has-children:!has-siblings:adjoins-item {
 	image: url(:/images/branch-end.png);
-}
+}*/
 
 QTreeView::branch:has-children:!has-siblings:closed, 
 QTreeView::branch:closed:has-children:has-siblings {

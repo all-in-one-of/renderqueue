@@ -32,8 +32,8 @@ class WorkerThread(QtCore.QThread):
 	# printMessage = QtCore.Signal(str)
 	# printProgress = QtCore.Signal(str)
 	# updateProgressBar = QtCore.Signal(int)
-	taskCompleted = QtCore.Signal(str, int)
-	taskFailed = QtCore.Signal(str, int)
+	taskCompleted = QtCore.Signal(str, int) #, float
+	taskFailed = QtCore.Signal(str, int) #, float
 
 	def __init__(self, job, task, worker, logfile, ignore_errors=True):
 		QtCore.QThread.__init__(self)
@@ -46,7 +46,6 @@ class WorkerThread(QtCore.QThread):
 
 		# Set up logging
 		logger_name = '%s_logger' %os.path.splitext(os.path.basename(logfile))[0]
-		print(logger_name)
 		self.task_logger = common.setup_logger(logger_name, logfile)
 
 
@@ -64,10 +63,8 @@ class WorkerThread(QtCore.QThread):
 		args = []
 		errors = 0
 
-		# print("[%s] Job ID %s, Task ID %s: Starting render..." 
-		# 	%(self.worker['name'], self.job['jobID'], self.task['taskNo']))
-		self.task_logger.info("Starting render on worker %s" 
-			%self.worker['name'])
+		self.task_logger.info("Starting render on worker %s (%s)" 
+			%(self.worker['name'], self.worker['id']))
 
 		if self.task['frames'] == "Unknown":
 			frameList = self.task['frames']
@@ -80,22 +77,6 @@ class WorkerThread(QtCore.QThread):
 			args = [self.job['command'], self.job['flags']]
 
 		elif self.job['jobType'] == "Maya":
-			# try:
-			# 	renderCmd = '"%s"' %os.environ['MAYARENDERVERSION'] # store this in XML as maya version may vary with project
-			# except KeyError:
-			# 	print "ERROR: Path to Maya Render command executable not found. This can be set with the environment variable 'MAYARENDERVERSION'."
-			#renderCmd = '"%s"' %os.path.normpath(self.rq.getValue(jobElement, 'mayaRenderCmd'))
-			#renderCmd = self.rq.getValue(jobElement, 'mayaRenderCmd')
-			# if not os.path.isfile(renderCmd): # disabled this check 
-			# 	print "ERROR: Maya render command not found: %s" %renderCmd
-			# 	return False
-
-			# if not os.path.isfile(self.job['scene']): # check scene exists - disabled for now as could cause worker to get stuck in a loop
-			# 	print "ERROR: Scene not found: %s" %self.job['scene']
-			# 	self.rq.requeueTask(self.renderJobID, self.renderTaskID)
-			# 	#self.rq.setStatus(self.renderJobID, "Failed")
-			# 	return False
-
 			# Set executable (rewrite this to use app paths / versions)
 			if platform.system() == "Windows":
 				args.append('C:/Program Files/Autodesk/Maya2018/bin/Render.exe')
@@ -110,8 +91,14 @@ class WorkerThread(QtCore.QThread):
 			if self.job['flags']:
 				args.append(self.job['flags'])
 
-			# if self.job['renderer']:
-			# 	args.append('-r %s' %self.job['flags'])
+			if self.job['renderer']:
+				args.append('-r')
+				args.append(self.job['renderer'])
+
+			# Set arnold verbosity (temp)
+			if self.job['renderer'] == "arnold":
+				args.append('-ai:lve')
+				args.append('1')
 
 			if frameList == "Unknown":
 				pass
@@ -124,22 +111,6 @@ class WorkerThread(QtCore.QThread):
 			args.append(self.job['scene'])
 
 		elif self.job['jobType'] == "Nuke":
-			# renderCmd = self.rq.getValue(jobElement, 'nukeRenderCmd')
-			# scriptName = self.rq.getValue(jobElement, 'nukeScript')
-
-			# cmdStr = ''
-			# args = ''
-
-			# nukeFlags = self.rq.getValue(jobElement, 'nukeFlags')
-			# if nukeFlags is not None:
-			# 	args += ' %s' %nukeFlags
-
-			# # Construct command(s)
-			# if frameList == 'Unknown':
-			# 	cmdStr = '"%s" %s -x "%s"' %(renderCmd, args, scriptName)
-			# else:
-			# 	cmdStr += '"%s" %s -F %s -x "%s"' %(renderCmd, args, frameList, scriptName)
-
 			# Set executable (rewrite this to use app paths / versions)
 			if platform.system() == "Windows":
 				args.append('C:/Program Files/Nuke10.0v3/Nuke10.0.exe')
@@ -160,17 +131,18 @@ class WorkerThread(QtCore.QThread):
 			args.append('-x')
 			args.append(self.job['scene'])
 
-	# Set rendering status
-	# verbose.print_(cmdStr, 4)
+		# # Set rendering status
+		# # Fill info fields
+		# self.ui.taskInfo_label.setText("Rendering %s %s from '%s'" %(verbose.pluralise("frame", len(frameList)), frames, self.rq.getValue(jobElement, 'name')))
+		# self.ui.runningTime_label.setText(startTime)  # change this to display the task running time
+		# self.ui.runningTime_label.setText( str(datetime.timedelta(seconds=0)) )
 
-	# # Fill info fields
-	# #self.ui.taskInfo_label.setText("Rendering %s %s from '%s'" %(verbose.pluralise("frame", len(frameList)), frames, self.rq.getValue(jobElement, 'name')))
-	# #self.ui.runningTime_label.setText(startTime)  # change this to display the task running time
-	# self.ui.runningTime_label.setText( str(datetime.timedelta(seconds=0)) )
+		# self.setWorkerStatus("rendering")
+		# self.renderProcess.start(cmdStr)
+		# self.updateRenderQueueView()
 
-	# self.setWorkerStatus("rendering")
-	# self.renderProcess.start(cmdStr)
-	# self.updateRenderQueueView()
+		cmd_str = " ".join(args)
+		self.task_logger.info("Render command:\n%s" %cmd_str)
 
 		# Execute the command, redirect output to log, catch errors
 		try:
@@ -185,13 +157,16 @@ class WorkerThread(QtCore.QThread):
 		#self.task_logger.info("Result: %s", result)
 		#self.task_logger.info(output)
 
+		# Complete or fail the task depending on return code
 		#print(result)
 		if result == 0:  # Normal exit code
-			self.taskCompleted.emit(self.task['jobID'], self.task['taskNo'])
-			# self.rq.completeTask(task['jobID'], task['taskNo'], taskTime=1)
-		else:
-			self.taskFailed.emit(self.task['jobID'], self.task['taskNo'])
-			# self.rq.failTask(task['jobID'], task['taskNo'], taskTime=1)
+			self.task_logger.info("Render completed successfully on worker %s (%s)" 
+				%(self.worker['name'], self.worker['id']))
+			self.taskCompleted.emit(self.task['jobID'], self.task['taskNo']) #, taskTime=1)
+		else:  # Failure
+			self.task_logger.error("Render failed on worker %s (%s)" 
+				%(self.worker['name'], self.worker['id']))
+			self.taskFailed.emit(self.task['jobID'], self.task['taskNo']) #, taskTime=1)
 		return result
 
 # ----------------------------------------------------------------------------

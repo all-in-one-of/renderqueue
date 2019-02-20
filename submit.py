@@ -1156,6 +1156,15 @@ def run_maya(**kwargs):
 	renderSubmitUI.display(**kwargs)  # Show the UI
 
 
+def run_houdini(**kwargs):
+	""" Run in Houdini.
+	"""
+	# UI._houdini_delete_ui(WINDOW_OBJECT, WINDOW_TITLE)  # Delete any existing UI
+	renderSubmitUI = RenderSubmitUI(parent=UI._houdini_main_window())
+
+	renderSubmitUI.display(**kwargs)  # Show the UI
+
+
 def run_nuke(**kwargs):
 	""" Run in Nuke.
 	"""

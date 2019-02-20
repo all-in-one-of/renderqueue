@@ -1044,11 +1044,11 @@ def _maya_main_window():
 	raise RuntimeError("Could not find MayaWindow instance")
 
 
-# def _houdini_main_window():
-# 	""" Return Houdini's main window.
-# 	"""
-# 	return hou.qt.mainWindow()
-# 	raise RuntimeError("Could not find Houdini's main window instance")
+def _houdini_main_window():
+	""" Return Houdini's main window.
+	"""
+	return hou.qt.mainWindow()
+	raise RuntimeError("Could not find Houdini's main window instance")
 
 
 def _nuke_main_window():

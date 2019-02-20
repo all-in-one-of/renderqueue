@@ -119,7 +119,7 @@ class RenderQueueApp(QtWidgets.QMainWindow, UI.TemplateUI):
 		self.rq = database.RenderQueue(databaseLocation)
 
 		# Define standard UI colours
-		self.colBlack         = QtGui.QColor("#272822")  # black
+		self.colBlack         = QtGui.QColor("#0a0a0a")  # black
 		self.colWhite         = QtGui.QColor("#ffffff")  # white
 		self.colBorder        = QtGui.QColor("#222222")  # dark grey
 		self.colNormal        = QtGui.QColor("#cccccc")  # light grey
@@ -257,10 +257,12 @@ class RenderQueueApp(QtWidgets.QMainWindow, UI.TemplateUI):
 		# self.ui.actionViewWorkerLog.triggered.connect(self.viewWorkerLog)  # not yet implemented
 		# self.ui.actionViewWorkerLog.setIcon(self.iconSet('log.svg'))
 
+		self.ui.actionPing.triggered.connect(self.ping)
+
 		self.ui.actionRemote.triggered.connect(self.rdesktop)
 		self.ui.actionRemote.setIcon(self.iconSet('computer.png'))
 
-		self.ui.actionDequeue.triggered.connect(self.dequeue)
+		# self.ui.actionDequeue.triggered.connect(self.dequeue)  # functionality removed
 
 		# Add context menu items to worker control tool button
 		# self.ui.workerControl_toolButton.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
@@ -361,6 +363,20 @@ class RenderQueueApp(QtWidgets.QMainWindow, UI.TemplateUI):
 		if result:
 			self.prefs.read()
 			self.rebuildQueueView()
+
+
+	def ping(self):
+		""" Ping the selected worker's host in order to determine if it's
+			onnline or offline (currently linux only).
+		"""
+		try:
+			for item in self.ui.workers_treeWidget.selectedItems():
+				args = ['ping', '-c', '1', item.text(3)]
+				result, output = oswrapper.execute(args)
+				print(result, output)
+
+		except ValueError:
+			pass
 
 
 	def rdesktop(self):
@@ -515,8 +531,10 @@ Developers: %s
 			jobTotalTimeSeconds = 0
 			inProgressTaskCount = 0
 			completedTaskCount = 0
+			failedTaskCount = 0
 			inProgressTaskFrameCount = 0
 			completedTaskFrameCount = 0
+			failedTaskFrameCount = 0
 			if not job['frames'] or job['frames'] == 'Unknown':
 				totalFrameCount = -1
 			else:
@@ -561,6 +579,9 @@ Developers: %s
 					if taskStatus == "Done":
 						completedTaskCount += 1
 						completedTaskFrameCount = -1
+					# if taskStatus == "Failed":
+					# 	failedTaskCount += 1
+					# 	failedTaskFrameCount = -1
 				else:
 					taskFrameCount = len(sequence.numList(task['frames']))
 					if taskStatus.startswith("Rendering"):
@@ -569,6 +590,9 @@ Developers: %s
 					if taskStatus == "Done":
 						completedTaskCount += 1
 						completedTaskFrameCount += taskFrameCount
+					# if taskStatus == "Failed":
+					# 	failedTaskCount += 1
+					# 	failedTaskFrameCount += taskFrameCount
 
 				# Colour the status text
 				for col in range(widget.columnCount()):
@@ -603,6 +627,7 @@ Developers: %s
 			renderJobItem.sortChildren(1, QtCore.Qt.AscendingOrder)  # Tasks are always sorted by ID
 
 			# Calculate job progress and update status
+			colBg = self.colBlack
 			colProgress = self.colCompleted
 			#renderJobItem.setForeground(4, QtGui.QBrush(self.colWhite))
 			if completedTaskFrameCount == 0:
@@ -621,8 +646,18 @@ Developers: %s
 				else:
 					jobStatus = "[%d%%] Working" %percentComplete
 					colProgress = self.colCompleted
+				# if failedTaskCount == 0:
+				# 	colBg = self.colBlack
+				# else:
+				# 	colBg = self.colError
 
-			self.drawJobProgressIndicator(renderJobItem, completedTaskFrameCount, inProgressTaskFrameCount, totalFrameCount, colProgress)
+			self.drawJobProgressIndicator(
+				renderJobItem, 
+				completedTaskFrameCount, 
+				failedTaskFrameCount, 
+				inProgressTaskFrameCount, 
+				totalFrameCount, 
+				colProgress)
 
 			# self.rq.setStatus(job['jobID'], jobStatus)  # Write to XML if status has changed
 			renderJobItem.setText(4, jobStatus)
@@ -721,9 +756,11 @@ Developers: %s
 			return QtWidgets.QTreeWidgetItem(parent)
 
 
-	def drawJobProgressIndicator(self, renderJobItem, completedTaskFrameCount, 
-		inProgressTaskFrameCount, totalFrameCount, colProgress):
-		""" Draw a pixmap to represent the progress of a job.
+	def drawJobProgressIndicator(self, renderJobItem, 
+		completedTaskFrameCount, failedTaskFrameCount, 
+		inProgressTaskFrameCount, totalFrameCount, 
+		colProgress):
+		""" Draw a pixmap progress bar to represent the progress of a job.
 		"""
 		border = 1
 		width = self.ui.queue_treeWidget.columnWidth(4)
@@ -731,8 +768,10 @@ Developers: %s
 		barWidth = width - (border*2)
 		barHeight = height - (border*2)
 		completedRatio = float(completedTaskFrameCount) / float(totalFrameCount)
+		# failedRatio = float(failedTaskFrameCount) / float(totalFrameCount)
 		inProgressRatio = float(inProgressTaskFrameCount) / float(totalFrameCount)
 		completedLevel = math.ceil(completedRatio*barWidth)
+		# failedLevel = math.ceil(failedRatio*barWidth)
 		inProgressLevel = math.ceil((completedRatio+inProgressRatio)*barWidth)
 
 		image = QtGui.QPixmap(width, height)
@@ -742,14 +781,16 @@ Developers: %s
 		pen = QtGui.QPen()
 		pen.setStyle(QtCore.Qt.NoPen)
 		qp.setPen(pen)
-		qp.setBrush(self.colBorder)
+		qp.setBrush(self.colBorder)  # Draw border
 		qp.drawRect(0, 0, width, height)
-		qp.setBrush(self.colBlack)
+		qp.setBrush(self.colBlack)  # Draw background
 		qp.drawRect(border, border, barWidth, barHeight)
-		qp.setBrush(self.colActive.darker())
+		qp.setBrush(self.colActive.darker())  # Draw in-progress bar
 		qp.drawRect(border, border, inProgressLevel, barHeight)
-		qp.setBrush(colProgress.darker())
+		qp.setBrush(colProgress.darker())  # Draw completed level bar
 		qp.drawRect(border, border, completedLevel, barHeight)
+		# qp.setBrush(self.colError.darker())  # Draw failed level bar
+		# qp.drawRect(border, border, failedLevel, barHeight)
 		qp.end()
 
 		#renderJobItem.setBackground(4, image)  # PyQt5 doesn't like this
@@ -1279,7 +1320,7 @@ Developers: %s
 		# for worker in workers:
 		# 	if worker['ip_address'] == self.ip_address:  # Local workers only
 		# 		if worker['status'] == "Idle":  # Worker is ready
-		# 			# ...
+		# 			# ---SNIP---
 
 		# Get workers - from widget
 		root = self.ui.workers_treeWidget.invisibleRootItem()
@@ -1290,7 +1331,7 @@ Developers: %s
 			workerStatus = workerItem.text(4)
 			if workerIP == self.ip_address:  # Local workers only
 				if workerStatus == "Idle":  # Worker is ready
-					# ...
+					# ---SNIP---
 					self.rq.dequeueTask(task['jobID'], task['taskNo'], workerID)
 
 					job = self.rq.getJob(task['jobID'])

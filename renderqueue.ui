@@ -740,18 +740,23 @@
     <property name="title">
      <string>Worker</string>
     </property>
+    <widget class="QMenu" name="menuOnTaskCompletion">
+     <property name="title">
+      <string>On current task completion</string>
+     </property>
+     <addaction name="actionContinueAfterTask"/>
+     <addaction name="actionStopWorkerAfterTask"/>
+    </widget>
     <addaction name="actionNewWorker"/>
     <addaction name="actionEditWorker"/>
+    <addaction name="actionPing"/>
     <addaction name="actionRemote"/>
     <addaction name="actionDeleteWorker"/>
     <addaction name="actionViewWorkerLog"/>
     <addaction name="separator"/>
     <addaction name="actionStartWorker"/>
     <addaction name="actionStopWorker"/>
-    <addaction name="actionStopWorkerAfterTask"/>
-    <addaction name="actionContinueAfterTask"/>
-    <addaction name="separator"/>
-    <addaction name="actionDequeue"/>
+    <addaction name="menuOnTaskCompletion"/>
    </widget>
    <widget class="QMenu" name="menuQueue">
     <property name="title">
@@ -832,7 +837,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Continue after current task completion</string>
+    <string>Continue</string>
    </property>
   </action>
   <action name="actionStopWorkerAfterTask">
@@ -840,7 +845,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Stop after current task completion</string>
+    <string>Stop</string>
    </property>
   </action>
   <action name="actionStopWorker">
@@ -925,12 +930,17 @@
   </action>
   <action name="actionBrowse">
    <property name="text">
-    <string>Browse output...</string>
+    <string>Browse output images...</string>
    </property>
   </action>
   <action name="actionRemote">
    <property name="text">
     <string>Connect to remote desktop... </string>
+   </property>
+  </action>
+  <action name="actionPing">
+   <property name="text">
+    <string>Ping</string>
    </property>
   </action>
  </widget>
