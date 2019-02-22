@@ -13,7 +13,7 @@
 
 import datetime
 import getpass
-import json
+#import json
 #import logging
 import math
 import os
@@ -27,9 +27,9 @@ import ui_template as UI
 
 # Import custom modules
 import about
-import oswrapper
 import database
-import outputparser
+import oswrapper
+#import outputparser
 import sequence
 #import verbose
 import worker
@@ -96,6 +96,10 @@ class RenderQueueApp(QtWidgets.QMainWindow, UI.TemplateUI):
 
 		#verbose.registerStatusBar(self.ui.statusBar)  # only in standalone?
 
+		# Get tree view column header indices
+		self.queue_header = self.getHeaderIndices(self.ui.queue_treeWidget)
+		self.workers_header = self.getHeaderIndices(self.ui.workers_treeWidget)
+
 		# Restore widget state
 		try:
 			self.ui.splitter.restoreState(self.settings.value("splitterSizes")) #.toByteArray())
@@ -104,43 +108,44 @@ class RenderQueueApp(QtWidgets.QMainWindow, UI.TemplateUI):
 		except:
 			pass
 
-		# Instantiate render queue class and load data
-		databaseLocation = oswrapper.translatePath(
-			self.prefs.getValue('user', 'databaseLocation', './rq_database'), 
-			'L:', '/Volumes/Library', '/mnt/Library')
+		# Define standard UI colours
+		self.colBlack     = QtGui.QColor("#0a0a0a")  # black
+		self.colWhite     = QtGui.QColor("#ffffff")  # white
+		self.colBorder    = QtGui.QColor("#222222")  # dark grey
+		self.colNormal    = self.col['text']  #QtGui.QColor("#cccccc")  # light grey
+		self.colActive    = QtGui.QColor(self.prefs.getValue('user', 'colorActive', "#00ffbb"))
+		self.colInactive  = QtGui.QColor(self.prefs.getValue('user', 'colorInactive', "#808080"))
+		self.colCompleted = QtGui.QColor(self.prefs.getValue('user', 'colorSuccess', "#00bbff"))
+		self.colError     = QtGui.QColor(self.prefs.getValue('user', 'colorFailure', "#ff5533"))
 
-		# If database location is not set or doesn't exist, prompt use to set
+		# Instantiate render queue class and load data
+		# databaseLocation = oswrapper.translatePath(
+		# 	self.prefs.getValue('user', 'databaseLocation', './rq_database'), 
+		# 	'L:', '/Volumes/Library', '/mnt/Library')
+		try:
+			databaseLocation = oswrapper.translatePath(
+				self.prefs.getValue('user', 'databaseLocation'), 
+				'L:', '/Volumes/Library', '/mnt/Library')
+		except:
+			databaseLocation = None
+
+		# If database location is not set or doesn't exist, prompt user to set
 		# the location.
 		if (not databaseLocation) or (not os.path.isdir(databaseLocation)):
-			print("ERROR: Database not found: %s" %databaseLocation)
-			databaseLocation = self.folderDialog('.')
-			self.prefs.setValue('user', 'databaseLocation', databaseLocation)
-			self.prefs.write()
+			# print("ERROR: Database not found: %s" %databaseLocation)
+			dialog_title = "Database not found"
+			dialog_msg = "The render queue database could not be found. Please set the database location in the settings dialog."
+			self.promptDialog(dialog_msg, dialog_title, conf=True)
+			self.openSettings()
+
+			# databaseLocation = self.folderDialog('.')
+			# self.prefs.setValue('user', 'databaseLocation', databaseLocation)
+			# self.prefs.write()
+
 		self.rq = database.RenderQueue(databaseLocation)
 
-		# Define standard UI colours
-		self.colBlack         = QtGui.QColor("#0a0a0a")  # black
-		self.colWhite         = QtGui.QColor("#ffffff")  # white
-		self.colBorder        = QtGui.QColor("#222222")  # dark grey
-		self.colNormal        = QtGui.QColor("#cccccc")  # light grey
-		self.colActive        = QtGui.QColor(self.prefs.getValue('user', 'colorActive', "#709e32"))
-		self.colInactive      = QtGui.QColor(self.prefs.getValue('user', 'colorInactive', "#999999"))
-		self.colCompleted     = QtGui.QColor(self.prefs.getValue('user', 'colorSuccess', "#00b2ee"))
-		self.colError         = QtGui.QColor(self.prefs.getValue('user', 'colorWarning', "#bc0000"))
-
-		# Define status icons - TODO: generate resources file containing icons
-		# self.readyIcon = QtGui.QIcon()
-		# self.readyIcon.addPixmap(QtGui.QPixmap(oswrapper.absolutePath("$IC_FORMSDIR/rsc/status_icon_ready.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-		# self.nullIcon = QtGui.QIcon()
-		# self.nullIcon.addPixmap(QtGui.QPixmap(oswrapper.absolutePath("$IC_FORMSDIR/rsc/status_icon_null.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-		# self.doneIcon = QtGui.QIcon()
-		# self.doneIcon.addPixmap(QtGui.QPixmap(oswrapper.absolutePath("$IC_FORMSDIR/rsc/status_icon_done.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-		# self.waitingIcon = QtGui.QIcon()
-		# self.waitingIcon.addPixmap(QtGui.QPixmap(oswrapper.absolutePath("$IC_FORMSDIR/rsc/status_icon_waiting.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-		# self.errorIcon = QtGui.QIcon()
-		# self.errorIcon.addPixmap(QtGui.QPixmap(oswrapper.absolutePath("$IC_FORMSDIR/rsc/status_icon_error.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-
-		# Disable some actions until properly implemented (temp)
+		# Temporarily disable some actions until properly implemented
+		self.ui.actionResubmit.setEnabled(False)
 		self.ui.actionRemote.setEnabled(False)
 		self.ui.actionSplit.setEnabled(False)
 
@@ -160,9 +165,9 @@ class RenderQueueApp(QtWidgets.QMainWindow, UI.TemplateUI):
 		self.ui.submitJob_toolButton.clicked.connect(self.launchRenderSubmit)
 		self.ui.submitJob_toolButton.setIcon(self.iconSet('document-new.svg'))
 
-		self.ui.actionRefresh.triggered.connect(self.rebuildQueueView)
+		self.ui.actionRefresh.triggered.connect(self.refreshViews)
 		self.ui.actionRefresh.setIcon(self.iconSet('view-refresh.svg'))
-		self.ui.refresh_toolButton.clicked.connect(self.rebuildQueueView)
+		self.ui.refresh_toolButton.clicked.connect(self.refreshViews)
 		self.ui.refresh_toolButton.setIcon(self.iconSet('view-refresh.svg'))
 
 		self.ui.actionResize_columns.triggered.connect(self.resizeColumns)
@@ -184,6 +189,9 @@ class RenderQueueApp(QtWidgets.QMainWindow, UI.TemplateUI):
 
 		self.ui.actionBrowse.triggered.connect(self.launchRenderBrowser)
 		self.ui.actionBrowse.setIcon(self.iconSet('view-preview.svg'))
+
+		self.ui.actionBrowseFolder.triggered.connect(self.openRenderFolder)
+		self.ui.actionBrowseFolder.setIcon(self.iconSet('icon_folder.png'))
 
 		# self.ui.actionViewJobLog.triggered.connect(self.viewJobLog)  # not yet implemented
 		# self.ui.actionViewJobLog.setIcon(self.iconSet('log.svg'))
@@ -242,11 +250,11 @@ class RenderQueueApp(QtWidgets.QMainWindow, UI.TemplateUI):
 		self.ui.actionEditWorker.triggered.connect(self.editWorker)
 		self.ui.actionEditWorker.setIcon(self.iconSet('edit.svg'))
 
-		self.ui.actionStartWorker.triggered.connect(self.startWorker)
-		self.ui.actionStartWorker.setIcon(self.iconSet('media-playback-start.svg'))
+		self.ui.actionStartWorker.triggered.connect(self.enableWorkers)
+		#self.ui.actionStartWorker.setIcon(self.iconSet('media-playback-start.svg'))
 
-		self.ui.actionStopWorker.triggered.connect(self.stopWorker)
-		self.ui.actionStopWorker.setIcon(self.iconSet('media-playback-stop.svg'))
+		self.ui.actionStopWorker.triggered.connect(self.disableWorkers)
+		#self.ui.actionStopWorker.setIcon(self.iconSet('media-playback-stop.svg'))
 
 		#self.ui.actionStopWorkerImmediately.triggered.connect(self.cancelRender)
 		#self.ui.actionStopWorkerImmediately.setIcon(self.iconSet('paint-none.svg'))
@@ -269,11 +277,11 @@ class RenderQueueApp(QtWidgets.QMainWindow, UI.TemplateUI):
 		self.ui.workerControl_toolButton.setIcon(self.iconSet('computer.png'))
 
 		# self.actionWorkerStart = QtWidgets.QAction("Start Worker", None)
-		# self.actionWorkerStart.triggered.connect(self.startWorker)
+		# self.actionWorkerStart.triggered.connect(self.enableWorkers)
 		# self.ui.workerControl_toolButton.addAction(self.actionWorkerStart)
 
 		# self.actionWorkerStop = QtWidgets.QAction("Stop Worker", None)
-		# self.actionWorkerStop.triggered.connect(self.stopWorker)
+		# self.actionWorkerStop.triggered.connect(self.disableWorkers)
 		# self.ui.workerControl_toolButton.addAction(self.actionWorkerStop)
 
 		# self.actionKillTask = QtWidgets.QAction("Stop Worker Immediately and Kill Current Task", None)
@@ -313,20 +321,21 @@ class RenderQueueApp(QtWidgets.QMainWindow, UI.TemplateUI):
 			self.renderSubmitUI.display(**kwargs)
 
 
-	def launchRenderBrowser(self):
-		""" Launch Render Browser window.
-			Some horrible hackery going on here
+	def getOutputDir(self):
+		""" Get render output directory.
+			Some horrible hackery going on here.
 		"""
+		header = self.queue_header
 		try:
 			for item in self.ui.queue_treeWidget.selectedItems():
 				# If item has no parent then it must be a top level item, and
 				# therefore also a job
 				if not item.parent():
-					jobID = item.text(1)
+					jobID = item.text(header['ID'])
 					job = self.rq.getJob(jobID)
 					output = job['output']
 					mayaproj = job['mayaProject']
-					frameRange = item.text(3)
+					frameRange = item.text(header['Frames'])
 
 		except ValueError:
 			pass
@@ -338,6 +347,14 @@ class RenderQueueApp(QtWidgets.QMainWindow, UI.TemplateUI):
 			directory = os.path.split(directory)[:-1][0]
 		print(directory)
 
+		return directory, frameRange
+
+
+	def launchRenderBrowser(self):
+		""" Launch Render Browser window.
+		"""
+		directory, frameRange = self.getOutputDir()
+
 		import browser
 		try:
 			self.renderBrowserUI.display(
@@ -348,43 +365,105 @@ class RenderQueueApp(QtWidgets.QMainWindow, UI.TemplateUI):
 				directory=directory, frameRange=frameRange)
 
 
+	def openRenderFolder(self):
+		""" Open a file explorer to browse the render output directory.
+		"""
+		directory = self.getOutputDir()[0]
+		os.system('xdg-open %s' %directory)
+
+
 	def openSettings(self):
 		""" Open settings dialog.
 		"""
 		import settings
 		self.settingsEditor = settings.SettingsDialog(parent=self)
-		result = self.settingsEditor.display(settingsType=WINDOW_TITLE, 
-		                                     categoryLs=['user', 'database'], 
-		                                     startPanel=None, 
-		                                     datafile='config/userprefs.json', 
-		                                     inherit=None, 
-		                                     autoFill=False)
+		result = self.settingsEditor.display(
+			settingsType=WINDOW_TITLE, 
+			categoryLs=['user', 'database'], 
+			startPanel=None, 
+			datafile='config/userprefs.json', 
+			inherit=None, 
+			autoFill=False)
 
-		if result:
+		if result:  # Dialog accepted
 			self.prefs.read()
-			self.rebuildQueueView()
+			self.refreshViews()  # Update view to refresh colours
 
 
 	def ping(self):
-		""" Ping the selected worker's host in order to determine if it's
-			onnline or offline (currently linux only).
+		""" Ping the selected worker's IP address.
+			Ideally this should run on its own thread to prevent locking the
+			UI.
 		"""
+		header = self.workers_header
+
 		try:
 			for item in self.ui.workers_treeWidget.selectedItems():
-				args = ['ping', '-c', '1', item.text(3)]
+				workerName = item.text(header['Name'])
+				workerID = item.text(header['ID'])
+				workerIP = item.text(header['IP Address'])
+				status = item.text(header['Status'])
+
+				args = ['ping', '-c', '1', workerIP]
+				# args = ['ping', '-n', '1', workerIP]  # Windows
 				result, output = oswrapper.execute(args)
-				print(result, output)
+				if result == True:
+					print("%s is Online" %workerName)
+					print(output)
+				else:
+					print("%s is Offline" %workerName)
+					print(output)
+					#self.rq.setWorkerStatus(workerID, "Offline")
 
 		except ValueError:
 			pass
 
 
+	# def pingRemote(self):
+	# 	""" Automatically mark remote workers as offline if they do not
+	# 		respond to a ping.
+	# 		This function is called by a timer.
+	# 		Ideally this should run on its own thread to prevent locking the
+	# 		UI.
+	# 	"""
+	# 	header = self.workers_header
+
+	# 	#print("ping")
+	# 	try:
+	# 		for item in self.ui.workers_treeWidget.selectedItems():
+	# 			workerID = item.text(header['ID'])
+	# 			workerIP = item.text(header['IP Address'])
+	# 			workerType = item.text(header['Type'])
+	# 			status = item.text(header['Status'])
+
+	# 			if status != "Offline":  # Only ping online workers
+	# 				if workerType == "Remote":  # Only remote workers
+	# 					args = ['ping', '-c', '1', workerIP]
+	# 					# args = ['ping', '-n', '1', workerIP]  # Windows
+	# 					result, output = oswrapper.execute(args)
+
+	# 					if not result: # != 0:
+	# 						pass
+	# 						#self.rq.setWorkerStatus(workerID, "Offline")
+
+	# 	except ValueError:
+	# 		pass
+
+
+	def closeRemote(self):
+		""" Close the remote client. Not yet implemented.
+		"""
+		print("close")
+
+
 	def rdesktop(self):
 		""" Connect to remote desktop (currently linux only).
 		"""
+		header = self.workers_header
+
 		try:
 			for item in self.ui.workers_treeWidget.selectedItems():
-				ip = item.text(3)
+				ip = item.text(header['IP Address'])
 				cmd = 'rdesktop -g 1920x1200 -x 0x80 -a 32 -u %s -KD %s' %(os.environ.get('IC_USERNAME', getpass.getuser()), ip)
 				#os.system('rdesktop -g 1920x1200 -x 0x80 -a 32 -u vfx -p vfx -KD %s' %ip)
 				print(cmd)
@@ -453,14 +532,37 @@ Developers: %s
 		""" Resize all columns of the specified widget to fit content.
 		"""
 		widget = self.ui.queue_treeWidget
-		for i in range(0, widget.columnCount()):
+		for i in range(widget.columnCount()):
 			widget.resizeColumnToContents(i)
 
 
-	def rebuildQueueView(self):
-		""" Clears and rebuilds the render queue and worker tree view widgets,
-			populating it with entries for render jobs and tasks.
+	def getHeaderIndex(self, widget, text):
+		""" Returns the column index number for the specified header text in
+			the specified widget.
 		"""
+		for i in range(widget.columnCount()):
+			if text == widget.headerItem().text(i):
+				return i
+		return -1
+
+
+	def getHeaderIndices(self, widget):
+		""" Returns a dictionary containing the column headers as keys and
+			the index numbers as values for the specified widget. This gives
+			a more robust way to reference data from tree widgets.
+		"""
+		col_headers = {}
+		for i in range(widget.columnCount()):
+			col_headers[widget.headerItem().text(i)] = i
+		return col_headers
+
+
+	def refreshViews(self):
+		""" Clears and rebuilds the render queue and worker tree view widgets,
+			populating with entries for render jobs and tasks.
+		"""
+		widgets = [self.ui.queue_treeWidget, self.ui.workers_treeWidget]
+
 		# Instantiate render queue class and load data
 		databaseLocation = oswrapper.translatePath(
 			self.prefs.getValue('user', 'databaseLocation'), 
@@ -469,26 +571,22 @@ Developers: %s
 		self.rq = database.RenderQueue(databaseLocation)
 
 		# Set custom colours
-		self.colActive    = QtGui.QColor(self.prefs.getValue('user', 'colorActive',   "#709e32"))
-		self.colInactive  = QtGui.QColor(self.prefs.getValue('user', 'colorInactive', "#666666"))
-		self.colCompleted = QtGui.QColor(self.prefs.getValue('user', 'colorSuccess',  "#00b2ee"))
-		self.colError     = QtGui.QColor(self.prefs.getValue('user', 'colorWarning',  "#bc0000"))
+		self.colActive    = QtGui.QColor(self.prefs.getValue('user', 'colorActive',   "#00ffbb"))
+		self.colInactive  = QtGui.QColor(self.prefs.getValue('user', 'colorInactive', "#808080"))
+		self.colCompleted = QtGui.QColor(self.prefs.getValue('user', 'colorSuccess',  "#00bbff"))
+		self.colError     = QtGui.QColor(self.prefs.getValue('user', 'colorFailure',  "#ff5533"))
 
-		# Clear widgets
-		self.ui.queue_treeWidget.clear()
-		self.ui.workers_treeWidget.clear()
+		for widget in widgets:
+			# Clear widgets
+			widget.clear()
+
+			# Hide ID column(s)
+			# id_col = self.getHeaderIndex(widget, 'ID')
+			# widget.setColumnHidden(id_col, True)
 
 		# Populate tree widget with render jobs and tasks
 		self.updateQueueView()
 		self.updateWorkerView()
-
-		# Hide ID column
-		#self.ui.queue_treeWidget.setColumnHidden(1, True)
-
-		# Sort by submit time column - move this somewhere else?
-		#self.ui.queue_treeWidget.sortByColumn(7, QtCore.Qt.DescendingOrder)
-
-		#self.updateWorkerView()
 
 
 	def updateQueueView(self):
@@ -496,10 +594,9 @@ Developers: %s
 			jobs and tasks.
 			This function will refresh the view by updating the existing
 			items, without completely rebuilding it.
-			TODO: we probably shouldn't be writing to the XML file here, this
-			function should be read only.
 		"""
 		widget = self.ui.queue_treeWidget
+		header = self.queue_header
 
 		# Stop the widget from emitting signals
 		widget.blockSignals(True)
@@ -510,22 +607,22 @@ Developers: %s
 			return
 		for job in jobs:
 
-			# Get values from XML
+			# Set default job status
 			jobStatus = "Queued"
 
 			# Get the render job item or create it if it doesn't exist
-			renderJobItem = self.getQueueItem(widget.invisibleRootItem(), job['jobID'])
+			jobItem = self.getQueueItem(widget, widget.invisibleRootItem(), job['jobID'])
 
 			# Fill columns with data
-			renderJobItem.setText(0, job['jobName'])
-			renderJobItem.setIcon(0, self.iconSet('app_icon_%s.png' %job['jobType'].lower()))
-			renderJobItem.setText(1, job['jobID'])
-			renderJobItem.setText(2, job['jobType'])
-			renderJobItem.setText(3, job['frames'])
-			renderJobItem.setText(4, jobStatus)
-			renderJobItem.setText(5, str(job['priority']))
-			renderJobItem.setText(6, job['username'])
-			renderJobItem.setText(7, job['submitTime'])
+			jobItem.setText(header['Name'], job['jobName'])
+			jobItem.setIcon(header['Name'], self.iconSet('app_icon_%s.png' %job['jobType'].lower()))
+			jobItem.setText(header['ID'], job['jobID'])
+			jobItem.setText(header['Type'], job['jobType'])
+			jobItem.setText(header['Frames'], job['frames'])
+			jobItem.setText(header['Status'], jobStatus)
+			jobItem.setText(header['Priority'], str(job['priority']))
+			jobItem.setText(header['User'], job['username'])
+			jobItem.setText(header['Submitted'], job['submitTime'])
 
 			# Initialise counters and timers
 			jobTotalTimeSeconds = 0
@@ -563,13 +660,13 @@ Developers: %s
 					taskWorker = "None"
 
 				# Get the render task item or create it if it doesn't exist
-				renderTaskItem = self.getQueueItem(renderJobItem, taskID)
+				taskItem = self.getQueueItem(widget, jobItem, taskID)
 
 				# Fill columns with data
-				renderTaskItem.setText(0, "Task %d" %task['taskNo'])
-				renderTaskItem.setText(1, taskID)
-				renderTaskItem.setText(3, task['frames'])
-				renderTaskItem.setText(4, taskStatus)
+				taskItem.setText(header['Name'], "Task %d" %task['taskNo'])
+				taskItem.setText(header['ID'], taskID)
+				taskItem.setText(header['Frames'], task['frames'])
+				taskItem.setText(header['Status'], taskStatus)
 
 				# Calculate progress
 				if task['frames'] == 'Unknown':
@@ -596,22 +693,22 @@ Developers: %s
 
 				# Colour the status text
 				for col in range(widget.columnCount()):
-					# renderTaskItem.setForeground(col, QtGui.QBrush(self.colInactive))
+					# taskItem.setForeground(col, QtGui.QBrush(self.colInactive))
 					# if taskStatus == "Queued": # and taskWorker == self.localhost:
-					# 	renderTaskItem.setForeground(4, QtGui.QBrush(self.colInactive))
-					# 	# renderTaskItem.setIcon(4, self.nullIcon)
+					# 	taskItem.setForeground(header['Status'], QtGui.QBrush(self.colInactive))
+					# 	# taskItem.setIcon(header['Status'], self.nullIcon)
 					if taskStatus.startswith("Rendering"): # and taskWorker == self.localhost:
-						renderTaskItem.setForeground(4, QtGui.QBrush(self.colActive))
-						# renderTaskItem.setIcon(4, self.readyIcon)
+						taskItem.setForeground(header['Status'], QtGui.QBrush(self.colActive))
+						# taskItem.setIcon(header['Status'], self.readyIcon)
 					elif taskStatus == "Done": # and taskWorker == self.localhost:
-						renderTaskItem.setForeground(4, QtGui.QBrush(self.colCompleted))
-						#renderTaskItem.setIcon(4, self.iconSet('dialog-ok-apply.svg'))
-						# renderTaskItem.setIcon(4, self.doneIcon)
+						taskItem.setForeground(header['Status'], QtGui.QBrush(self.colCompleted))
+						#taskItem.setIcon(header['Status'], self.iconSet('dialog-ok-apply.svg'))
+						# taskItem.setIcon(header['Status'], self.doneIcon)
 					elif taskStatus == "Failed": # and taskWorker == self.localhost:
-						renderTaskItem.setForeground(4, QtGui.QBrush(self.colError))
-						# renderTaskItem.setIcon(4, self.errorIcon)
+						taskItem.setForeground(header['Status'], QtGui.QBrush(self.colError))
+						# taskItem.setIcon(header['Status'], self.errorIcon)
 					else:
-						renderTaskItem.setForeground(4, QtGui.QBrush(self.colNormal))
+						taskItem.setForeground(header['Status'], QtGui.QBrush(self.colNormal))
 
 				# Update timers
 				try:
@@ -621,15 +718,17 @@ Developers: %s
 				except (TypeError, ValueError):
 					totalTime = None
 
-				renderTaskItem.setText(8, totalTime)
-				renderTaskItem.setText(9, taskWorker)
+				taskItem.setText(header['Clock'], totalTime)
+				taskItem.setText(header['Worker'], taskWorker)
+			# End task setup
 
-			renderJobItem.sortChildren(1, QtCore.Qt.AscendingOrder)  # Tasks are always sorted by ID
+			# Always sort tasks by ID (ignore column sort order)
+			jobItem.sortChildren(header['ID'], QtCore.Qt.AscendingOrder)
 
 			# Calculate job progress and update status
 			colBg = self.colBlack
 			colProgress = self.colCompleted
-			#renderJobItem.setForeground(4, QtGui.QBrush(self.colWhite))
+			#jobItem.setForeground(4, QtGui.QBrush(self.colWhite))
 			if completedTaskFrameCount == 0:
 				if inProgressTaskFrameCount == 0:
 					jobStatus = "Queued"
@@ -637,7 +736,7 @@ Developers: %s
 					jobStatus = "[0%] Working"
 			elif completedTaskFrameCount == totalFrameCount:
 				jobStatus = "Done"
-				#renderJobItem.setForeground(4, QtGui.QBrush(self.colBorder))
+				#jobItem.setForeground(4, QtGui.QBrush(self.colBorder))
 			else:
 				percentComplete = (float(completedTaskFrameCount) / float(totalFrameCount)) * 100
 				if inProgressTaskFrameCount == 0:
@@ -652,7 +751,8 @@ Developers: %s
 				# 	colBg = self.colError
 
 			self.drawJobProgressIndicator(
-				renderJobItem, 
+				header['Status'], 
+				jobItem, 
 				completedTaskFrameCount, 
 				failedTaskFrameCount, 
 				inProgressTaskFrameCount, 
@@ -660,7 +760,7 @@ Developers: %s
 				colProgress)
 
 			# self.rq.setStatus(job['jobID'], jobStatus)  # Write to XML if status has changed
-			renderJobItem.setText(4, jobStatus)
+			jobItem.setText(header['Status'], jobStatus)
 
 			# Calculate time taken
 			try:
@@ -668,16 +768,16 @@ Developers: %s
 			except (TypeError, ValueError):
 				jobTotalTime = None
 
-			renderJobItem.setText(8, str(jobTotalTime))
+			jobItem.setText(header['Clock'], str(jobTotalTime))
 			if inProgressTaskCount:
-				renderJobItem.setText(9, "[%d rendering]" %inProgressTaskCount)
+				jobItem.setText(header['Worker'], "[%d rendering]" %inProgressTaskCount)
 			else:
-				renderJobItem.setText(9, "")
-			renderJobItem.setText(10, job['comment'])
+				jobItem.setText(header['Worker'], "")
+			jobItem.setText(header['Comment'], job['comment'])
 
 			# Attempt to restore expanded job items
 			try:
-				renderJobItem.setExpanded(self.expandedJobs[job['jobID']])
+				jobItem.setExpanded(self.expandedJobs[job['jobID']])
 			except:
 				pass
 
@@ -689,6 +789,7 @@ Developers: %s
 		""" Update the information in the worker view.
 		"""
 		widget = self.ui.workers_treeWidget
+		header = self.workers_header
 
 		# Stop the widget from emitting signals
 		widget.blockSignals(True)
@@ -700,36 +801,50 @@ Developers: %s
 		for worker in workers:
 
 			# Get the worker item or create it if it doesn't exist
-			# workerListItem = QtWidgets.QTreeWidgetItem(widget.invisibleRootItem())
-			workerListItem = self.getQueueItem(widget.invisibleRootItem(), worker['id'])
+			# workerItem = QtWidgets.QTreeWidgetItem(widget.invisibleRootItem())
+			workerItem = self.getQueueItem(widget, widget.invisibleRootItem(), worker['id'])
 			# workerIcon = QtGui.QIcon()
 			# workerIcon.addPixmap(QtGui.QPixmap(self.checkFilePath(icon+".png", searchpath)), QtGui.QIcon.Normal, QtGui.QIcon.Off)
 			# action.setIcon(workerIcon)
-			#workerListItem.setIcon(0, self.setSVGIcon('computer-symbolic'))
-			workerListItem.setIcon(0, self.iconSet('computer.png'))
+			workerItem.setIcon(header['Name'], self.iconSet('computer.png'))
 
 			# Fill columns with data
-			workerListItem.setText(0, worker['name'])
-			workerListItem.setText(1, worker['id'])
-			workerListItem.setText(2, worker['hostname'])
-			workerListItem.setText(3, worker['ip_address'])
-			workerListItem.setText(4, worker['status'])
-			workerListItem.setText(5, worker['username'])
-			#workerListItem.setText(5, worker['runningTime'])
-			workerListItem.setText(7, worker['pool'])
-			workerListItem.setText(8, worker['comment'])
+			workerItem.setText(header['Name'], worker['name'])
+			workerItem.setText(header['ID'], worker['id'])
+			workerItem.setText(header['Status'], worker['status'])
+			workerItem.setText(header['Hostname'], worker['hostname'])
+			workerItem.setText(header['IP Address'], worker['ip_address'])
+			workerItem.setText(header['User'], worker['username'])
+			#workerItem.setText(header['Clock'], worker['runningTime'])
+			workerItem.setText(header['Pool'], worker['pool'])
+			workerItem.setText(header['Comment'], worker['comment'])
 
 			# Give remote workers different colour
 			# (could add extra column instead)
 			if worker['ip_address'] != self.ip_address:
-				for col in range(widget.columnCount()):
-					workerListItem.setForeground(col, QtGui.QBrush(self.colInactive))
+				workerItem.setText(header['Type'], 'Remote')
+				# for col in range(widget.columnCount()):
+				# 	workerItem.setForeground(col, QtGui.QBrush(self.colInactive))
+			else:
+				workerItem.setText(header['Type'], 'Local')
+
+			# Colour the status text
+			if worker['status'].startswith("Rendering"):
+				workerItem.setForeground(header['Status'], QtGui.QBrush(self.colActive))
+			elif worker['status'] == "Disabled":
+				workerItem.setForeground(header['Status'], QtGui.QBrush(self.colInactive))
+			elif worker['status'] == "Offline":
+				workerItem.setForeground(header['Status'], QtGui.QBrush(self.colError))
+			else:
+				workerItem.setForeground(header['Status'], QtGui.QBrush(self.colNormal))
 
 		# Re-enable signals
 		widget.blockSignals(False)
 
+		self.checkinLocalWorkers()
 
-	def getQueueItem(self, parent, itemID=None):
+
+	def getQueueItem(self, widget, parent, itemID=None):
 		""" Return the tree widget item identified by 'itemID' belonging to
 			'parent'.
 			If it doesn't exist, return a new item.
@@ -749,22 +864,23 @@ Developers: %s
 		else:
 			for i in range(child_count):
 				item = parent.child(i)
-				if item.text(1) == itemID:
+				id_col = self.getHeaderIndex(widget, 'ID')
+				if item.text(id_col) == itemID:
 					return item
 
 			# Return a new item
 			return QtWidgets.QTreeWidgetItem(parent)
 
 
-	def drawJobProgressIndicator(self, renderJobItem, 
+	def drawJobProgressIndicator(self, col, jobItem, 
 		completedTaskFrameCount, failedTaskFrameCount, 
 		inProgressTaskFrameCount, totalFrameCount, 
 		colProgress):
 		""" Draw a pixmap progress bar to represent the progress of a job.
 		"""
 		border = 1
-		width = self.ui.queue_treeWidget.columnWidth(4)
-		height = self.ui.queue_treeWidget.rowHeight(self.ui.queue_treeWidget.indexFromItem(renderJobItem))
+		width = self.ui.queue_treeWidget.columnWidth(col)
+		height = self.ui.queue_treeWidget.rowHeight(self.ui.queue_treeWidget.indexFromItem(jobItem))
 		barWidth = width - (border*2)
 		barHeight = height - (border*2)
 		completedRatio = float(completedTaskFrameCount) / float(totalFrameCount)
@@ -793,9 +909,9 @@ Developers: %s
 		# qp.drawRect(border, border, failedLevel, barHeight)
 		qp.end()
 
-		#renderJobItem.setBackground(4, image)  # PyQt5 doesn't like this
-		renderJobItem.setBackground(4, QtGui.QBrush(image))  # Test with Qt4/PySide
-		#renderJobItem.setForeground(4, QtGui.QBrush(self.colWhite))
+		#jobItem.setBackground(col, image)  # PyQt5 doesn't like this
+		jobItem.setBackground(col, QtGui.QBrush(image))  # Test with Qt4/PySide
+		#jobItem.setForeground(col, QtGui.QBrush(self.colWhite))
 
 
 	# @QtCore.Slot()
@@ -804,10 +920,10 @@ Developers: %s
 		"""
 		#print "Column %s resized from %s to %s pixels" %(logicalIndex, oldSize, newSize)
 
-		if logicalIndex == 4:
-			# renderJobItems = self.getQueueItem(self.ui.queue_treeWidget.invisibleRootItem())
-			# for renderJobItem in renderJobItems:
-			# 	self.drawJobProgressIndicator(renderJobItem, 0, 0, 100, self.colInactive)
+		if logicalIndex == self.getHeaderIndex(self.ui.queue_treeWidget, 'Status'):
+			# jobItems = self.getQueueItem(self.ui.queue_treeWidget.invisibleRootItem())
+			# for jobItem in jobItems:
+			# 	self.drawJobProgressIndicator(jobItem, 0, 0, 100, self.colInactive)
 
 			self.updateQueueView()
 
@@ -816,23 +932,25 @@ Developers: %s
 	def storeExpandedJobs(self):
 		""" Store the expanded status of all jobs.
 		"""
+		header = self.queue_header
 		root = self.ui.queue_treeWidget.invisibleRootItem()
 		for i in range(root.childCount()):
 			jobItem = root.child(i)
-			jobID = jobItem.text(1)
+			jobID = jobItem.text(header['ID'])
 			self.expandedJobs[jobID] = jobItem.isExpanded()
 		# print(self.expandedJobs)
 
 
 	# @QtCore.Slot()
 	def sortTasks(self):
-		""" Sort all tasks by ID, regardless of sort column.
+		""" Sort all tasks by ID, regardless of sort column. Called whenever
+			the user resizes a column of the render queue tree view widget.
 		"""
+		header = self.queue_header
 		root = self.ui.queue_treeWidget.invisibleRootItem()
-		child_count = root.childCount()
-		for i in range(child_count):
-			item = root.child(i)
-			item.sortChildren(1, QtCore.Qt.AscendingOrder)  # Tasks are always sorted by ID
+		for i in range(root.childCount()):
+			jobItem = root.child(i)
+			jobItem.sortChildren(header['ID'], QtCore.Qt.AscendingOrder)
 
 
 	def updateSelection(self):
@@ -840,29 +958,33 @@ Developers: %s
 			Only allow jobs OR tasks to be selected, not both.
 			Update the toolbar and menus based on the selection.
 		"""
+		widget = self.ui.queue_treeWidget
+		header = self.queue_header
+
 		self.selection = []  # Clear selection
 		selectionType = None
 		sameJob = True
 		frames = []
 
-		for item in self.ui.queue_treeWidget.selectedItems():
+		for item in widget.selectedItems():
 
 			if item.parent():  # Task is selected
-				currentItem = self.ui.queue_treeWidget.currentItem()
+				currentItem = widget.currentItem()
 				if selectionType == "Job":
 					self.selection = []
-					self.ui.queue_treeWidget.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
-					self.ui.queue_treeWidget.clearSelection()
-					self.ui.queue_treeWidget.setCurrentItem(currentItem)
+					widget.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
+					widget.clearSelection()
+					widget.setCurrentItem(currentItem)
 				else:
 					selectionType = "Task"
-					self.ui.queue_treeWidget.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
-					jobTaskID = item.parent().text(1), int(item.text(1))
+					widget.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
+					id_col = header['ID']
+					jobTaskID = item.parent().text(id_col), int(item.text(id_col))
 					self.selection.append(jobTaskID)
 
 					if jobTaskID[0] == self.selection[0][0]:
 						try:
-							frames += sequence.numList(item.text(3), quiet=True)
+							frames += sequence.numList(item.text(header['Frames']), quiet=True)
 						except:
 							pass
 					else:
@@ -874,16 +996,16 @@ Developers: %s
 					self.ui.menuTask.setEnabled(True)
 
 			else:  # Job is selected
-				currentItem = self.ui.queue_treeWidget.currentItem()
+				currentItem = widget.currentItem()
 				if selectionType == "Task":
 					self.selection = []
-					self.ui.queue_treeWidget.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
-					self.ui.queue_treeWidget.clearSelection()
-					self.ui.queue_treeWidget.setCurrentItem(currentItem)
+					widget.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
+					widget.clearSelection()
+					widget.setCurrentItem(currentItem)
 				else:
 					selectionType = "Job"
-					self.ui.queue_treeWidget.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
-					jobTaskID = item.text(1), -1
+					widget.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
+					jobTaskID = item.text(header['ID']), -1
 					self.selection.append(jobTaskID)
 
 					self.ui.job_frame.setEnabled(True)
@@ -910,7 +1032,6 @@ Developers: %s
 				contiguous_frame_range = None
 
 			# Print status message
-			#print(self.ui.queue_treeWidget.currentItem().text(1))
 			count = len(self.selection)
 			# if selectionType == "Job":
 			if self.selection[0][1] == -1:
@@ -941,12 +1062,14 @@ Developers: %s
 		""" Stops selected render job(s). All tasks currently rendering will
 			be stopped immediately.
 		"""
+		header = self.queue_header
+
 		try:
 			for item in self.ui.queue_treeWidget.selectedItems():
 				# If item has no parent then it must be a top level item, and
 				# therefore also a job
 				if not item.parent():
-					jobID = item.text(1)
+					jobID = item.text(header['ID'])
 					self.rq.requeueJob(jobID)
 
 			self.changePriority(0, absolute=True)  # Pause job(s)
@@ -961,12 +1084,14 @@ Developers: %s
 		""" Removes selected render job(s) from the database and updates the
 			view.
 		"""
+		header = self.queue_header
+
 		try:
 			for item in self.ui.queue_treeWidget.selectedItems():
 				# If item has no parent then it must be a top level item, and
 				# therefore also a job
 				if not item.parent():
-					jobID = item.text(1)
+					jobID = item.text(header['ID'])
 
 					# Remove item from view
 					if self.rq.deleteJob(jobID):
@@ -984,10 +1109,12 @@ Developers: %s
 	def deleteWorker(self):
 		""" Removes selected worker(s) from the database and updates the view.
 		"""
+		header = self.workers_header
+
 		if self.promptDialog("Are you sure?", "Delete worker(s)"):
 			try:
 				for item in self.ui.workers_treeWidget.selectedItems():
-					workerID = item.text(1)
+					workerID = item.text(header['ID'])
 
 					# Remove item from view
 					if self.rq.deleteWorker(workerID):
@@ -1008,12 +1135,14 @@ Developers: %s
 			Currently just opens a text editor to edit the JSON file, in lieu
 			of a proper editor UI (currently linux only).
 		"""
+		header = self.queue_header
+
 		try:
 			for item in self.ui.queue_treeWidget.selectedItems():
 				# If item has no parent then it must be a top level item, and
 				# therefore also a job
 				if not item.parent():
-					jobID = item.text(1)
+					jobID = item.text(header['ID'])
 					os.system('xdg-open %s' %self.rq.getJobDatafile(jobID))
 
 			#self.updateWorkerView()
@@ -1027,9 +1156,11 @@ Developers: %s
 			Currently just opens a text editor to edit the JSON file, in lieu
 			of a proper editor UI (currently linux only).
 		"""
+		header = self.workers_header
+
 		try:
 			for item in self.ui.workers_treeWidget.selectedItems():
-				workerID = item.text(1)
+				workerID = item.text(header['ID'])
 				os.system('xdg-open %s' %self.rq.getWorkerDatafile(workerID))
 
 			#self.updateWorkerView()
@@ -1045,6 +1176,8 @@ Developers: %s
 			And 'absolute=True' when we want to set the priority directly,
 			e.g. when a job is paused.
 		"""
+		header = self.queue_header
+
 		self.timerUpdateView.stop()  # Don't update the view when dragging the slider
 
 		try:
@@ -1052,7 +1185,7 @@ Developers: %s
 				# If item has no parent then it must be a top level item, and
 				# therefore also a job
 				if not item.parent():
-					jobID = item.text(1)
+					jobID = item.text(header['ID'])
 					minPriority = 0
 					maxPriority = 100
 
@@ -1063,11 +1196,11 @@ Developers: %s
 						newPriority = currentPriority+amount
 
 					if newPriority <= minPriority:
-						item.setText(5, str(minPriority))
+						item.setText(header['Priority'], str(minPriority))
 					elif newPriority >= maxPriority:
-						item.setText(5, str(maxPriority))
+						item.setText(header['Priority'], str(maxPriority))
 					else:
-						item.setText(5, str(newPriority))
+						item.setText(header['Priority'], str(newPriority))
 
 					if absolute:
 						self.updatePriority()
@@ -1082,13 +1215,15 @@ Developers: %s
 			This function is called when the 'Reprioritise' slider is
 			released, or when we want to set the priority directly.
 		"""
+		header = self.queue_header
+
 		try:
 			for item in self.ui.queue_treeWidget.selectedItems():
 				# If item has no parent then it must be a top level item, and
 				# therefore also a job
 				if not item.parent():
-					jobID = item.text(1)
-					priority = int(item.text(5))
+					jobID = item.text(header['ID'])
+					priority = int(item.text(header['Priority']))
 					self.rq.setPriority(jobID, priority)
 
 			self.updateQueueView()
@@ -1132,13 +1267,15 @@ Developers: %s
 	def viewTaskLog(self):
 		""" View the log for the selected task(s).
 		"""
+		header = self.queue_header
+
 		try:
 			for item in self.ui.queue_treeWidget.selectedItems():
 				# If item has parent then it must be a subitem, and therefore
 				# also a task
 				if item.parent():
-					jobID = item.parent().text(1)
-					taskID = int(item.text(1))
+					jobID = item.parent().text(header['ID'])
+					taskID = int(item.text(header['ID']))
 					os.system('xdg-open %s' %self.rq.getTaskLog(jobID, taskID))
 
 		except ValueError:
@@ -1166,6 +1303,8 @@ Developers: %s
 	def setTaskStatus(self, status):
 		""" Mark the selected task as completed, failed, or queued.
 		"""
+		header = self.queue_header
+
 		jobTaskIDs = []  # This will hold a tuple containing (job id, task id)
 
 		try:
@@ -1173,7 +1312,8 @@ Developers: %s
 				# If item has parent then it must be a subitem, and therefore
 				# also a task
 				if item.parent():
-					jobTaskID = item.parent().text(1), int(item.text(1))
+					jobTaskID = item.parent().text(
+						header['ID']), int(item.text(header['ID']))
 					jobTaskIDs.append(jobTaskID)
 
 			for jobTaskID in jobTaskIDs:
@@ -1201,42 +1341,97 @@ Developers: %s
 	# 		self.setWorkerStatus("Disabled")
 
 
-	def startWorker(self):
-		""" Start the selected worker(s).
+	def enableWorkers(self):
+		""" Enable the selected worker(s).
 		"""
-		self.setWorkerStatus("Idle")
-
-
-	def stopWorker(self):
-		""" Start the selected worker(s).
-		"""
-		self.setWorkerStatus("Disabled")
-
-
-	def setWorkerStatus(self, status):
-		""" Set the local worker status, and update the tool button and menu.
-		"""
-		workerIDs = []
+		header = self.workers_header
 
 		try:
 			for item in self.ui.workers_treeWidget.selectedItems():
-				workerIDs.append(item.text(1))
-
-			for workerID in workerIDs:
-				if status == "Disabled":
-					# self.rq.requeueTask(workerID[0], workerID[1])
-					self.rq.setWorkerStatus(workerID, "Disabled")
-				elif status == "Idle":
-					# self.rq.completeTask(workerID[0], workerID[1], taskTime=0)
-					self.rq.setWorkerStatus(workerID, "Idle")
-				elif status == "Rendering":
-					# self.rq.failTask(workerID[0], workerID[1], taskTime=0)
-					self.rq.setWorkerStatus(workerID, "Rendering")
+				if item.text(header['Status']) == "Offline":
+					print("Offline workers cannot be enabled/disabled")
+				else:
+					self.rq.enableWorker(item.text(header['ID']))
 
 			self.updateWorkerView()
 
 		except ValueError:
 			pass
+
+
+	def disableWorkers(self):
+		""" Disable the selected worker(s).
+		"""
+		header = self.workers_header
+
+		try:
+			for item in self.ui.workers_treeWidget.selectedItems():
+				if item.text(header['Status']) == "Offline":
+					print("Offline workers cannot be enabled/disabled")
+				else:
+					self.rq.disableWorker(item.text(header['ID']))
+
+			self.updateWorkerView()
+
+		except ValueError:
+			pass
+
+
+	def checkinLocalWorkers(self):
+		""" Check in local worker(s).
+		"""
+		header = self.workers_header
+
+		root = self.ui.workers_treeWidget.invisibleRootItem()
+		for i in range(root.childCount()):
+			workerID = root.child(i).text(header['ID'])
+			workerType = root.child(i).text(header['Type'])
+			workerStatus = root.child(i).text(header['Status'])
+
+			if workerType == "Local":
+				self.rq.checkinWorker(workerID, self.localhost)
+
+
+	def checkoutLocalWorkers(self):
+		""" Check out local worker(s).
+			This should happen when the Render Queue client UI is closed.
+		"""
+		header = self.workers_header
+
+		root = self.ui.workers_treeWidget.invisibleRootItem()
+		for i in range(root.childCount()):
+			workerID = root.child(i).text(header['ID'])
+			workerType = root.child(i).text(header['Type'])
+
+			if workerType == "Local":
+				self.rq.checkoutWorker(workerID, self.localhost)
+
+
+	# def setWorkerStatus(self, status):
+	# 	""" Set the local worker status, and update the tool button and menu.
+	# 	"""
+	# 	header = self.workers_header
+	# 	workerIDs = []
+
+	# 	try:
+	# 		for item in self.ui.workers_treeWidget.selectedItems():
+	# 			workerIDs.append(item.text(header['ID']))
+
+	# 		for workerID in workerIDs:
+	# 			if status == "Disabled":
+	# 				# self.rq.requeueTask(workerID[0], workerID[1])
+	# 				self.rq.setWorkerStatus(workerID, "Disabled")
+	# 			elif status == "Idle":
+	# 				# self.rq.completeTask(workerID[0], workerID[1], taskTime=0)
+	# 				self.rq.setWorkerStatus(workerID, "Idle")
+	# 			# elif status == "Rendering":
+	# 			# 	# self.rq.failTask(workerID[0], workerID[1], taskTime=0)
+	# 			# 	self.rq.setWorkerStatus(workerID, "Rendering")
+
+	# 		self.updateWorkerView()
+
+	# 	except ValueError:
+	# 		pass
 
 
 	def combineTasks(self):
@@ -1245,6 +1440,8 @@ Developers: %s
 			contiguous frame range.
 		"""
 		pass # Re-enable when implementing this feature
+		# header = self.queue_header
+
 		# # for item in self.selection:
 		# jobIDs = []
 		# taskIDs = []
@@ -1256,12 +1453,12 @@ Developers: %s
 		# 		# also a task
 		# 		if item.parent():
 		# 			# Only add task if it belongs to the same job as the first
-		# 			jobID = item.parent().text(1)
+		# 			jobID = item.parent().text(header['ID'])
 		# 			jobIDs.append(jobID)
 		# 			if jobID == jobIDs[0]:
-		# 				# frames += sequence.numList(item.text(3))
+		# 				# frames += sequence.numList(item.text(header['Frames']))
 
-		# 				taskIDs.append(int(item.text(1)))
+		# 				taskIDs.append(int(item.text(header['Frames'])))
 		# 			else:
 		# 				print("Warning: Only tasks belonging to the same job can be combined.")
 		# 				return False
@@ -1279,13 +1476,15 @@ Developers: %s
 
 
 	def newWorker(self):
-		""" Create a new worker node.
+		""" Create a new local worker node.
 		"""
 		worker_args = {}
+		worker_args['name'] = self.localhost.split(".")[0]
 		worker_args['hostname'] = self.localhost
 		worker_args['ip_address'] = self.ip_address
-		worker_args['name'] = self.localhost.split(".")[0]
-		worker_args['status'] = "Disabled"
+		#worker_args['status'] = "Disabled"
+		worker_args['enable'] = False
+		worker_args['online'] = time.time()
 		worker_args['username'] = os.environ.get('IC_USERNAME', getpass.getuser())
 		worker_args['pool'] = "None"
 		worker_args['comment'] = ""
@@ -1297,6 +1496,7 @@ Developers: %s
 	def dequeue(self):
 		""" Dequeue a render task from the queue and start rendering.
 		"""
+		header = self.workers_header
 		# workerIDs = []
 
 		self.renderTaskInterrupted = False
@@ -1326,10 +1526,10 @@ Developers: %s
 		root = self.ui.workers_treeWidget.invisibleRootItem()
 		for i in range(root.childCount()):
 			workerItem = root.child(i)
-			workerID = workerItem.text(1)
-			workerIP = workerItem.text(3)
-			workerStatus = workerItem.text(4)
-			if workerIP == self.ip_address:  # Local workers only
+			workerID = workerItem.text(header['ID'])
+			workerType = workerItem.text(header['Type'])
+			workerStatus = workerItem.text(header['Status'])
+			if workerType == "Local":  # Local workers only
 				if workerStatus == "Idle":  # Worker is ready
 					# ---SNIP---
 					self.rq.dequeueTask(task['jobID'], task['taskNo'], workerID)
@@ -1344,7 +1544,7 @@ Developers: %s
 					# 	self.rq.failTask(task['jobID'], task['taskNo'], taskTime=1)
 
 					# Initialise worker thread, connect signals & slots, start processing
-					logfile = os.path.join(self.rq.db_logs, '%s_%s.log' %(task['jobID'], str(task['taskNo']).zfill(4)))
+					logfile = os.path.join(self.rq.db['logs'], '%s_%s.log' %(task['jobID'], str(task['taskNo']).zfill(4)))
 					#print(logfile)
 					self.workerThread = worker.WorkerThread(
 						job, task, node, logfile, 
@@ -1379,7 +1579,7 @@ Developers: %s
 		self.workerThread.quit()  # Enclose in try/except?
 		self.workerThread.wait()  # Enclose in try/except?
 
-		# self.ui.taskList_treeWidget.resizeColumnToContents(self.header("Status"))
+		# self.ui.taskList_treeWidget.resizeColumnToContents(self.getHeaderIndex("Status"))
 
 
 	def updateTimers(self):
@@ -1452,33 +1652,49 @@ Developers: %s
 		# self.timerUpdateTimer.timeout.connect(self.updateTimers)
 		# self.timerUpdateTimer.start(1000)
 
+		# self.timerPing = QtCore.QTimer(self)
+		# self.timerPing.timeout.connect(self.pingRemote)
+		# self.timerPing.start(15000)
+
+		# self.timerCheckin = QtCore.QTimer(self)
+		# self.timerCheckin.timeout.connect(self.checkinLocalWorkers)
+		# self.timerCheckin.start(15000)
+
 		self.updateQueueView()
 		self.updateWorkerView()
 		self.updateSelection()
+		#self.checkinLocalWorkers()
 
 
 	def closeEvent(self, event):
 		""" Event handler for when window is closed.
 		"""
+		header = self.workers_header
+		render_in_progress = False
+
+		# Check if any local workers are rendering
+		root = self.ui.workers_treeWidget.invisibleRootItem()
+		for i in range(root.childCount()):
+			workerID = root.child(i).text(header['ID'])
+			workerType = root.child(i).text(header['Type'])
+			workerStatus = root.child(i).text(header['Status'])
+
+			if workerType == "Local":
+				if workerStatus.startswith("Rendering"):
+					render_in_progress = True
 
 		# Confirmation dialog
-		# if self.workerStatus == "rendering":
-		# 	import pDialog
+		if render_in_progress:
+			dialog_title = 'Render in progress'
+			dialog_msg = ''
+			dialog_msg += 'One or more local workers are currently rendering. Closing the Render Queue window will also stop the render(s).\n'
+			dialog_msg += 'Are you sure you want to quit?'
 
-		# 	dialogTitle = 'Render in progress'
-		# 	dialogMsg = ''
-		# 	dialogMsg += 'There is currently a render in progress on the local worker. Closing the Render Queue window will also kill the render.\n'
-		# 	dialogMsg += 'Are you sure you want to quit?'
-
-		# 	dialog = pDialog.dialog()
-		# 	if dialog.display(dialogMsg, dialogTitle):
-		# 		event.accept()
-		# 	else:
-		# 		event.ignore()
-		# 		return
+			if not self.promptDialog(dialog_msg, dialog_title):
+				return
 
 		# Kill the rendering process
-		# self.killRenderProcess()
+		#self.killRenderProcess()
 
 		# Requeue the task that's currently rendering
 		#self.rq.requeueTask(jobTaskID[0], jobTaskID[1])
@@ -1487,6 +1703,10 @@ Developers: %s
 		self.timerUpdateView.stop()
 		self.timerDequeue.stop()
 		# self.timerUpdateTimer.stop()
+		# self.timerCheckin.stop()
+
+		# Mark local worker(s) as offline
+		self.checkoutLocalWorkers()
 
 		# Store window geometry and state of certain widgets
 		self.storeWindow()

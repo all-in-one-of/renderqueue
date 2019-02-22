@@ -3,7 +3,7 @@
 # settings.py
 #
 # Mike Bonnington <mjbonnington@gmail.com>
-# (c) 2015-2018
+# (c) 2015-2019
 #
 # Modular settings editor dialog.
 # Provides a skeleton dialog which can be extended with load-in panels, each
@@ -116,8 +116,11 @@ class SettingsDialog(QtWidgets.QDialog, UI.TemplateUI):
 
 		# Load data from xml file(s)
 		#self.xd.loaddata(self.datafile)
-		with open(self.datafile, 'r') as f:
-			self.xd = json.load(f)
+		try:
+			with open(self.datafile, 'r') as f:
+				self.xd = json.load(f)
+		except IOError:
+			self.xd = {}
 		if self.inherit:
 			import settingsData
 			self.id = settingsData.SettingsData()

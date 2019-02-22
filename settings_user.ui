@@ -301,31 +301,6 @@
       <string>colorPalette</string>
      </property>
      <layout class="QGridLayout" name="gridLayout">
-      <item row="1" column="1">
-       <widget class="QToolButton" name="colorInactive_button">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="minimumSize">
-         <size>
-          <width>64</width>
-          <height>0</height>
-         </size>
-        </property>
-        <property name="text">
-         <string>Inactive</string>
-        </property>
-        <property name="xmlTag" stdset="0">
-         <string>colorInactive</string>
-        </property>
-        <property name="colorChooser" stdset="0">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
       <item row="1" column="2">
        <widget class="QToolButton" name="colorSuccess_button">
         <property name="sizePolicy">
@@ -337,7 +312,7 @@
         <property name="minimumSize">
          <size>
           <width>64</width>
-          <height>0</height>
+          <height>48</height>
          </size>
         </property>
         <property name="text">
@@ -345,6 +320,31 @@
         </property>
         <property name="xmlTag" stdset="0">
          <string>colorSuccess</string>
+        </property>
+        <property name="colorChooser" stdset="0">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="3">
+       <widget class="QToolButton" name="colorFailure_button">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>64</width>
+          <height>48</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>Failure</string>
+        </property>
+        <property name="xmlTag" stdset="0">
+         <string>colorFailure</string>
         </property>
         <property name="colorChooser" stdset="0">
          <bool>true</bool>
@@ -362,7 +362,7 @@
         <property name="minimumSize">
          <size>
           <width>64</width>
-          <height>0</height>
+          <height>48</height>
          </size>
         </property>
         <property name="text">
@@ -376,8 +376,8 @@
         </property>
        </widget>
       </item>
-      <item row="1" column="3">
-       <widget class="QToolButton" name="colorWarning_button">
+      <item row="1" column="1">
+       <widget class="QToolButton" name="colorInactive_button">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
           <horstretch>0</horstretch>
@@ -387,14 +387,14 @@
         <property name="minimumSize">
          <size>
           <width>64</width>
-          <height>0</height>
+          <height>48</height>
          </size>
         </property>
         <property name="text">
-         <string>Warning</string>
+         <string>Inactive</string>
         </property>
         <property name="xmlTag" stdset="0">
-         <string>colorWarning</string>
+         <string>colorInactive</string>
         </property>
         <property name="colorChooser" stdset="0">
          <bool>true</bool>
@@ -423,31 +423,6 @@
           <number>0</number>
          </property>
         </layout>
-       </widget>
-      </item>
-      <item row="1" column="4">
-       <widget class="QToolButton" name="colorFailure_button">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="minimumSize">
-         <size>
-          <width>64</width>
-          <height>0</height>
-         </size>
-        </property>
-        <property name="text">
-         <string>Failure</string>
-        </property>
-        <property name="xmlTag" stdset="0">
-         <string>colorFailure</string>
-        </property>
-        <property name="colorChooser" stdset="0">
-         <bool>true</bool>
-        </property>
        </widget>
       </item>
      </layout>

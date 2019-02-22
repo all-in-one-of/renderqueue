@@ -88,6 +88,7 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 		# Set icons (temp)
 		self.ui.commandBrowse_toolButton.setIcon(self.iconSet('folder-open-symbolic.svg'))
 		self.ui.mayaSceneBrowse_toolButton.setIcon(self.iconSet('folder-open-symbolic.svg'))
+		self.ui.houdiniSceneBrowse_toolButton.setIcon(self.iconSet('folder-open-symbolic.svg'))
 		self.ui.nukeScriptBrowse_toolButton.setIcon(self.iconSet('folder-open-symbolic.svg'))
 
 		self.ui.getCameras_toolButton.setIcon(self.iconSet('view-refresh.svg'))
@@ -235,6 +236,14 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 			if layers:
 				self.ui.layers_lineEdit.setText(layers)
 
+		elif UI.ENVIRONMENT == "HOUDINI":
+			self.jobType = "Houdini"
+			self.ui.jobType_comboBox.setCurrentIndex(self.ui.jobType_comboBox.findText(self.jobType))
+			self.setJobType()
+
+			if scene:
+				self.ui.houdiniScene_comboBox.addItem(scene)
+
 		elif UI.ENVIRONMENT == "NUKE":
 			self.jobType = "Nuke"
 			self.ui.jobType_comboBox.setCurrentIndex(self.ui.jobType_comboBox.findText(self.jobType))
@@ -346,6 +355,7 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 		"""
 		self.ui.generic_groupBox.hide()
 		self.ui.maya_groupBox.hide()
+		self.ui.houdini_groupBox.hide()
 		self.ui.nuke_groupBox.hide()
 
 		if self.jobType == "Generic":
@@ -355,6 +365,13 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 			self.ui.maya_groupBox.show()
 			try:
 				self.relativeScenesDir = oswrapper.absolutePath('%s/%s' %(os.environ['MAYADIR'], 'scenes'))
+			except KeyError:
+				self.relativeScenesDir = ""
+
+		elif self.jobType == "Houdini":
+			self.ui.houdini_groupBox.show()
+			try:
+				self.relativeScenesDir = oswrapper.absolutePath('%s/%s' %(os.environ['HOUDINIDIR'], 'scenes'))
 			except KeyError:
 				self.relativeScenesDir = ""
 
@@ -1150,28 +1167,38 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 def run_maya(**kwargs):
 	""" Run in Maya.
 	"""
-	UI._maya_delete_ui(WINDOW_OBJECT, WINDOW_TITLE)  # Delete any existing UI
-	renderSubmitUI = RenderSubmitUI(parent=UI._maya_main_window())
+	try:
+		renderSubmitUI.display(**kwargs)  # Show the UI
+	except (AttributeError, UnboundLocalError):
+		UI._maya_delete_ui(WINDOW_OBJECT, WINDOW_TITLE)  # Delete any existing UI
+		renderSubmitUI = RenderSubmitUI(parent=UI._maya_main_window())
 
-	renderSubmitUI.display(**kwargs)  # Show the UI
+		renderSubmitUI.display(**kwargs)
 
 
 def run_houdini(**kwargs):
 	""" Run in Houdini.
 	"""
-	# UI._houdini_delete_ui(WINDOW_OBJECT, WINDOW_TITLE)  # Delete any existing UI
-	renderSubmitUI = RenderSubmitUI(parent=UI._houdini_main_window())
+	try:
+		session.renderSubmitUI.display(**kwargs)  # Show the UI
+	except (AttributeError, UnboundLocalError):
+		# UI._houdini_delete_ui(WINDOW_OBJECT, WINDOW_TITLE)  # Delete any existing UI
+		session = UI._houdini_get_session()
+		session.renderSubmitUI = RenderSubmitUI(parent=UI._houdini_main_window())
 
-	renderSubmitUI.display(**kwargs)  # Show the UI
+		session.renderSubmitUI.display(**kwargs)
 
 
 def run_nuke(**kwargs):
 	""" Run in Nuke.
 	"""
-	UI._nuke_delete_ui(WINDOW_OBJECT, WINDOW_TITLE)  # Delete any existing UI
-	renderSubmitUI = RenderSubmitUI(parent=UI._nuke_main_window())
+	try:
+		renderSubmitUI.display(**kwargs)  # Show the UI
+	except (AttributeError, UnboundLocalError):
+		UI._nuke_delete_ui(WINDOW_OBJECT, WINDOW_TITLE)  # Delete any existing UI
+		renderSubmitUI = RenderSubmitUI(parent=UI._nuke_main_window())
 
-	renderSubmitUI.display(**kwargs)  # Show the UI
+		renderSubmitUI.display(**kwargs)
 
 
 # Run as standalone app

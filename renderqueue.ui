@@ -53,6 +53,12 @@
        </property>
        <item>
         <widget class="QFrame" name="view_frame">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
          <property name="lineWidth">
           <number>0</number>
          </property>
@@ -173,6 +179,12 @@
        </item>
        <item>
         <widget class="QFrame" name="job_frame">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
          <property name="lineWidth">
           <number>0</number>
          </property>
@@ -398,6 +410,12 @@
        </item>
        <item>
         <widget class="QFrame" name="task_frame">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
          <property name="lineWidth">
           <number>0</number>
          </property>
@@ -485,6 +503,12 @@
        </item>
        <item>
         <widget class="QFrame" name="worker_frame">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
          <property name="lineWidth">
           <number>0</number>
          </property>
@@ -555,6 +579,9 @@
        <property name="selectionMode">
         <enum>QAbstractItemView::ExtendedSelection</enum>
        </property>
+       <property name="rootIsDecorated">
+        <bool>true</bool>
+       </property>
        <property name="uniformRowHeights">
         <bool>true</bool>
        </property>
@@ -567,14 +594,12 @@
        <attribute name="headerShowSortIndicator" stdset="0">
         <bool>true</bool>
        </attribute>
+       <attribute name="headerStretchLastSection">
+        <bool>true</bool>
+       </attribute>
        <column>
         <property name="text">
-         <string>Job / Task</string>
-        </property>
-       </column>
-       <column>
-        <property name="text">
-         <string>ID</string>
+         <string>Name</string>
         </property>
        </column>
        <column>
@@ -584,12 +609,12 @@
        </column>
        <column>
         <property name="text">
-         <string>Frames</string>
+         <string>Status</string>
         </property>
        </column>
        <column>
         <property name="text">
-         <string>Status</string>
+         <string>Frames</string>
         </property>
        </column>
        <column>
@@ -609,12 +634,17 @@
        </column>
        <column>
         <property name="text">
-         <string>Running time</string>
+         <string>Clock</string>
         </property>
        </column>
        <column>
         <property name="text">
          <string>Worker</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>ID</string>
         </property>
        </column>
        <column>
@@ -646,16 +676,21 @@
         <bool>true</bool>
        </attribute>
        <attribute name="headerStretchLastSection">
-        <bool>false</bool>
+        <bool>true</bool>
        </attribute>
        <column>
         <property name="text">
-         <string>Worker</string>
+         <string>Name</string>
         </property>
        </column>
        <column>
         <property name="text">
-         <string>ID</string>
+         <string>Type</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>Status</string>
         </property>
        </column>
        <column>
@@ -670,22 +705,22 @@
        </column>
        <column>
         <property name="text">
-         <string>Status</string>
-        </property>
-       </column>
-       <column>
-        <property name="text">
          <string>User</string>
         </property>
        </column>
        <column>
         <property name="text">
-         <string>Running time</string>
+         <string>Clock</string>
         </property>
        </column>
        <column>
         <property name="text">
          <string>Pool</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>ID</string>
         </property>
        </column>
        <column>
@@ -716,6 +751,7 @@
     </property>
     <addaction name="actionEditJob"/>
     <addaction name="actionBrowse"/>
+    <addaction name="actionBrowseFolder"/>
     <addaction name="actionViewJobLog"/>
     <addaction name="separator"/>
     <addaction name="actionPause"/>
@@ -747,16 +783,24 @@
      <addaction name="actionContinueAfterTask"/>
      <addaction name="actionStopWorkerAfterTask"/>
     </widget>
+    <widget class="QMenu" name="menuRemoteControl">
+     <property name="title">
+      <string>Remote control</string>
+     </property>
+     <addaction name="actionPing"/>
+     <addaction name="actionRemoteClose"/>
+     <addaction name="actionRemoteRestart"/>
+     <addaction name="actionRemote"/>
+    </widget>
     <addaction name="actionNewWorker"/>
     <addaction name="actionEditWorker"/>
-    <addaction name="actionPing"/>
-    <addaction name="actionRemote"/>
     <addaction name="actionDeleteWorker"/>
     <addaction name="actionViewWorkerLog"/>
     <addaction name="separator"/>
     <addaction name="actionStartWorker"/>
     <addaction name="actionStopWorker"/>
     <addaction name="menuOnTaskCompletion"/>
+    <addaction name="menuRemoteControl"/>
    </widget>
    <widget class="QMenu" name="menuQueue">
     <property name="title">
@@ -829,7 +873,7 @@
   </action>
   <action name="actionStartWorker">
    <property name="text">
-    <string>Start</string>
+    <string>Enable</string>
    </property>
   </action>
   <action name="actionContinueAfterTask">
@@ -850,7 +894,7 @@
   </action>
   <action name="actionStopWorker">
    <property name="text">
-    <string>Stop</string>
+    <string>Disable</string>
    </property>
   </action>
   <action name="actionSubmitJob">
@@ -915,7 +959,7 @@
   </action>
   <action name="actionNewWorker">
    <property name="text">
-    <string>New...</string>
+    <string>New</string>
    </property>
   </action>
   <action name="actionDeleteWorker">
@@ -941,6 +985,21 @@
   <action name="actionPing">
    <property name="text">
     <string>Ping</string>
+   </property>
+  </action>
+  <action name="actionRemoteClose">
+   <property name="text">
+    <string>Close</string>
+   </property>
+  </action>
+  <action name="actionRemoteRestart">
+   <property name="text">
+    <string>Restart</string>
+   </property>
+  </action>
+  <action name="actionBrowseFolder">
+   <property name="text">
+    <string>Browse output folder</string>
    </property>
   </action>
  </widget>

@@ -6,6 +6,7 @@
 # (c) 2016-2019
 #
 # Interface for the Render Queue database.
+# Manages jobs, tasks and workers.
 
 
 import glob
@@ -25,33 +26,48 @@ class RenderQueue():
 	""" Class to manage the render queue database.
 	"""
 	def __init__(self, location=None):
+		self.time_format = "%Y/%m/%d %H:%M:%S"
+
 		self.debug = False
 		if self.debug:
 			self.io_reads = 0
 			self.io_writes = 0
 
-		self.db_root = location
-		self.db_jobs = os.path.join(location, 'jobs')
-		self.db_tasks = os.path.join(location, 'tasks')
-		self.db_queued = os.path.join(location, 'tasks', 'queued')
-		self.db_completed = os.path.join(location, 'tasks', 'completed')
-		self.db_failed = os.path.join(location, 'tasks', 'failed')
-		self.db_workers = os.path.join(location, 'workers')
-		self.db_logs = os.path.join(location, 'logs')
-		print("Connecting to render queue database at: " + location)
+		# Set up paths
+		self.db = {}
+		self.db['root'] = location
+		self.db['jobs'] = os.path.join(location, 'jobs')
+		self.db['tasks'] = os.path.join(location, 'tasks')
+		self.db['queued'] = os.path.join(location, 'tasks', 'queued')
+		self.db['completed'] = os.path.join(location, 'tasks', 'completed')
+		self.db['failed'] = os.path.join(location, 'tasks', 'failed')
+		self.db['workers'] = os.path.join(location, 'workers')
+		self.db['logs'] = os.path.join(location, 'logs')
+		print("Connecting to render queue database at: %s" %location)
 
-		# Create folder structure (could be more dynamic)
-		oswrapper.createDir(self.db_jobs)
-		oswrapper.createDir(self.db_tasks)
-		oswrapper.createDir(self.db_queued)
-		oswrapper.createDir(self.db_completed)
-		oswrapper.createDir(self.db_failed)
-		oswrapper.createDir(self.db_workers)
-		oswrapper.createDir(self.db_logs)
+		# Check database is valid, if not create folder structure 
+		if not self.validate():
+			self.create()
 
 		# Set up logging
-		logfile = os.path.join(self.db_logs, 'renderqueue.log')
+		logfile = os.path.join(self.db['logs'], 'renderqueue.log')
 		self.queue_logger = common.setup_logger('queue_logger', logfile)
+
+
+	def validate(self):
+		""" Check the database is valid (directory structure exists).
+		"""
+		for directory in self.db.values():
+			if not os.path.isdir(directory):
+				return False
+		return True
+
+
+	def create(self):
+		""" Create the database directory structure.
+		"""
+		for directory in self.db.values():
+			oswrapper.createDir(directory)
 
 
 	def read(self, datafile):
@@ -96,7 +112,7 @@ class RenderQueue():
 		kwargs['jobID'] = jobID
 
 		# Write job data file
-		datafile = os.path.join(self.db_jobs, '%s.json' %jobID)
+		datafile = os.path.join(self.db['jobs'], '%s.json' %jobID)
 		self.write(kwargs, datafile)
 
 		# Write tasks and place in queue
@@ -109,7 +125,7 @@ class RenderQueue():
 			# taskdata['command'] = kwargs['command']
 			# taskdata['flags'] = kwargs['flags']
 
-			datafile = os.path.join(self.db_queued, 
+			datafile = os.path.join(self.db['queued'], 
 				'%s_%s.json' %(jobID, str(i).zfill(4)))
 			self.write(taskdata, datafile)
 
@@ -118,7 +134,7 @@ class RenderQueue():
 
 		# Set up job logging
 		# logger_name = '%s_logger' %jobID
-		# logfile = os.path.join(self.db_logs, '%s.log' %jobID)
+		# logfile = os.path.join(self.db['logs'], '%s.log' %jobID)
 		# print(logger_name, logfile)
 		# self.job_logger = common.setup_logger(logger_name, logfile)
 
@@ -129,10 +145,10 @@ class RenderQueue():
 			structure and deletes them. Also kills processes for tasks that
 			are rendering.
 		"""
-		datafile = os.path.join(self.db_jobs, '%s.json' %jobID)
+		datafile = os.path.join(self.db['jobs'], '%s.json' %jobID)
 		oswrapper.remove(datafile)
 
-		path = '%s/*/*/%s_*.json' %(self.db_root, jobID)
+		path = '%s/*/*/%s_*.json' %(self.db['root'], jobID)
 		for filename in glob.glob(path):
 			if 'workers' in filename:
 				# TODO: Deal nicely with tasks that are currently rendering
@@ -156,10 +172,10 @@ class RenderQueue():
 		""" Requeue a render job and associated tasks.
 		"""
 		#statuses = ['queued', 'working', 'completed', 'failed']
-		path = '%s/*/*/%s_*.json' %(self.db_root, jobID)
+		path = '%s/*/*/%s_*.json' %(self.db['root'], jobID)
 		for filename in glob.glob(path):
 			if 'queued' not in filename:
-				oswrapper.move(filename, self.db_queued)
+				oswrapper.move(filename, self.db['queued'])
 				self.queue_logger.info("Requeued job %s" %jobID)
 
 
@@ -167,7 +183,7 @@ class RenderQueue():
 		""" Return a list of all jobs in the database.
 		"""
 		jobs = []
-		path = '%s/jobs/*.json' %self.db_root
+		path = '%s/jobs/*.json' %self.db['root']
 		for filename in glob.glob(path):
 			jobs.append(self.read(filename))
 		return jobs
@@ -176,7 +192,7 @@ class RenderQueue():
 	def getJob(self, jobID):
 		""" Return a specific job.
 		"""
-		filename = os.path.join(self.db_jobs, '%s.json' %jobID)
+		filename = os.path.join(self.db['jobs'], '%s.json' %jobID)
 		try:
 			job = self.read(filename)
 			return job
@@ -187,7 +203,31 @@ class RenderQueue():
 	def getJobDatafile(self, jobID):
 		""" Return the path to the specified job's JSON data file.
 		"""
-		return os.path.join(self.db_jobs, '%s.json' %jobID)
+		return os.path.join(self.db['jobs'], '%s.json' %jobID)
+
+
+	def getPriority(self, jobID):
+		""" Get the priority of a render job.
+		"""
+		filename = os.path.join(self.db['jobs'], '%s.json' %jobID)
+		job = self.read(filename)
+		return job['priority']
+
+
+	def setPriority(self, jobID, priority):
+		""" Set the priority of a render job.
+		"""
+		filename = os.path.join(self.db['jobs'], '%s.json' %jobID)
+		job = self.read(filename)
+		if 0 <= priority <= 100:
+			# Only write file if priority has changed
+			if job['priority'] != priority:
+				job['priority'] = priority
+				self.write(job, filename)
+				self.queue_logger.info("Set priority of job %s to %d" %(jobID, priority))
+		# elif priority == 0:
+		# 	job['priorityold'] = job['priority']
+		# 	job['priority'] = priority
 
 
 	def getTasks(self, jobID):
@@ -195,7 +235,7 @@ class RenderQueue():
 		"""
 		tasks = []
 		#statuses = ['queued', 'working', 'completed', 'failed']
-		path = '%s/*/*/%s_*.json' %(self.db_root, jobID)
+		path = '%s/*/*/%s_*.json' %(self.db['root'], jobID)
 		for filename in glob.glob(path):
 			taskdata = self.read(filename)
 
@@ -222,40 +262,12 @@ class RenderQueue():
 		""" Return all queued tasks for a specified job.
 		"""
 		tasks = []
-		path = '%s/%s_*.json' %(self.db_queued, jobID)
+		path = '%s/%s_*.json' %(self.db['queued'], jobID)
 		for filename in glob.glob(path):
 			taskdata = self.read(filename)
 			tasks.append(taskdata)
 		return tasks
 
-
-	def getPriority(self, jobID):
-		""" Get the priority of a render job.
-		"""
-		filename = os.path.join(self.db_jobs, '%s.json' %jobID)
-		job = self.read(filename)
-		return job['priority']
-
-
-	def setPriority(self, jobID, priority):
-		""" Set the priority of a render job.
-		"""
-		filename = os.path.join(self.db_jobs, '%s.json' %jobID)
-		job = self.read(filename)
-		if 0 <= priority <= 100:
-			# Only write file if priority has changed
-			if job['priority'] != priority:
-				job['priority'] = priority
-				self.write(job, filename)
-				self.queue_logger.info("Set priority of job %s to %d" %(jobID, priority))
-		# elif priority == 0:
-		# 	job['priorityold'] = job['priority']
-		# 	job['priority'] = priority
-
-
-	#########
-	# TASKS #
-	#########
 
 	def getTaskToRender(self):
 		""" Find a task to render by finding the highest priority job with
@@ -279,6 +291,10 @@ class RenderQueue():
 		return None
 
 
+	#########
+	# TASKS #
+	#########
+
 	def getTaskID(self, jobID, taskNo):
 		""" Return the task ID: a string made up of the job UUID appended with
 			the four-digit padded task number.
@@ -291,7 +307,7 @@ class RenderQueue():
 		""" Return the path to the specified task's log file.
 		"""
 		logfile = '%s.log' %self.getTaskID(jobID, taskNo)
-		return os.path.join(self.db_logs, logfile)
+		return os.path.join(self.db['logs'], logfile)
 
 
 	# def updateTaskStatus(self, jobID, taskID, progress):
@@ -314,8 +330,8 @@ class RenderQueue():
 		"""
 		taskID = self.getTaskID(jobID, taskNo)
 
-		filename = os.path.join(self.db_queued, '%s.json' %taskID)
-		dst_dir = os.path.join(self.db_workers, workerID)
+		filename = os.path.join(self.db['queued'], '%s.json' %taskID)
+		dst_dir = os.path.join(self.db['workers'], workerID)
 
 		if oswrapper.move(filename, dst_dir):
 			dst_filename = os.path.join(dst_dir, '%s.json' %taskID)
@@ -335,7 +351,7 @@ class RenderQueue():
 		"""
 		taskID = self.getTaskID(jobID, taskNo)
 
-		path = '%s/*/*/%s.json' %(self.db_root, taskID)
+		path = '%s/*/*/%s.json' %(self.db['root'], taskID)
 		for filename in glob.glob(path):
 			if 'completed' not in filename:
 				# task = self.read(filename)
@@ -343,7 +359,7 @@ class RenderQueue():
 				# 	task['endTime'] = time.time()
 				# self.write(task, filename)
 
-				if oswrapper.move(filename, self.db_completed):
+				if oswrapper.move(filename, self.db['completed']):
 					self.queue_logger.info("Worker %s completed task %s" %(workerID, taskID))
 					return True
 				else:
@@ -355,7 +371,7 @@ class RenderQueue():
 		"""
 		taskID = self.getTaskID(jobID, taskNo)
 
-		path = '%s/*/*/%s.json' %(self.db_root, taskID)
+		path = '%s/*/*/%s.json' %(self.db['root'], taskID)
 		for filename in glob.glob(path):
 			if 'failed' not in filename:
 				# task = self.read(filename)
@@ -363,7 +379,7 @@ class RenderQueue():
 				# 	task['endTime'] = time.time()
 				# self.write(task, filename)
 
-				if oswrapper.move(filename, self.db_failed):
+				if oswrapper.move(filename, self.db['failed']):
 					self.queue_logger.info("Worker %s failed task %s" %(workerID, taskID))
 					return True
 				else:
@@ -375,7 +391,7 @@ class RenderQueue():
 		"""
 		taskID = self.getTaskID(jobID, taskNo)
 
-		path = '%s/*/*/%s.json' %(self.db_root, taskID)
+		path = '%s/*/*/%s.json' %(self.db['root'], taskID)
 		for filename in glob.glob(path):
 			if 'queued' not in filename:
 				# task = self.read(filename)
@@ -383,7 +399,7 @@ class RenderQueue():
 				# task.pop('endTime', None)
 				# self.write(task, filename)
 
-				if oswrapper.move(filename, self.db_queued):
+				if oswrapper.move(filename, self.db['queued']):
 					self.queue_logger.info("Requeued task %s" %taskID)
 					return True
 				else:
@@ -401,7 +417,7 @@ class RenderQueue():
 	# 	tasks_to_delete = []
 	# 	frames = []
 	# 	for taskID in taskIDs:
-	# 		filename = os.path.join(self.db_queued, 
+	# 		filename = os.path.join(self.db['queued'], 
 	# 			'%s.json' %self.getTaskID(jobID, taskNo))
 	# 		with open(filename, 'r') as f:
 	# 			taskdata = json.load(f)
@@ -429,7 +445,7 @@ class RenderQueue():
 
 	# 	# Write new task
 	# 	newtaskdata['frames'] = newframerange
-	# 	datafile = os.path.join(self.db_queued, 
+	# 	datafile = os.path.join(self.db['queued'], 
 	# 		'%s_%s.json' %(jobID, str(taskIDs[0]).zfill(4)))
 	# 	with open(datafile, 'w') as f:
 	# 		json.dump(newtaskdata, f, indent=4)
@@ -473,11 +489,12 @@ class RenderQueue():
 		kwargs['name'] = re.sub(r"\#+$", " (%d)" %num_suffix, name)
 
 		# Create worker folder and data file
-		workerdir = os.path.join(self.db_workers, workerID)
+		workerdir = os.path.join(self.db['workers'], workerID)
 		oswrapper.createDir(workerdir)
 		datafile = os.path.join(workerdir, 'workerinfo.json')
 		self.write(kwargs, datafile)
-		self.queue_logger.info("Created worker %s" %workerID)
+		self.queue_logger.info("Created worker %s (%s)" 
+			%(kwargs['name'], workerID))
 
 
 	def getWorkers(self):
@@ -485,22 +502,36 @@ class RenderQueue():
 			associated with it and add it to the dictionary.
 		"""
 		workers = []
+
 		# Read data from each worker entry
-		path = '%s/*/workerinfo.json' %self.db_workers
+		path = '%s/*/workerinfo.json' %self.db['workers']
 		for filename in glob.glob(path):
+			status = "Idle"
+
 			# Check if the worker has a task
-			workerdir = os.path.dirname(filename)
-			workertaskpath = '%s/*_*json' %workerdir
-			tasks = []
-			status = ""
+			workertaskpath = '%s/*_*.json' %os.path.dirname(filename)
 			for datafile in glob.glob(workertaskpath):
 				task = self.read(datafile)
 				job = self.getJob(task['jobID'])
 				if job:
 					status = "Rendering frame(s) %s from %s" %(task['frames'], job['jobName'])
+
+			# Determine status of worker
 			worker = self.read(filename)
-			if status:
-				worker['status'] = status
+			if not worker['enable']:
+				status = "Disabled"
+
+			# Check if remote workers have checked in recently
+			if worker['online']:
+				timeSinceLastOnline = time.time() - worker['online']
+				# Mark as offline if not seen for 60 seconds
+				# DISABLED as system clocks not synced
+				# if timeSinceLastOnline > 60:
+				# 	status = "Offline"
+			else:
+				status = "Offline"
+
+			worker['status'] = status
 			workers.append(worker)
 
 		return workers
@@ -510,8 +541,9 @@ class RenderQueue():
 		""" Return a list of worker names in the database.
 		"""
 		workerNames = []
+
 		# Read data from each worker entry
-		path = '%s/*/workerinfo.json' %self.db_workers
+		path = '%s/*/workerinfo.json' %self.db['workers']
 		for filename in glob.glob(path):
 			worker = self.read(filename)
 			workerNames.append(worker['name'])
@@ -522,7 +554,7 @@ class RenderQueue():
 	def getWorkerDatafile(self, workerID):
 		""" Return the path to the specified worker's JSON data file.
 		"""
-		return os.path.join(self.db_workers, workerID, 'workerinfo.json')
+		return os.path.join(self.db['workers'], workerID, 'workerinfo.json')
 
 
 	def getWorker(self, workerID):
@@ -534,7 +566,7 @@ class RenderQueue():
 	def deleteWorker(self, workerID):
 		""" Delete a worker from the database.
 		"""
-		path = os.path.join(self.db_workers, workerID)
+		path = os.path.join(self.db['workers'], workerID)
 
 		if oswrapper.remove(path)[0]:
 			self.queue_logger.info("Deleted worker %s" %workerID)
@@ -544,21 +576,67 @@ class RenderQueue():
 			return False
 
 
-	def getWorkerStatus(self, workerID):
-		""" Get the status of the specified worker.
-		"""
-		worker = self.read(self.getWorkerDatafile(workerID))
-		return worker['status']
-
-
-	def setWorkerStatus(self, workerID, status):
-		""" Set the status of the specified worker.
+	def enableWorker(self, workerID):
+		""" Enable the specified worker.
 		"""
 		datafile = self.getWorkerDatafile(workerID)
 		worker = self.read(datafile)
-		if worker['status'] != status:
-			worker['status'] = status
+		if worker['enable'] == False:
+			worker['enable'] = True
 			self.write(worker, datafile)
+			self.queue_logger.info("Enabled worker %s (%s)" 
+				%(worker['name'], workerID))
 
-			self.queue_logger.info("Set status of worker %s to %s" %(workerID, status))
+
+	def disableWorker(self, workerID):
+		""" Disable the specified worker.
+		"""
+		datafile = self.getWorkerDatafile(workerID)
+		worker = self.read(datafile)
+		if worker['enable'] == True:
+			worker['enable'] = False
+			self.write(worker, datafile)
+			self.queue_logger.info("Disabled worker %s (%s)" 
+				%(worker['name'], workerID))
+
+
+	def checkinWorker(self, workerID, hostname):
+		""" Check in the local worker from the client.
+		"""
+		datafile = self.getWorkerDatafile(workerID)
+		worker = self.read(datafile)
+		worker['online'] = time.time() #time.strftime(self.time_format)
+		self.write(worker, datafile)
+		# self.queue_logger.info("Worker %s (%s) checked in from host %s" 
+		# 	%(worker['name'], workerID, hostname))
+
+
+	def checkoutWorker(self, workerID, hostname):
+		""" Check out the local worker (mark as offline).
+		"""
+		datafile = self.getWorkerDatafile(workerID)
+		worker = self.read(datafile)
+		worker['online'] = False
+		self.write(worker, datafile)
+		# self.queue_logger.info("Worker %s (%s) checked out from host %s" 
+		# 	%(worker['name'], workerID, hostname))
+
+
+	# def getWorkerStatus(self, workerID):
+	# 	""" Get the status of the specified worker.
+	# 	"""
+	# 	worker = self.read(self.getWorkerDatafile(workerID))
+	# 	return worker['status']
+
+
+	# def setWorkerStatus(self, workerID, status):
+	# 	""" Set the status of the specified worker.
+	# 	"""
+	# 	datafile = self.getWorkerDatafile(workerID)
+	# 	worker = self.read(datafile)
+	# 	if worker['status'] != status:
+	# 		worker['status'] = status
+	# 		self.write(worker, datafile)
+	# 		self.queue_logger.info("Set status of worker %s (%s) to %s" 
+	# 			%(worker['name'], workerID, status))
 

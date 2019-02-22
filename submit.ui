@@ -118,6 +118,11 @@
          </item>
          <item>
           <property name="text">
+           <string>Houdini</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
            <string>Nuke</string>
           </property>
          </item>
@@ -190,29 +195,14 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>435</width>
-         <height>605</height>
+         <width>438</width>
+         <height>692</height>
         </rect>
        </property>
        <property name="noBackground" stdset="0">
         <bool>true</bool>
        </property>
-       <layout class="QVBoxLayout" name="settings_verticalLayout">
-        <property name="spacing">
-         <number>4</number>
-        </property>
-        <property name="leftMargin">
-         <number>6</number>
-        </property>
-        <property name="topMargin">
-         <number>0</number>
-        </property>
-        <property name="rightMargin">
-         <number>6</number>
-        </property>
-        <property name="bottomMargin">
-         <number>0</number>
-        </property>
+       <layout class="QVBoxLayout" name="verticalLayout_2">
         <item>
          <widget class="QGroupBox" name="generic_groupBox">
           <property name="sizePolicy">
@@ -708,6 +698,120 @@
                 </property>
                 <property name="xmlTag" stdset="0">
                  <string>useRenderSetup</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="QGroupBox" name="houdini_groupBox">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="title">
+           <string>Houdini options</string>
+          </property>
+          <property name="checked">
+           <bool>false</bool>
+          </property>
+          <property name="expandable" stdset="0">
+           <bool>true</bool>
+          </property>
+          <property name="xmlCategory" stdset="0">
+           <string>houdini</string>
+          </property>
+          <layout class="QFormLayout" name="maya_formLayout_2">
+           <property name="labelAlignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           </property>
+           <property name="horizontalSpacing">
+            <number>4</number>
+           </property>
+           <property name="verticalSpacing">
+            <number>4</number>
+           </property>
+           <property name="leftMargin">
+            <number>8</number>
+           </property>
+           <property name="topMargin">
+            <number>8</number>
+           </property>
+           <property name="rightMargin">
+            <number>8</number>
+           </property>
+           <property name="bottomMargin">
+            <number>8</number>
+           </property>
+           <item row="0" column="0">
+            <widget class="QLabel" name="houdiniScene_label">
+             <property name="text">
+              <string>Scene:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QFrame" name="houdiniScene_frame">
+             <property name="lineWidth">
+              <number>0</number>
+             </property>
+             <layout class="QHBoxLayout" name="mayaScene_horizontalLayout_2">
+              <property name="spacing">
+               <number>4</number>
+              </property>
+              <property name="leftMargin">
+               <number>0</number>
+              </property>
+              <property name="topMargin">
+               <number>0</number>
+              </property>
+              <property name="rightMargin">
+               <number>0</number>
+              </property>
+              <property name="bottomMargin">
+               <number>0</number>
+              </property>
+              <item>
+               <widget class="QComboBox" name="houdiniScene_comboBox">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="editable">
+                 <bool>false</bool>
+                </property>
+                <property name="maxCount">
+                 <number>10</number>
+                </property>
+                <property name="insertPolicy">
+                 <enum>QComboBox::InsertAtTop</enum>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QToolButton" name="houdiniSceneBrowse_toolButton">
+                <property name="text">
+                 <string>...</string>
+                </property>
+                <property name="iconSize">
+                 <size>
+                  <width>15</width>
+                  <height>15</height>
+                 </size>
+                </property>
+                <property name="toolButtonStyle">
+                 <enum>Qt::ToolButtonIconOnly</enum>
+                </property>
+                <property name="noBackground" stdset="0">
+                 <bool>false</bool>
                 </property>
                </widget>
               </item>
@@ -1574,12 +1678,12 @@
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>148</x>
-     <y>307</y>
+     <x>201</x>
+     <y>538</y>
     </hint>
     <hint type="destinationlabel">
-     <x>195</x>
-     <y>306</y>
+     <x>396</x>
+     <y>541</y>
     </hint>
    </hints>
   </connection>
@@ -1590,12 +1694,12 @@
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>197</x>
-     <y>321</y>
+     <x>398</x>
+     <y>541</y>
     </hint>
     <hint type="destinationlabel">
-     <x>115</x>
-     <y>323</y>
+     <x>191</x>
+     <y>538</y>
     </hint>
    </hints>
   </connection>
@@ -1606,12 +1710,12 @@
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>100</x>
-     <y>421</y>
+     <x>139</x>
+     <y>655</y>
     </hint>
     <hint type="destinationlabel">
-     <x>147</x>
-     <y>418</y>
+     <x>286</x>
+     <y>658</y>
     </hint>
    </hints>
   </connection>
@@ -1622,12 +1726,12 @@
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>208</x>
-     <y>433</y>
+     <x>347</x>
+     <y>658</y>
     </hint>
     <hint type="destinationlabel">
-     <x>71</x>
-     <y>436</y>
+     <x>139</x>
+     <y>655</y>
     </hint>
    </hints>
   </connection>

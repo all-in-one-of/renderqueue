@@ -1012,28 +1012,9 @@ class TemplateUI(object):
 # DCC application helper functions
 # ----------------------------------------------------------------------------
 
-def _maya_delete_ui(window_object, window_title):
-	""" Delete existing UI in Maya.
-	"""
-	if mc.window(window_object, query=True, exists=True):
-		mc.deleteUI(window_object)  # Delete window
-	if mc.dockControl('MayaWindow|' + window_title, query=True, exists=True):
-		mc.deleteUI('MayaWindow|' + window_title)  # Delete docked window
-
-
-# def _houdini_delete_ui(window_object, window_title):
-# 	""" Delete existing UI in Houdini.
-# 	"""
-# 	pass
-
-
-def _nuke_delete_ui(window_object, window_title):
-	""" Delete existing UI in Nuke.
-	"""
-	for obj in QtWidgets.QApplication.allWidgets():
-		if obj.objectName() == window_object:
-			obj.deleteLater()
-
+########
+# MAYA #
+########
 
 def _maya_main_window():
 	""" Return Maya's main window.
@@ -1044,12 +1025,39 @@ def _maya_main_window():
 	raise RuntimeError("Could not find MayaWindow instance")
 
 
+def _maya_delete_ui(window_object, window_title):
+	""" Delete existing UI in Maya.
+	"""
+	if mc.window(window_object, query=True, exists=True):
+		mc.deleteUI(window_object)  # Delete window
+	if mc.dockControl('MayaWindow|' + window_title, query=True, exists=True):
+		mc.deleteUI('MayaWindow|' + window_title)  # Delete docked window
+
+
+###########
+# HOUDINI #
+###########
+
+def _houdini_get_session():
+	return hou.session
+
+
 def _houdini_main_window():
 	""" Return Houdini's main window.
 	"""
 	return hou.qt.mainWindow()
 	raise RuntimeError("Could not find Houdini's main window instance")
 
+
+# def _houdini_delete_ui(window_object, window_title):
+# 	""" Delete existing UI in Houdini.
+# 	"""
+# 	pass
+
+
+########
+# NUKE #
+########
 
 def _nuke_main_window():
 	""" Returns Nuke's main window.
@@ -1058,6 +1066,14 @@ def _nuke_main_window():
 		if (obj.inherits('QMainWindow') and obj.metaObject().className() == 'Foundry::UI::DockMainWindow'):
 			return obj
 	raise RuntimeError("Could not find DockMainWindow instance")
+
+
+def _nuke_delete_ui(window_object, window_title):
+	""" Delete existing UI in Nuke.
+	"""
+	for obj in QtWidgets.QApplication.allWidgets():
+		if obj.objectName() == window_object:
+			obj.deleteLater()
 
 
 def _nuke_set_zero_margins(widget_object):

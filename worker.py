@@ -167,6 +167,10 @@ class WorkerThread(QtCore.QThread):
 			self.task_logger.error("Render failed on worker %s (%s)" 
 				%(self.worker['name'], self.worker['id']))
 			self.taskFailed.emit(self.task['jobID'], self.task['taskNo']) #, taskTime=1)
+
+		divider = "="*80
+		self.task_logger.info("Log ends\n%s" %divider)
+
 		return result
 
 # ----------------------------------------------------------------------------
