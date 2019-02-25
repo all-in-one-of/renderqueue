@@ -194,9 +194,9 @@
        <property name="geometry">
         <rect>
          <x>0</x>
-         <y>0</y>
+         <y>-324</y>
          <width>438</width>
-         <height>692</height>
+         <height>756</height>
         </rect>
        </property>
        <property name="noBackground" stdset="0">
@@ -818,6 +818,20 @@
              </layout>
             </widget>
            </item>
+           <item row="1" column="0">
+            <widget class="QLabel" name="houdiniOutputDriver_label">
+             <property name="text">
+              <string>Output driver:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QComboBox" name="houdiniOutputDriver_comboBox">
+             <property name="editable">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
           </layout>
          </widget>
         </item>
@@ -1307,103 +1321,28 @@
            <property name="bottomMargin">
             <number>8</number>
            </property>
-           <item row="2" column="0">
-            <widget class="QLabel" name="priority_label">
-             <property name="text">
-              <string>Priority:</string>
-             </property>
-            </widget>
-           </item>
-           <item row="3" column="0">
+           <item row="5" column="0">
             <widget class="QLabel" name="comment_label">
              <property name="text">
               <string>Comment:</string>
              </property>
             </widget>
            </item>
-           <item row="0" column="0">
+           <item row="1" column="0">
             <widget class="QLabel" name="pool_label">
              <property name="text">
               <string>Pool:</string>
              </property>
             </widget>
            </item>
-           <item row="1" column="0">
+           <item row="3" column="0">
             <widget class="QLabel" name="group_label">
              <property name="text">
               <string>Group:</string>
              </property>
             </widget>
            </item>
-           <item row="2" column="1">
-            <widget class="QFrame" name="priority_frame">
-             <property name="lineWidth">
-              <number>0</number>
-             </property>
-             <layout class="QHBoxLayout" name="priority_horizontalLayout">
-              <property name="spacing">
-               <number>6</number>
-              </property>
-              <property name="leftMargin">
-               <number>0</number>
-              </property>
-              <property name="topMargin">
-               <number>0</number>
-              </property>
-              <property name="rightMargin">
-               <number>0</number>
-              </property>
-              <property name="bottomMargin">
-               <number>0</number>
-              </property>
-              <item>
-               <widget class="QSpinBox" name="priority_spinBox">
-                <property name="toolTip">
-                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Set the priority for this render job. Higher priority jobs will be rendered first. Setting the priority to zero will submit the job as paused.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                </property>
-                <property name="buttonSymbols">
-                 <enum>QAbstractSpinBox::NoButtons</enum>
-                </property>
-                <property name="minimum">
-                 <number>0</number>
-                </property>
-                <property name="maximum">
-                 <number>100</number>
-                </property>
-                <property name="value">
-                 <number>50</number>
-                </property>
-                <property name="xmlTag" stdset="0">
-                 <string>priority</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QSlider" name="priority_slider">
-                <property name="minimum">
-                 <number>0</number>
-                </property>
-                <property name="maximum">
-                 <number>100</number>
-                </property>
-                <property name="value">
-                 <number>50</number>
-                </property>
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="tickPosition">
-                 <enum>QSlider::NoTicks</enum>
-                </property>
-                <property name="tickInterval">
-                 <number>10</number>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </widget>
-           </item>
-           <item row="3" column="1">
+           <item row="5" column="1">
             <widget class="QFrame" name="comment_frame">
              <property name="lineWidth">
               <number>0</number>
@@ -1440,7 +1379,7 @@
              </layout>
             </widget>
            </item>
-           <item row="0" column="1">
+           <item row="1" column="1">
             <widget class="QFrame" name="pool_frame">
              <property name="lineWidth">
               <number>0</number>
@@ -1505,7 +1444,7 @@
              </layout>
             </widget>
            </item>
-           <item row="1" column="1">
+           <item row="3" column="1">
             <widget class="QFrame" name="group_frame">
              <property name="lineWidth">
               <number>0</number>
@@ -1564,6 +1503,153 @@
                 </property>
                 <property name="noBackground" stdset="0">
                  <bool>false</bool>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item row="2" column="1">
+            <widget class="QFrame" name="pool2_frame">
+             <property name="lineWidth">
+              <number>0</number>
+             </property>
+             <layout class="QHBoxLayout" name="pool2_horizontalLayout">
+              <property name="spacing">
+               <number>4</number>
+              </property>
+              <property name="leftMargin">
+               <number>0</number>
+              </property>
+              <property name="topMargin">
+               <number>0</number>
+              </property>
+              <property name="rightMargin">
+               <number>0</number>
+              </property>
+              <property name="bottomMargin">
+               <number>0</number>
+              </property>
+              <item>
+               <widget class="QComboBox" name="pool2_comboBox">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="editable">
+                 <bool>true</bool>
+                </property>
+                <property name="insertPolicy">
+                 <enum>QComboBox::InsertAtTop</enum>
+                </property>
+                <property name="xmlTag" stdset="0">
+                 <string>secondaryPool</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QToolButton" name="getPools2_toolButton">
+                <property name="toolTip">
+                 <string>Get pools from Deadline</string>
+                </property>
+                <property name="text">
+                 <string>Get</string>
+                </property>
+                <property name="iconSize">
+                 <size>
+                  <width>15</width>
+                  <height>15</height>
+                 </size>
+                </property>
+                <property name="toolButtonStyle">
+                 <enum>Qt::ToolButtonIconOnly</enum>
+                </property>
+                <property name="noBackground" stdset="0">
+                 <bool>false</bool>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item row="2" column="0">
+            <widget class="QLabel" name="pool2_label">
+             <property name="text">
+              <string>Secondary pool:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="0">
+            <widget class="QLabel" name="priority_label">
+             <property name="text">
+              <string>Priority:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QFrame" name="priority_frame">
+             <property name="lineWidth">
+              <number>0</number>
+             </property>
+             <layout class="QHBoxLayout" name="priority_horizontalLayout">
+              <property name="spacing">
+               <number>6</number>
+              </property>
+              <property name="leftMargin">
+               <number>0</number>
+              </property>
+              <property name="topMargin">
+               <number>0</number>
+              </property>
+              <property name="rightMargin">
+               <number>0</number>
+              </property>
+              <property name="bottomMargin">
+               <number>0</number>
+              </property>
+              <item>
+               <widget class="QSpinBox" name="priority_spinBox">
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Set the priority for this render job. Higher priority jobs will be rendered first. Setting the priority to zero will submit the job as paused.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
+                <property name="buttonSymbols">
+                 <enum>QAbstractSpinBox::NoButtons</enum>
+                </property>
+                <property name="minimum">
+                 <number>0</number>
+                </property>
+                <property name="maximum">
+                 <number>100</number>
+                </property>
+                <property name="value">
+                 <number>50</number>
+                </property>
+                <property name="xmlTag" stdset="0">
+                 <string>priority</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QSlider" name="priority_slider">
+                <property name="minimum">
+                 <number>0</number>
+                </property>
+                <property name="maximum">
+                 <number>100</number>
+                </property>
+                <property name="value">
+                 <number>50</number>
+                </property>
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="tickPosition">
+                 <enum>QSlider::NoTicks</enum>
+                </property>
+                <property name="tickInterval">
+                 <number>10</number>
                 </property>
                </widget>
               </item>
@@ -1679,11 +1765,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>201</x>
-     <y>538</y>
+     <y>290</y>
     </hint>
     <hint type="destinationlabel">
-     <x>396</x>
-     <y>541</y>
+     <x>418</x>
+     <y>286</y>
     </hint>
    </hints>
   </connection>
@@ -1694,12 +1780,12 @@
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>398</x>
-     <y>541</y>
+     <x>418</x>
+     <y>286</y>
     </hint>
     <hint type="destinationlabel">
-     <x>191</x>
-     <y>538</y>
+     <x>201</x>
+     <y>290</y>
     </hint>
    </hints>
   </connection>
@@ -1710,12 +1796,12 @@
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>139</x>
-     <y>655</y>
+     <x>177</x>
+     <y>433</y>
     </hint>
     <hint type="destinationlabel">
-     <x>286</x>
-     <y>658</y>
+     <x>418</x>
+     <y>429</y>
     </hint>
    </hints>
   </connection>
@@ -1726,12 +1812,12 @@
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>347</x>
-     <y>658</y>
+     <x>418</x>
+     <y>429</y>
     </hint>
     <hint type="destinationlabel">
-     <x>139</x>
-     <y>655</y>
+     <x>177</x>
+     <y>433</y>
     </hint>
    </hints>
   </connection>

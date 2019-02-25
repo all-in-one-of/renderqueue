@@ -21,12 +21,11 @@ import ui_template as UI
 
 # Import custom modules
 import oswrapper
-#import pDialog
 import common
 import submit_deadline as deadline
 import database
 import sequence
-# import settingsData
+#import settingsData
 #import userPrefs
 #import verbose
 
@@ -78,7 +77,8 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 		self.setWindowFlags(QtCore.Qt.Tool)
 
 		# Set other Qt attributes
-		#self.setAttribute(QtCore.Qt.WA_DeleteOnClose, True)
+		if parent == None:
+			self.setAttribute(QtCore.Qt.WA_DeleteOnClose, True)
 
 		# Set up keyboard shortcuts
 		self.shortcutExpertMode = QtWidgets.QShortcut(self)
@@ -93,6 +93,7 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 
 		self.ui.getCameras_toolButton.setIcon(self.iconSet('view-refresh.svg'))
 		self.ui.getPools_toolButton.setIcon(self.iconSet('view-refresh.svg'))
+		self.ui.getPools2_toolButton.setIcon(self.iconSet('view-refresh.svg'))
 		self.ui.getGroups_toolButton.setIcon(self.iconSet('view-refresh.svg'))
 
 		self.ui.frameListOptions_toolButton.setIcon(self.iconSet('configure.svg'))
@@ -122,6 +123,7 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 		self.ui.frames_lineEdit.textChanged.connect(self.calcFrameList)
 		self.ui.taskSize_spinBox.valueChanged.connect(self.calcFrameList)
 		self.ui.getPools_toolButton.clicked.connect(self.getPools)
+		self.ui.getPools2_toolButton.clicked.connect(self.getPools)
 		self.ui.getGroups_toolButton.clicked.connect(self.getGroups)
 
 		self.ui.submit_pushButton.clicked.connect(self.submit)
@@ -167,7 +169,7 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 		try:
 			parentWindowTitle = self.parent.windowTitle()
 		except AttributeError:
-			parentWindowTitle = None
+			parentWindowTitle = "None"
 		if parentWindowTitle.startswith("Render Queue"):
 			self.submitTo = "Render Queue"
 			self.ui.submitTo_label.setEnabled(False)
@@ -192,6 +194,8 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 			if scene:
 				if self.jobType == 'Maya':
 					self.ui.mayaScene_comboBox.addItem(scene)
+				elif self.jobType == 'Houdini':
+					self.ui.houdiniScene_comboBox.addItem(scene)
 				elif self.jobType == 'Nuke':
 					self.ui.nukeScript_comboBox.addItem(scene)
 			self.ui.camera_label.setEnabled(False)
@@ -243,6 +247,12 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 
 			if scene:
 				self.ui.houdiniScene_comboBox.addItem(scene)
+
+			self.ui.jobType_label.setEnabled(False)
+			self.ui.jobType_comboBox.setEnabled(False)
+			self.ui.houdiniScene_label.setEnabled(False)
+			self.ui.houdiniScene_comboBox.setEnabled(False)
+			self.ui.houdiniSceneBrowse_toolButton.setEnabled(False)
 
 		elif UI.ENVIRONMENT == "NUKE":
 			self.jobType = "Nuke"
@@ -324,17 +334,21 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 		# Show/hide specific UI elements based on selected queue manager
 		# rq_show_list = [self.ui.flags_label, self.ui.flags_lineEdit]
 		rq_show_list = [self.ui.interactiveLicense_checkBox]
-		dl_show_list = [self.ui.pool_label, self.ui.pool_frame, 
-		                self.ui.group_label, self.ui.group_frame]
+		dl_show_list = [self.ui.pool2_label, self.ui.pool2_frame, 
+		                self.ui.group_label, self.ui.group_frame, 
+		                self.ui.getPools_toolButton]
 
 		for item in rq_show_list + dl_show_list:
 			item.setEnabled(False)
+			#item.hide()
 		if self.submitTo == "Render Queue":
 			for item in rq_show_list:
 				item.setEnabled(True)
+				#item.show()
 		if self.submitTo == "Deadline":
 			for item in dl_show_list:
 				item.setEnabled(True)
+				#item.show()
 
 
 	# @QtCore.Slot()
@@ -568,6 +582,7 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 		pools = deadline.get_pools()
 		if pools:
 			self.populateComboBox(self.ui.pool_comboBox, pools)
+			self.populateComboBox(self.ui.pool2_comboBox, pools)
 
 
 	def getGroups(self):
@@ -928,7 +943,6 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 			# Show confirmation dialog
 			dialog_title = "Submit to %s - %s" %(self.submitTo, submit_args['jobName'])
 			dialog_msg = job_info_msg + "\n" + frames_msg + "Do you want to continue?"
-			#dialog = pDialog.dialog()
 
 			#if dialog.display(dialog_msg, dialog_title):
 			if self.promptDialog(dialog_msg, dialog_title):
@@ -961,7 +975,8 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 
 		submit_args['frames'] = self.ui.frames_lineEdit.text()
 		submit_args['taskSize'] = self.ui.taskSize_spinBox.value()
-		submit_args['pool'] = self.ui.pool_comboBox.currentText()  # Deadline only
+		submit_args['pool'] = self.ui.pool_comboBox.currentText()
+		submit_args['secondaryPool'] = self.ui.pool2_comboBox.currentText()  # Deadline only
 		submit_args['group'] = self.ui.group_comboBox.currentText()  # Deadline only
 		submit_args['priority'] = self.ui.priority_spinBox.value()
 		submit_args['comment'] = self.ui.comment_lineEdit.text()
@@ -984,7 +999,7 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 
 		elif self.jobType == "Maya":
 			submit_args['plugin'] = "MayaBatch"  # Deadline only
-			submit_args['renderCmdEnvVar'] = 'MAYARENDERVERSION'  # RQ only
+			#submit_args['renderCmdEnvVar'] = 'MAYARENDERVERSION'  # RQ only
 			submit_args['flags'] = ""  # RQ only
 			submit_args['version'] = os.environ.get('MAYA_VER', "2018")  #jobData.getAppVersion('Maya')
 			submit_args['renderer'] = self.ui.renderer_comboBox.currentText()  # Maya submit only
@@ -1015,9 +1030,20 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 			if submit_args['renderer'] == "redshift":
 				submit_args['envVars'] += ['REDSHIFT_COREDATAPATH']
 
+		elif self.jobType == "Houdini":
+			submit_args['plugin'] = "Houdini"  # Deadline only
+			#submit_args['renderCmdEnvVar'] = 'MAYARENDERVERSION'  # RQ only
+			submit_args['flags'] = ""  # RQ only
+			submit_args['version'] = "16"  # Temp
+			scene = self.makePathAbsolute(self.ui.houdiniScene_comboBox.currentText()).replace("\\", "/")
+			submit_args['scene'] = scene
+			submit_args['jobName'] = os.path.splitext(os.path.basename(scene))[0]
+			submit_args['outputDriver'] = self.ui.houdiniOutputDriver_comboBox.currentText()
+			submit_args['renderLayers'] = None  # Use renderLayers for takes
+
 		elif self.jobType == "Nuke":
 			submit_args['plugin'] = "Nuke"  # Deadline only
-			submit_args['renderCmdEnvVar'] = 'NUKEVERSION'  # RQ only
+			#submit_args['renderCmdEnvVar'] = 'NUKEVERSION'  # RQ only
 			submit_args['flags'] = ""  # RQ only
 			submit_args['version'] = os.environ.get('NUKE_VER', "10.0v3").split('v')[0]  #jobData.getAppVersion('Nuke')
 			submit_args['isMovie'] = self.getCheckBoxValue(self.ui.isMovie_checkBox)
@@ -1064,13 +1090,12 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 		# 		return False, "Failed to submit job.\n%s" %error_msg
 		renderCmd = ""
 
-		# Instantiate render queue class, load data, and create new job
-		try:
-			rq = self.parent.rq  # If running from Render Queue
-		except:
-			databaseLocation = '/mnt/anubis/PersonalJobs/999925_Mike_Bonnington/test/rq_database'  # temp assignment
+		# Instantiate Render Queue class, load data, and create new job
+		try:  # If running from Render Queue
+			rq = self.parent.rq
+		except:  # Otherwise instatiate new Render Queue class
+			databaseLocation = '/mnt/anubis/PersonalJobs/999925_Mike_Bonnington/dev/renderqueue/rq_database'  # temp assignment - should read from prefs file
 			rq = database.RenderQueue(databaseLocation)
-		#rq.loadXML(os.path.join(os.environ['IC_CONFIGDIR'], 'renderQueue.xml'), use_template=False)
 
 		try:
 			#renderOpts = kwargs['scene']

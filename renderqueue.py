@@ -101,12 +101,7 @@ class RenderQueueApp(QtWidgets.QMainWindow, UI.TemplateUI):
 		self.workers_header = self.getHeaderIndices(self.ui.workers_treeWidget)
 
 		# Restore widget state
-		try:
-			self.ui.splitter.restoreState(self.settings.value("splitterSizes")) #.toByteArray())
-			self.ui.queue_treeWidget.header().restoreState(self.settings.value("renderQueueView")) #.toByteArray())
-			self.ui.workers_treeWidget.header().restoreState(self.settings.value("workersView")) #.toByteArray())
-		except:
-			pass
+		self.restoreView()
 
 		# Define standard UI colours
 		self.colBlack     = QtGui.QColor("#0a0a0a")  # black
@@ -145,6 +140,7 @@ class RenderQueueApp(QtWidgets.QMainWindow, UI.TemplateUI):
 		self.rq = database.RenderQueue(databaseLocation)
 
 		# Temporarily disable some actions until properly implemented
+		#self.ui.actionResetView.setEnabled(False)
 		self.ui.actionResubmit.setEnabled(False)
 		self.ui.actionRemote.setEnabled(False)
 		self.ui.actionSplit.setEnabled(False)
@@ -170,7 +166,9 @@ class RenderQueueApp(QtWidgets.QMainWindow, UI.TemplateUI):
 		self.ui.refresh_toolButton.clicked.connect(self.refreshViews)
 		self.ui.refresh_toolButton.setIcon(self.iconSet('view-refresh.svg'))
 
-		self.ui.actionResize_columns.triggered.connect(self.resizeColumns)
+		self.ui.actionResetView.triggered.connect(self.resetView)
+
+		self.ui.actionResizeColumns.triggered.connect(self.resizeColumns)
 
 		self.ui.actionSettings.triggered.connect(self.openSettings)
 		self.ui.actionSettings.setIcon(self.iconSet('configure.svg'))
@@ -528,12 +526,44 @@ Developers: %s
 			menu.exec_(self.sender().viewport().mapToGlobal(position))
 
 
+	def restoreView(self):
+		""" Restore and apply saved state of tree widgets.
+		"""
+		try:
+			self.ui.splitter.restoreState(self.settings.value("splitterSizes")) #.toByteArray())
+			self.ui.queue_treeWidget.header().restoreState(self.settings.value("renderQueueView")) #.toByteArray())
+			self.ui.workers_treeWidget.header().restoreState(self.settings.value("workersView")) #.toByteArray())
+		except:
+			pass
+
+
+	def resetView(self):
+		""" Reset state of tree widgets to default.
+		"""
+		self.settings.remove("renderQueueView")
+		self.settings.remove("workersView")
+		#self.resetColumnWidth()
+
+
+	# def resetColumnWidth(self):
+	# 	""" Resize all columns of the specified widget to fit content.
+	# 	"""
+	# 	widgets = [self.ui.queue_treeWidget, self.ui.workers_treeWidget]
+
+	# 	for widget in widgets:
+	# 		width = widget.headerItem().defaultSectionSize()
+	# 		for i in range(widget.columnCount()):
+	# 			widget.setColumnWidth(i, width)
+
+
 	def resizeColumns(self):
 		""" Resize all columns of the specified widget to fit content.
 		"""
-		widget = self.ui.queue_treeWidget
-		for i in range(widget.columnCount()):
-			widget.resizeColumnToContents(i)
+		widgets = [self.ui.queue_treeWidget, self.ui.workers_treeWidget]
+
+		for widget in widgets:
+			for i in range(widget.columnCount()):
+				widget.resizeColumnToContents(i)
 
 
 	def getHeaderIndex(self, widget, text):
@@ -773,6 +803,7 @@ Developers: %s
 				jobItem.setText(header['Worker'], "[%d rendering]" %inProgressTaskCount)
 			else:
 				jobItem.setText(header['Worker'], "")
+			jobItem.setText(header['Pool'], job['pool'])
 			jobItem.setText(header['Comment'], job['comment'])
 
 			# Attempt to restore expanded job items
@@ -801,32 +832,28 @@ Developers: %s
 		for worker in workers:
 
 			# Get the worker item or create it if it doesn't exist
-			# workerItem = QtWidgets.QTreeWidgetItem(widget.invisibleRootItem())
 			workerItem = self.getQueueItem(widget, widget.invisibleRootItem(), worker['id'])
-			# workerIcon = QtGui.QIcon()
-			# workerIcon.addPixmap(QtGui.QPixmap(self.checkFilePath(icon+".png", searchpath)), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-			# action.setIcon(workerIcon)
-			workerItem.setIcon(header['Name'], self.iconSet('computer.png'))
 
-			# Fill columns with data
+			# Name, ID and icon
 			workerItem.setText(header['Name'], worker['name'])
+			workerItem.setIcon(header['Name'], self.iconSet('computer.png'))
 			workerItem.setText(header['ID'], worker['id'])
-			workerItem.setText(header['Status'], worker['status'])
-			workerItem.setText(header['Hostname'], worker['hostname'])
-			workerItem.setText(header['IP Address'], worker['ip_address'])
-			workerItem.setText(header['User'], worker['username'])
-			#workerItem.setText(header['Clock'], worker['runningTime'])
-			workerItem.setText(header['Pool'], worker['pool'])
-			workerItem.setText(header['Comment'], worker['comment'])
 
-			# Give remote workers different colour
-			# (could add extra column instead)
-			if worker['ip_address'] != self.ip_address:
+			# Check if workers are local or remote
+			if worker['ip_address'] == self.ip_address:
+				workerItem.setText(header['Type'], 'Local')
+
+				# Check-in worker if it's local
+				# Note this introduces a JSON write so not optimal
+				self.rq.checkinWorker(worker['id'], self.localhost)
+			else:
 				workerItem.setText(header['Type'], 'Remote')
+
 				# for col in range(widget.columnCount()):
 				# 	workerItem.setForeground(col, QtGui.QBrush(self.colInactive))
-			else:
-				workerItem.setText(header['Type'], 'Local')
+
+			# Set worker status
+			workerItem.setText(header['Status'], worker['status'])
 
 			# Colour the status text
 			if worker['status'].startswith("Rendering"):
@@ -838,10 +865,18 @@ Developers: %s
 			else:
 				workerItem.setForeground(header['Status'], QtGui.QBrush(self.colNormal))
 
+			# Fill remaining columns
+			workerItem.setText(header['Hostname'], worker['hostname'])
+			workerItem.setText(header['IP Address'], worker['ip_address'])
+			workerItem.setText(header['User'], worker['username'])
+			#workerItem.setText(header['Clock'], worker['runningTime'])
+			workerItem.setText(header['Pool'], worker['pool'])
+			workerItem.setText(header['Comment'], worker['comment'])
+
 		# Re-enable signals
 		widget.blockSignals(False)
 
-		self.checkinLocalWorkers()
+		#self.checkinLocalWorkers()
 
 
 	def getQueueItem(self, widget, parent, itemID=None):
@@ -1377,19 +1412,19 @@ Developers: %s
 			pass
 
 
-	def checkinLocalWorkers(self):
-		""" Check in local worker(s).
-		"""
-		header = self.workers_header
+	# def checkinLocalWorkers(self):
+	# 	""" Check in local worker(s).
+	# 	"""
+	# 	header = self.workers_header
 
-		root = self.ui.workers_treeWidget.invisibleRootItem()
-		for i in range(root.childCount()):
-			workerID = root.child(i).text(header['ID'])
-			workerType = root.child(i).text(header['Type'])
-			workerStatus = root.child(i).text(header['Status'])
+	# 	root = self.ui.workers_treeWidget.invisibleRootItem()
+	# 	for i in range(root.childCount()):
+	# 		workerID = root.child(i).text(header['ID'])
+	# 		workerType = root.child(i).text(header['Type'])
+	# 		workerStatus = root.child(i).text(header['Status'])
 
-			if workerType == "Local":
-				self.rq.checkinWorker(workerID, self.localhost)
+	# 		if workerType == "Local":
+	# 			self.rq.checkinWorker(workerID, self.localhost)
 
 
 	def checkoutLocalWorkers(self):
@@ -1620,14 +1655,15 @@ Developers: %s
 				# 	fname = str(url.toLocalFile())
 				fname = str(url.toLocalFile())
 
-			#self.fname = fname
-			#verbose.print_("Dropped '%s' on to window." %fname)
+			#print("Dropped '%s' on to window." %fname)
 			if os.path.isdir(fname):
 				pass
 			elif os.path.isfile(fname):
 				filetype = os.path.splitext(fname)[1]
 				if filetype in ['.ma', '.mb']:  # Maya files
 					self.launchRenderSubmit(jobtype='Maya', scene=fname)
+				if filetype in ['.hip']:  # Houdini files
+					self.launchRenderSubmit(jobtype='Houdini', scene=fname)
 				if filetype in ['.nk', ]:  # Nuke files
 					self.launchRenderSubmit(jobtype='Nuke', scene=fname)
 		else:
@@ -1662,6 +1698,7 @@ Developers: %s
 
 		self.updateQueueView()
 		self.updateWorkerView()
+		#self.updateWorkerView()  # bodge - run twice to update online workers
 		self.updateSelection()
 		#self.checkinLocalWorkers()
 

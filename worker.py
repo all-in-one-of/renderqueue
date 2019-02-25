@@ -60,11 +60,12 @@ class WorkerThread(QtCore.QThread):
 	def _render_task(self):
 		""" Perform the rendering operation(s).
 		"""
-		args = []
-		errors = 0
-
 		self.task_logger.info("Starting render on worker %s (%s)" 
 			%(self.worker['name'], self.worker['id']))
+
+		# Construct the render command...
+		args = []
+		#errors = 0
 
 		if self.task['frames'] == "Unknown":
 			frameList = self.task['frames']
@@ -73,8 +74,18 @@ class WorkerThread(QtCore.QThread):
 			startFrame = min(frameList)
 			endFrame = max(frameList)
 
+		###########
+		# GENERIC #
+		###########
+
 		if self.job['jobType'] == "Generic":
-			args = [self.job['command'], self.job['flags']]
+			args.append(self.job['command'])
+			if self.job['flags']:
+				args.append(self.job['flags'])
+
+		########
+		# MAYA #
+		########
 
 		elif self.job['jobType'] == "Maya":
 			# Set executable (rewrite this to use app paths / versions)
@@ -109,6 +120,37 @@ class WorkerThread(QtCore.QThread):
 				args.append(str(endFrame))
 
 			args.append(self.job['scene'])
+
+		###########
+		# HOUDINI #
+		###########
+
+		elif self.job['jobType'] == "Houdini":
+			# Set executable (rewrite this to use app paths / versions)
+			if platform.system() == "Windows":
+				args.append('')
+			elif platform.system() == "Darwin":
+				args.append('')
+			else:
+				args.append('/opt/hfs/bin/hrender')
+
+			args.append('-v')
+			args.append('-d')
+			args.append(self.job['outputDriver'])
+
+			if frameList == "Unknown":
+				pass
+			else:
+				args.append('-e')
+				args.append('-f')
+				args.append(str(startFrame))
+				args.append(str(endFrame))
+
+			args.append(self.job['scene'])
+
+		########
+		# NUKE #
+		########
 
 		elif self.job['jobType'] == "Nuke":
 			# Set executable (rewrite this to use app paths / versions)

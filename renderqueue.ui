@@ -644,6 +644,11 @@
        </column>
        <column>
         <property name="text">
+         <string>Pool</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
          <string>ID</string>
         </property>
        </column>
@@ -808,8 +813,8 @@
     </property>
     <addaction name="actionSubmitJob"/>
     <addaction name="actionRefresh"/>
-    <addaction name="actionReset_view"/>
-    <addaction name="actionResize_columns"/>
+    <addaction name="actionResetView"/>
+    <addaction name="actionResizeColumns"/>
     <addaction name="separator"/>
     <addaction name="actionSettings"/>
     <addaction name="actionAbout"/>
@@ -912,12 +917,12 @@
     <string>Exit</string>
    </property>
   </action>
-  <action name="actionResize_columns">
+  <action name="actionResizeColumns">
    <property name="text">
     <string>Resize all columns</string>
    </property>
   </action>
-  <action name="actionReset_view">
+  <action name="actionResetView">
    <property name="text">
     <string>Reset view</string>
    </property>

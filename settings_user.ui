@@ -34,7 +34,7 @@
      <property name="xmlCategory" stdset="0">
       <string>database</string>
      </property>
-     <layout class="QFormLayout" name="generic_formLayout">
+     <layout class="QFormLayout" name="database_formLayout">
       <property name="fieldGrowthPolicy">
        <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
       </property>
@@ -148,7 +148,7 @@
      <property name="xmlCategory" stdset="0">
       <string>userInterface</string>
      </property>
-     <layout class="QFormLayout" name="frames_formLayout">
+     <layout class="QFormLayout" name="userInterface_formLayout">
       <property name="fieldGrowthPolicy">
        <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
       </property>
@@ -300,7 +300,7 @@
      <property name="xmlCategory" stdset="0">
       <string>colorPalette</string>
      </property>
-     <layout class="QGridLayout" name="gridLayout">
+     <layout class="QGridLayout" name="palette_gridLayout">
       <item row="1" column="2">
        <widget class="QToolButton" name="colorSuccess_button">
         <property name="sizePolicy">

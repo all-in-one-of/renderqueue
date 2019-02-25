@@ -69,6 +69,7 @@ def generate_job_info_file(**kwargs):
 		fh.write("Frames=%s\n" %kwargs['frames'])
 		fh.write("ChunkSize=%s\n" %kwargs['taskSize'])
 		fh.write("Pool=%s\n" %kwargs['pool'])
+		fh.write("SecondaryPool=%s\n" %kwargs['secondaryPool'])
 		fh.write("Group=%s\n" %kwargs['group'])
 		fh.write("Priority=%s\n" %kwargs['priority'])
 		fh.write("UserName=%s\n" %kwargs['username'])
@@ -138,6 +139,12 @@ def generate_plugin_info_file(**kwargs):
 			if kwargs['renderLayer']:
 				fh.write("UsingRenderLayers=1\n")
 				fh.write("RenderLayer=%s\n" %kwargs['renderLayer'])
+
+		# Houdini ------------------------------------------------------------
+		elif kwargs['plugin'] == "Houdini":
+			fh.write("Version=%s\n" %kwargs['version'])
+			fh.write("SceneFile=%s\n" %kwargs['scene'])
+			fh.write("OutputDriver=%s\n" %kwargs['outputDriver'])
 
 		# Nuke ---------------------------------------------------------------
 		elif kwargs['plugin'] == "Nuke":
