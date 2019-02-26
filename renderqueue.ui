@@ -754,6 +754,14 @@
     <property name="title">
      <string>Job</string>
     </property>
+    <widget class="QMenu" name="menuDelete">
+     <property name="title">
+      <string>Delete</string>
+     </property>
+     <addaction name="actionDeleteJob"/>
+     <addaction name="actionDeleteLogs"/>
+     <addaction name="actionArchiveJob"/>
+    </widget>
     <addaction name="actionEditJob"/>
     <addaction name="actionBrowse"/>
     <addaction name="actionBrowseFolder"/>
@@ -762,8 +770,8 @@
     <addaction name="actionPause"/>
     <addaction name="actionResume"/>
     <addaction name="actionStop"/>
-    <addaction name="actionDelete"/>
     <addaction name="actionResubmit"/>
+    <addaction name="menuDelete"/>
    </widget>
    <widget class="QMenu" name="menuTask">
     <property name="title">
@@ -841,7 +849,7 @@
     <string>Stop</string>
    </property>
   </action>
-  <action name="actionDelete">
+  <action name="actionDeleteJob">
    <property name="text">
     <string>Delete</string>
    </property>
@@ -1005,6 +1013,16 @@
   <action name="actionBrowseFolder">
    <property name="text">
     <string>Browse output folder</string>
+   </property>
+  </action>
+  <action name="actionDeleteLogs">
+   <property name="text">
+    <string>Delete logs</string>
+   </property>
+  </action>
+  <action name="actionArchiveJob">
+   <property name="text">
+    <string>Archive</string>
    </property>
   </action>
  </widget>

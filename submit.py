@@ -29,10 +29,32 @@ import sequence
 #import userPrefs
 #import verbose
 
+
+# ----------------------------------------------------------------------------
+# Environment detection - TEMP HACK
+# ----------------------------------------------------------------------------
+
+#ENVIRONMENT = os.environ.get('IC_ENV', "STANDALONE")
+
 try:
 	import maya.cmds as mc
-except:
+	#ENVIRONMENT = "MAYA"
+except ImportError:
 	pass
+
+try:
+	import hou
+	#ENVIRONMENT = "HOUDINI"
+except ImportError:
+	pass
+
+try:
+	import nuke
+	import nukescripts
+	#ENVIRONMENT = "NUKE"
+except ImportError:
+	pass
+
 
 # ----------------------------------------------------------------------------
 # Configuration
@@ -61,14 +83,11 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 		super(RenderSubmitUI, self).__init__(parent)
 		self.parent = parent
 
-		#xml_data = os.path.join(os.environ['IC_USERPREFS'], 'renderSubmit.xml')
-		xml_data = None
-
 		self.setupUI(window_object=WINDOW_OBJECT, 
 		             window_title=WINDOW_TITLE, 
 		             ui_file=UI_FILE, 
 		             stylesheet=STYLESHEET, 
-		             prefs_file=xml_data, 
+		             prefs_file=None, 
 		             store_window_geometry=STORE_WINDOW_GEOMETRY)  # re-write as **kwargs ?
 
 		self.conformFormLayoutLabels(self.ui)
@@ -107,6 +126,8 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 		self.ui.commandBrowse_toolButton.clicked.connect(self.commandBrowse)
 		self.ui.mayaScene_comboBox.currentIndexChanged.connect(self.applySettings)
 		self.ui.mayaSceneBrowse_toolButton.clicked.connect(self.sceneBrowse)
+		self.ui.houdiniScene_comboBox.currentIndexChanged.connect(self.applySettings)
+		self.ui.houdiniSceneBrowse_toolButton.clicked.connect(self.sceneBrowse)
 		self.ui.nukeScript_comboBox.currentIndexChanged.connect(self.applySettings)
 		self.ui.nukeScriptBrowse_toolButton.clicked.connect(self.sceneBrowse)
 
@@ -155,7 +176,7 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 		self.expertMode = False
 
 
-	def display(self, jobtype=None, scene=None, frameRange=None, layers=None, flags=None):
+	def display(self, submitTo=None, jobtype=None, scene=None, frameRange=None, layers=None, flags=None):
 		""" Display the window.
 		"""
 		self.returnValue = False
@@ -176,14 +197,14 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 			self.ui.submitTo_comboBox.setEnabled(False)
 		else:
 			#self.submitTo = userPrefs.query('rendersubmit', 'submitto', default=self.ui.submitTo_comboBox.currentText())
-			self.submitTo = "Render Queue" # TEMP HACK
+			self.submitTo = "Deadline" # TEMP HACK
 			self.ui.submitTo_label.setEnabled(True)
 			self.ui.submitTo_comboBox.setEnabled(True)
 		self.ui.submitTo_comboBox.setCurrentIndex(self.ui.submitTo_comboBox.findText(self.submitTo))
 		self.ui.submit_pushButton.setText("Submit to %s" %self.submitTo)
 		self.setQueueManagerFromComboBox()
 
-		# Set job type from Icarus environment when possible
+		# Set job type from pipeline environment when possible
 		if UI.ENVIRONMENT == "STANDALONE":
 			#self.jobType = userPrefs.query('rendersubmit', 'lastrenderjobtype', default=self.ui.jobType_comboBox.currentText())
 			if jobtype:
@@ -191,7 +212,7 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 			else:
 				self.jobType = self.ui.jobType_comboBox.currentText() # TEMP HACK
 			self.ui.jobType_comboBox.setCurrentIndex(self.ui.jobType_comboBox.findText(self.jobType))
-			if scene:
+			if scene:  # For drag-n-drop submissions
 				if self.jobType == 'Maya':
 					self.ui.mayaScene_comboBox.addItem(scene)
 				elif self.jobType == 'Houdini':
@@ -211,59 +232,73 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 			self.ui.jobType_comboBox.setCurrentIndex(self.ui.jobType_comboBox.findText(self.jobType))
 			self.setJobType()
 
+			self.ui.mayaScene_comboBox.clear()
 			sceneName = mc.file(query=True, sceneName=True)
+			#sceneName = scene
 			if sceneName:  # Check we're not working in an unsaved scene
 				relPath = self.makePathRelative(oswrapper.absolutePath(sceneName))
 				if relPath:
 					self.ui.mayaScene_comboBox.addItem(relPath)
+					self.ui.submit_pushButton.setEnabled(True)
 			else:
 				msg = "Scene must be saved before submitting render."
 				mc.warning(msg)
 				#mc.confirmDialog(title="Scene not saved", message=msg, icon="warning", button="Close")
 				self.ui.mayaScene_comboBox.addItem(msg)
+				# self.ui.mayaScene_comboBox.lineEdit().setProperty("warning", True)
+				# self.ui.mayaScene_comboBox.style().unpolish(self.ui.mayaScene_comboBox)
+				# self.ui.mayaScene_comboBox.style().polish(self.ui.mayaScene_comboBox)
 				self.ui.submit_pushButton.setToolTip(msg)
 				self.ui.submit_pushButton.setEnabled(False)
 
 			self.ui.jobType_label.setEnabled(False)
 			self.ui.jobType_comboBox.setEnabled(False)
-			self.ui.mayaScene_label.setEnabled(False)
-			self.ui.mayaScene_comboBox.setEnabled(False)
-			self.ui.mayaSceneBrowse_toolButton.setEnabled(False)
+			#self.ui.mayaScene_label.setEnabled(False)
+			#self.ui.mayaScene_comboBox.setEnabled(False)
+			self.ui.mayaScene_comboBox.lineEdit().setReadOnly(True)
+			#self.ui.mayaSceneBrowse_toolButton.setEnabled(False)
+			self.ui.mayaSceneBrowse_toolButton.hide()
 			self.ui.renderer_label.setEnabled(False)
 			self.ui.renderer_comboBox.setEnabled(False)
 			self.ui.useRenderSetup_checkBox.setEnabled(False)
 
 			self.getCameras()
-			self.getRenderLayers()
+			#self.getRenderLayers()
 			self.getRenderers()
 
 			if layers:
 				self.ui.layers_lineEdit.setText(layers)
 
-		elif UI.ENVIRONMENT == "HOUDINI":
+		elif UI.ENVIRONMENT == "HOUDINI":  # Not fully implemented yet
 			self.jobType = "Houdini"
 			self.ui.jobType_comboBox.setCurrentIndex(self.ui.jobType_comboBox.findText(self.jobType))
 			self.setJobType()
 
+			self.ui.houdiniScene_comboBox.clear()
 			if scene:
 				self.ui.houdiniScene_comboBox.addItem(scene)
 
 			self.ui.jobType_label.setEnabled(False)
 			self.ui.jobType_comboBox.setEnabled(False)
-			self.ui.houdiniScene_label.setEnabled(False)
-			self.ui.houdiniScene_comboBox.setEnabled(False)
-			self.ui.houdiniSceneBrowse_toolButton.setEnabled(False)
+			#self.ui.houdiniScene_label.setEnabled(False)
+			#self.ui.houdiniScene_comboBox.setEnabled(False)
+			self.ui.houdiniScene_comboBox.lineEdit().setReadOnly(True)
+			#self.ui.houdiniSceneBrowse_toolButton.setEnabled(False)
+			self.ui.houdiniSceneBrowse_toolButton.hide()
 
 		elif UI.ENVIRONMENT == "NUKE":
 			self.jobType = "Nuke"
 			self.ui.jobType_comboBox.setCurrentIndex(self.ui.jobType_comboBox.findText(self.jobType))
 			self.setJobType()
 
+			self.ui.nukeScript_comboBox.clear()
 			scriptName = nuke.value('root.name')
+			#scriptName = scene
 			if scriptName:  # Check we're not working in an unsaved script
 				relPath = self.makePathRelative(oswrapper.absolutePath(scriptName))
 				if relPath:
 					self.ui.nukeScript_comboBox.addItem(relPath)
+					self.ui.submit_pushButton.setEnabled(True)
 			else:
 				msg = "Script must be saved before submitting render."
 				nuke.warning(msg)
@@ -274,9 +309,11 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 
 			self.ui.jobType_label.setEnabled(False)
 			self.ui.jobType_comboBox.setEnabled(False)
-			self.ui.nukeScript_label.setEnabled(False)
-			self.ui.nukeScript_comboBox.setEnabled(False)
-			self.ui.nukeScriptBrowse_toolButton.setEnabled(False)
+			#self.ui.nukeScript_label.setEnabled(False)
+			#self.ui.nukeScript_comboBox.setEnabled(False)
+			self.ui.nukeScript_comboBox.lineEdit().setReadOnly(True)
+			#self.ui.nukeScriptBrowse_toolButton.setEnabled(False)
+			self.ui.nukeScriptBrowse_toolButton.hide()
 
 			if layers:
 				self.ui.writeNodes_lineEdit.setText(layers)
@@ -466,6 +503,11 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 			fileDir = os.environ.get('MAYASCENESDIR', '.')  # Go to current dir if env var is not set
 			fileFilter = "Maya files (*.ma *.mb)"
 			fileTerminology = "scenes"
+		elif self.jobType == "Houdini":
+			comboBox = self.ui.houdiniScene_comboBox
+			fileDir = os.environ.get('HOUDINISCENESDIR', '.')  # Go to current dir if env var is not set
+			fileFilter = "Houdini files (*.hip)"
+			fileTerminology = "scenes"
 		elif self.jobType == "Nuke":
 			comboBox = self.ui.nukeScript_comboBox
 			fileDir = os.environ.get('NUKESCRIPTSDIR', '.')  # Go to current dir if env var is not set
@@ -484,7 +526,7 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 
 		# filePath = QtWidgets.QFileDialog.getOpenFileName(self, self.tr('Files'), startingDir, fileFilter)[0]
 		filePath = self.fileDialog(startingDir, fileFilter)
-		print(filePath)
+		#print(filePath)
 
 		if filePath:
 			#newEntry = self.makePathRelative(oswrapper.absolutePath(filePath))
@@ -502,17 +544,25 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 		""" Get frame range from shot settings.
 		"""
 		try:
-			self.ui.frames_lineEdit.setText("%d-%d" %(int(os.environ['STARTFRAME']), int(os.environ['ENDFRAME'])))
+			#frRange = "%d-%d" %(int(os.environ['STARTFRAME']), int(os.environ['ENDFRAME']))  # Icarus
+			frRange = "%d-%d" %(int(os.environ['UHUB_STARTFRAME']), int(os.environ['UHUB_ENDFRAME']))  # U-HUB
+			self.ui.frames_lineEdit.setText(frRange)
 		except KeyError:
 			self.ui.frames_lineEdit.setText("")
 
 
 	def getFrameRangeFromRenderSettings(self):
-		""" Get frame range from Maya or Nuke render settings.
+		""" Get frame range from DCC app settings.
 		"""
 		if UI.ENVIRONMENT == "MAYA":
 			start_frame = int(mc.getAttr('defaultRenderGlobals.startFrame'))
 			end_frame = int(mc.getAttr('defaultRenderGlobals.endFrame'))
+
+		elif UI.ENVIRONMENT == "HOUDINI":
+			# Note this is the time slider (playbar) range, not the render
+			# settings
+			start_frame = hou.playbar.playbackRange()[0]
+			end_frame = hou.playbar.playbackRange()[1]
 
 		elif UI.ENVIRONMENT == "NUKE":
 			start_frame = nuke.Root()['first_frame'].getValue()
@@ -915,8 +965,6 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 		"""
 		self.save()  # Save settings
 
-		#if not self.checkSubmissionOptions():
-
 		submit_args = self.getSubmissionOptions()
 		if submit_args:
 
@@ -924,7 +972,6 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 			if self.submitTo == "Render Queue":
 				if submit_args['frames']:
 					submit_args['taskSize'] = self.ui.taskSize_spinBox.value()
-					#frames_msg = "%d %s to be rendered; %d %s to be submitted.\n" %(len(self.numList), verbose.pluralise("frame", len(self.numList)), len(self.taskList), verbose.pluralise("task", len(self.taskList)))
 					frames_msg = "%d frame(s) to be rendered; %d task(s) to be submitted.\n" %(len(self.numList), len(self.taskList))
 				else:
 					submit_args['frames'] = "Unknown"
@@ -938,15 +985,15 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 				else:
 					submit_args['frames'] = "Unknown"
 					frames_msg = "Warning: No frame range specified.\n"
+
 			job_info_msg = "Name:\t%s\nType:\t%s\nFrames:\t%s\nTask size:\t%s\nPriority:\t%s\n" %(submit_args['jobName'], self.jobType, submit_args['frames'], submit_args['taskSize'], submit_args['priority'])
 
 			# Show confirmation dialog
 			dialog_title = "Submit to %s - %s" %(self.submitTo, submit_args['jobName'])
 			dialog_msg = job_info_msg + "\n" + frames_msg + "Do you want to continue?"
 
-			#if dialog.display(dialog_msg, dialog_title):
+			# Actually submit the job
 			if self.promptDialog(dialog_msg, dialog_title):
-				# Actually submit the job
 				if self.submitTo == "Render Queue":
 					result, result_msg = self.submitToRenderQueue(**submit_args)
 				elif self.submitTo == "Deadline":
@@ -955,7 +1002,6 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 				# Show post-confirmation dialog
 				dialog_title = "Submission Results - %s" %submit_args['jobName']
 				dialog_msg = job_info_msg + "\n" + result_msg
-				#dialog.display(dialog_msg, dialog_title, conf=True)
 				self.promptDialog(dialog_msg, dialog_title, conf=True)
 
 
@@ -1000,7 +1046,7 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 		elif self.jobType == "Maya":
 			submit_args['plugin'] = "MayaBatch"  # Deadline only
 			#submit_args['renderCmdEnvVar'] = 'MAYARENDERVERSION'  # RQ only
-			submit_args['flags'] = ""  # RQ only
+			#submit_args['flags'] = ""  # RQ only
 			submit_args['version'] = os.environ.get('MAYA_VER', "2018")  #jobData.getAppVersion('Maya')
 			submit_args['renderer'] = self.ui.renderer_comboBox.currentText()  # Maya submit only
 			submit_args['camera'] = self.ui.camera_comboBox.currentText()
@@ -1033,7 +1079,7 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 		elif self.jobType == "Houdini":
 			submit_args['plugin'] = "Houdini"  # Deadline only
 			#submit_args['renderCmdEnvVar'] = 'MAYARENDERVERSION'  # RQ only
-			submit_args['flags'] = ""  # RQ only
+			#submit_args['flags'] = ""  # RQ only
 			submit_args['version'] = "16"  # Temp
 			scene = self.makePathAbsolute(self.ui.houdiniScene_comboBox.currentText()).replace("\\", "/")
 			submit_args['scene'] = scene
@@ -1055,7 +1101,7 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 			submit_args['scene'] = scene
 			submit_args['jobName'] = os.path.splitext(os.path.basename(scene))[0]
 			#submit_args['writeNodes'] = self.ui.writeNodes_lineEdit.text()
-			submit_args['renderLayers'] = self.ui.writeNodes_lineEdit.text()
+			submit_args['renderLayers'] = self.ui.writeNodes_lineEdit.text()  # Use renderLayers for writeNodes
 
 			# File output location(s)... (Nuke submit only)
 			submit_args['output'] = self.getOutputs()
@@ -1069,95 +1115,48 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 	def submitToRenderQueue(self, **kwargs):
 		""" Submit job to render queue.
 		"""
-		time_format_str = "%Y/%m/%d %H:%M:%S" #"%a, %d %b %Y %H:%M:%S"
-		cmd_output = ""
+		time_format_str = "%Y/%m/%d %H:%M:%S"
 		result_msg = ""
 
-		if kwargs is not None:
-			for key, value in kwargs.items(): # iteritems(): for Python 2.x
-				#verbose.print_("%24s = %s" %(key, value))
-				print("%24s = %s" %(key, value))
-
-		# # Check render command is valid
-		# if self.jobType != "Generic":
-		# 	renderCmdEnvVar = kwargs['renderCmdEnvVar']
-		# 	try:
-		# 		renderCmd = os.environ[renderCmdEnvVar].replace("\\", "/")
-		# 	except KeyError:
-		# 		error_msg = "Path to %s render command executable not found. This can be set with the environment variable '%s'." %(self.jobType, renderCmdEnvVar)
-		# 		#verbose.error(error_msg)
-		# 		print(error_msg)
-		# 		return False, "Failed to submit job.\n%s" %error_msg
-		renderCmd = ""
+		# if kwargs is not None:
+		# 	for key, value in kwargs.items():
+		# 		print("%24s = %s" %(key, value))
 
 		# Instantiate Render Queue class, load data, and create new job
-		try:  # If running from Render Queue
+		try:  # If running from Render Queue main client UI
 			rq = self.parent.rq
 		except:  # Otherwise instatiate new Render Queue class
 			databaseLocation = '/mnt/anubis/PersonalJobs/999925_Mike_Bonnington/dev/renderqueue/rq_database'  # temp assignment - should read from prefs file
 			rq = database.RenderQueue(databaseLocation)
 
 		try:
-			#renderOpts = kwargs['scene']
+			jobNameBase = kwargs['jobName']
 			kwargs['jobType'] = self.jobType
 			kwargs['tasks'] = self.taskList
 			kwargs['submitTime'] = time.strftime(time_format_str)
 
-			# Set up Nuke command-line flags
-			if self.jobType == "Nuke":
-				if kwargs['nukeX']:
-					kwargs['flags'] += "--nukex "
-				if kwargs['interactiveLicense']:
-					kwargs['flags'] += "-i "
-
-			if kwargs['renderLayers']:  # Batch submission -----------------------
-				# Generate submission info files
+			if kwargs['renderLayers']:  # Batch submission -------------------
 				num_jobs = 0
 				for renderLayer in re.split(r',\s*', kwargs['renderLayers']): # use re for more versatility, or even better pass as list
 					kwargs['renderLayer'] = renderLayer
-
-					# Package option variables into tuples
-					kwargs['jobName'] += " - " + renderLayer
-					#jobName = "%s - %s" %(kwargs['jobName'], renderLayer)
-					#genericOpts = jobName, self.jobType, kwargs['frames'], kwargs['taskSize'], kwargs['priority']
-					if self.jobType == "Maya":
-						kwargs['flags'] += "-rl %s " %renderLayer
-						#mayaFlags = "-rl %s" %renderLayer
-						#renderOpts = kwargs['scene'], kwargs['mayaProject'], mayaFlags, kwargs['renderer'], renderCmd
-					elif self.jobType == "Nuke":
-						kwargs['flags'] += "-X %s " %renderLayer
-						#nukeFlags = "%s -X %s" %(kwargs['flags'], renderLayer)
-						#renderOpts = kwargs['scene'], nukeFlags, renderCmd
-
-					#rq.newJob(genericOpts, renderOpts, self.taskList, os.environ.get('IC_USERNAME', getpass.getuser()), time.strftime(time_format_str), kwargs['comment'])
-					rq.newJob(**kwargs)
-
+					kwargs['jobName'] = "%s - %s" %(jobNameBase, renderLayer)
+					rq.newJob(**kwargs)  # Create job
 					num_jobs += 1
 
 				result = True
-				#result_msg = "Successfully submitted %d %s." %(num_jobs, verbose.pluralise("job", num_jobs))
 				result_msg = "Successfully submitted %d job(s)." %num_jobs
 
-			else:  # Single job submission ---------------------------------------
-				# Package option variables into tuples
-				# genericOpts = kwargs['jobName'], self.jobType, kwargs['frames'], kwargs['taskSize'], kwargs['priority']
-				# if self.jobType == "Maya":
-				# 	renderOpts = kwargs['scene'], kwargs['mayaProject'], kwargs['flags'], kwargs['renderer'], renderCmd
-				# elif self.jobType == "Nuke":
-				# 	renderOpts = kwargs['scene'], kwargs['flags'], renderCmd
-
-				#rq.newJob(genericOpts, renderOpts, self.taskList, os.environ.get('IC_USERNAME', getpass.getuser()), time.strftime(time_format_str), kwargs['comment'])
-				rq.newJob(**kwargs)
+			else:  # Single job submission -----------------------------------
+				rq.newJob(**kwargs)  # Create job
 
 				result = True
 				result_msg = "Successfully submitted job."
 
-		except:  # Submission failed ---------------------------------------------
+		except:  # Submission failed -----------------------------------------
 			result = False
 			exc_type, exc_value, exc_traceback = sys.exc_info()
 			traceback.print_exception(exc_type, exc_value, exc_traceback)
 			result_msg = "Failed to submit job."
-			#verbose.error(result_msg)
 			print(result_msg)
 			result_msg += "\nCheck console output for details."
 
@@ -1178,52 +1177,38 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 # Run functions
 # ----------------------------------------------------------------------------
 
-# def run_(**kwargs):
-# 	# for key, value in kwargs.iteritems():
-# 	# 	print "%s = %s" % (key, value)
-# 	renderSubmitUI = RenderSubmitUI(**kwargs)
-# 	#renderSubmitUI.setAttribute(QtCore.Qt.WA_DeleteOnClose, True)
-# 	print renderSubmitUI
-# 	renderSubmitUI.show()
-# 	#renderSubmitUI.raise_()
-# 	#renderSubmitUI.exec_()
-
-
-def run_maya(**kwargs):
+def run_maya(session, **kwargs):
 	""" Run in Maya.
 	"""
-	try:
-		renderSubmitUI.display(**kwargs)  # Show the UI
-	except (AttributeError, UnboundLocalError):
+	try:  # Show the UI
+		session.renderSubmitUI.display()
+	except:  # Create the UI
 		UI._maya_delete_ui(WINDOW_OBJECT, WINDOW_TITLE)  # Delete any existing UI
-		renderSubmitUI = RenderSubmitUI(parent=UI._maya_main_window())
-
-		renderSubmitUI.display(**kwargs)
-
-
-def run_houdini(**kwargs):
-	""" Run in Houdini.
-	"""
-	try:
-		session.renderSubmitUI.display(**kwargs)  # Show the UI
-	except (AttributeError, UnboundLocalError):
-		# UI._houdini_delete_ui(WINDOW_OBJECT, WINDOW_TITLE)  # Delete any existing UI
-		session = UI._houdini_get_session()
-		session.renderSubmitUI = RenderSubmitUI(parent=UI._houdini_main_window())
-
+		session.renderSubmitUI = RenderSubmitUI(parent=UI._maya_main_window())
 		session.renderSubmitUI.display(**kwargs)
 
 
-def run_nuke(**kwargs):
+def run_houdini(session, **kwargs):
+	""" Run in Houdini.
+	"""
+	try:  # Show the UI
+		session.renderSubmitUI.display()
+	except:  # Create the UI
+		#UI._houdini_delete_ui(WINDOW_OBJECT, WINDOW_TITLE)  # Delete any existing UI
+		#session = UI._houdini_get_session()
+		session.renderSubmitUI = RenderSubmitUI(parent=UI._houdini_main_window())
+		session.renderSubmitUI.display(**kwargs)
+
+
+def run_nuke(session, **kwargs):
 	""" Run in Nuke.
 	"""
-	try:
-		renderSubmitUI.display(**kwargs)  # Show the UI
-	except (AttributeError, UnboundLocalError):
+	try:  # Show the UI
+		session.renderSubmitUI.display()
+	except:  # Create the UI
 		UI._nuke_delete_ui(WINDOW_OBJECT, WINDOW_TITLE)  # Delete any existing UI
-		renderSubmitUI = RenderSubmitUI(parent=UI._nuke_main_window())
-
-		renderSubmitUI.display(**kwargs)
+		session.renderSubmitUI = RenderSubmitUI(parent=UI._nuke_main_window())
+		session.renderSubmitUI.display(**kwargs)
 
 
 # Run as standalone app

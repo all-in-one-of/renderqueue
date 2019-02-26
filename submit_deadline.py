@@ -17,9 +17,8 @@ import traceback
 # Import custom modules
 import oswrapper
 import common
-#import verbose
 
-# temporary assignment
+# temporary assignment - store in prefs file e.g. submitter.deadlinecommand
 os.environ['DEADLINECMDVERSION'] = "/opt/Thinkbox/Deadline9/bin/deadlinecommand"
 
 
@@ -30,7 +29,6 @@ def get_pools():
 		pools = oswrapper.execute([os.environ['DEADLINECMDVERSION'], '-pools'])[1]
 		return pools.splitlines()
 	except:
-		#verbose.warning("Could not retrieve Deadline pools.")
 		print("Warning: Could not retrieve Deadline pools.")
 		return None
 
@@ -42,7 +40,6 @@ def get_groups():
 		groups = oswrapper.execute([os.environ['DEADLINECMDVERSION'], '-groups'])[1]
 		return groups.splitlines()
 	except:
-		#verbose.warning("Could not retrieve Deadline groups.")
 		print("Warning: Could not retrieve Deadline groups.")
 		return None
 
@@ -88,7 +85,6 @@ def generate_job_info_file(**kwargs):
 					fh.write("OutputDirectory%d=%s\n" %(i, outputPath[0]))
 					fh.write("OutputFilename%d=%s\n" %(i, outputPath[1]))
 		except:
-			#verbose.warning("Could not determine render output path(s).")
 			print("Warning: Could not determine render output path(s).")
 
 		for i, key in enumerate(kwargs['envVars']):
@@ -96,7 +92,6 @@ def generate_job_info_file(**kwargs):
 				fh.write("EnvironmentKeyValue%d=%s=%s\n" %(i, key, os.environ[key]))
 			except KeyError:
 				print("Warning: environment variable '%s' not set." %key)
-				pass
 
 		# fh.write("ExtraInfo0=%s\n" %os.environ['JOB'])
 		# fh.write("ExtraInfo1=%s\n" %os.environ['SHOT'])
@@ -181,10 +176,9 @@ def submit_job(**kwargs):
 	cmd_output = ""
 	result_msg = ""
 
-	if kwargs is not None:
-		for key, value in kwargs.items(): # iteritems(): for Python 2.x
-			#verbose.print_("%24s = %s" %(key, value))
-			print("%24s = %s" %(key, value))
+	# if kwargs is not None:
+	# 	for key, value in kwargs.items():
+	# 		print("%24s = %s" %(key, value))
 
 	try:
 		if kwargs['renderLayers']:  # Batch submission -----------------------
@@ -211,7 +205,6 @@ def submit_job(**kwargs):
 			# Execute deadlinecommand
 			cmd_result, cmd_output = oswrapper.execute([os.environ['DEADLINECMDVERSION'], batchSubmissionFile])
 			if cmd_result:
-				#result_msg = "Successfully submitted %d %s to Deadline." %(num_jobs, verbose.pluralise("job", num_jobs))
 				result_msg = "Successfully submitted %d job(s) to Deadline." %num_jobs
 
 			# Delete submission info files
@@ -241,7 +234,6 @@ def submit_job(**kwargs):
 		if cmd_result:
 			result = True
 			print(cmd_output) #.decode())
-			#verbose.message(result_msg)
 			print(result_msg)
 		else:
 			raise RuntimeError(cmd_output)
@@ -251,7 +243,6 @@ def submit_job(**kwargs):
 		exc_type, exc_value, exc_traceback = sys.exc_info()
 		traceback.print_exception(exc_type, exc_value, exc_traceback)
 		result_msg = "Failed to submit job to Deadline."
-		#verbose.error(result_msg)
 		print(result_msg)
 		if (exc_type == RuntimeError) and cmd_output:
 			result_msg += "\n" + cmd_output

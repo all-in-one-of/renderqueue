@@ -194,15 +194,30 @@
        <property name="geometry">
         <rect>
          <x>0</x>
-         <y>-324</y>
-         <width>438</width>
-         <height>756</height>
+         <y>-281</y>
+         <width>435</width>
+         <height>738</height>
         </rect>
        </property>
        <property name="noBackground" stdset="0">
         <bool>true</bool>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_2">
+        <property name="spacing">
+         <number>6</number>
+        </property>
+        <property name="leftMargin">
+         <number>6</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>6</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
         <item>
          <widget class="QGroupBox" name="generic_groupBox">
           <property name="sizePolicy">
@@ -223,6 +238,9 @@
           <layout class="QFormLayout" name="generic_formLayout">
            <property name="labelAlignment">
             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           </property>
+           <property name="formAlignment">
+            <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
            </property>
            <property name="horizontalSpacing">
             <number>4</number>
@@ -379,6 +397,9 @@
            <property name="labelAlignment">
             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
            </property>
+           <property name="formAlignment">
+            <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+           </property>
            <property name="horizontalSpacing">
             <number>4</number>
            </property>
@@ -455,7 +476,7 @@
                  </sizepolicy>
                 </property>
                 <property name="editable">
-                 <bool>false</bool>
+                 <bool>true</bool>
                 </property>
                 <property name="maxCount">
                  <number>10</number>
@@ -731,6 +752,9 @@
            <property name="labelAlignment">
             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
            </property>
+           <property name="formAlignment">
+            <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+           </property>
            <property name="horizontalSpacing">
             <number>4</number>
            </property>
@@ -786,7 +810,7 @@
                  </sizepolicy>
                 </property>
                 <property name="editable">
-                 <bool>false</bool>
+                 <bool>true</bool>
                 </property>
                 <property name="maxCount">
                  <number>10</number>
@@ -859,6 +883,9 @@
            <property name="labelAlignment">
             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
            </property>
+           <property name="formAlignment">
+            <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+           </property>
            <property name="horizontalSpacing">
             <number>4</number>
            </property>
@@ -921,7 +948,7 @@
                  </sizepolicy>
                 </property>
                 <property name="editable">
-                 <bool>false</bool>
+                 <bool>true</bool>
                 </property>
                 <property name="maxCount">
                  <number>10</number>
@@ -1110,6 +1137,9 @@
           <layout class="QFormLayout" name="frames_formLayout">
            <property name="labelAlignment">
             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           </property>
+           <property name="formAlignment">
+            <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
            </property>
            <property name="horizontalSpacing">
             <number>4</number>
@@ -1302,6 +1332,9 @@
           <layout class="QFormLayout" name="submission_formLayout">
            <property name="labelAlignment">
             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           </property>
+           <property name="formAlignment">
+            <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
            </property>
            <property name="horizontalSpacing">
             <number>4</number>

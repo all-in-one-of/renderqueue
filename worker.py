@@ -44,6 +44,8 @@ class WorkerThread(QtCore.QThread):
 		self.ignore_errors = ignore_errors
 		self.files_processed = 0
 
+		print(self)
+
 		# Set up logging
 		logger_name = '%s_logger' %os.path.splitext(os.path.basename(logfile))[0]
 		self.task_logger = common.setup_logger(logger_name, logfile)
@@ -99,8 +101,12 @@ class WorkerThread(QtCore.QThread):
 			args.append('-proj')
 			args.append(self.job['mayaProject'])
 
-			if self.job['flags']:
-				args.append(self.job['flags'])
+			if self.job['renderLayers']:
+				args.append('-rl')
+				args.append(self.job['renderLayer'])
+
+			# if self.job['flags']:
+			# 	args.append(self.job['flags'])
 
 			if self.job['renderer']:
 				args.append('-r')
@@ -161,8 +167,17 @@ class WorkerThread(QtCore.QThread):
 			else:
 				args.append('/usr/local/bin/nuke')
 
-			if self.job['flags']:
-				args.append(self.job['flags'])
+			if self.job['renderLayers']:  # (Write nodes)
+				args.append('-X')
+				args.append(self.job['renderLayer'])
+
+			if self.job['nukeX']:
+				args.append('--nukex')
+			if self.job['interactiveLicense']:
+				args.append('-i')
+
+			# if self.job['flags']:
+			# 	args.append(self.job['flags'])
 
 			if frameList == "Unknown":
 				pass

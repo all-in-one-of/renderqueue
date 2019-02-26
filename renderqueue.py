@@ -207,10 +207,16 @@ class RenderQueueApp(QtWidgets.QMainWindow, UI.TemplateUI):
 		self.ui.jobStop_toolButton.clicked.connect(self.stopJob)
 		self.ui.jobStop_toolButton.setIcon(self.iconSet('process-stop.svg'))
 
-		self.ui.actionDelete.triggered.connect(self.deleteJob)
-		self.ui.actionDelete.setIcon(self.iconSet('edit-delete.svg'))
+		self.ui.actionDeleteJob.triggered.connect(self.deleteJob)
+		self.ui.actionDeleteJob.setIcon(self.iconSet('edit-delete.svg'))
 		self.ui.jobDelete_toolButton.clicked.connect(self.deleteJob)
 		self.ui.jobDelete_toolButton.setIcon(self.iconSet('edit-delete.svg'))
+
+		#self.ui.actionDeleteLogs.triggered.connect(self.deleteJobLobs)
+		self.ui.actionDeleteLogs.setIcon(self.iconSet('edit-delete.svg'))
+
+		#self.ui.actionArchiveJob.triggered.connect(self.archiveJob)
+		self.ui.actionArchiveJob.setIcon(self.iconSet('archive.svg'))
 
 		#self.ui.actionResubmit.triggered.connect(self.resubmitJob)  # not yet implemented
 		self.ui.actionResubmit.setIcon(self.iconSet('resubmit.png'))
@@ -706,9 +712,9 @@ Developers: %s
 					if taskStatus == "Done":
 						completedTaskCount += 1
 						completedTaskFrameCount = -1
-					# if taskStatus == "Failed":
-					# 	failedTaskCount += 1
-					# 	failedTaskFrameCount = -1
+					if taskStatus == "Failed":
+						failedTaskCount += 1
+						failedTaskFrameCount = -1
 				else:
 					taskFrameCount = len(sequence.numList(task['frames']))
 					if taskStatus.startswith("Rendering"):
@@ -717,9 +723,9 @@ Developers: %s
 					if taskStatus == "Done":
 						completedTaskCount += 1
 						completedTaskFrameCount += taskFrameCount
-					# if taskStatus == "Failed":
-					# 	failedTaskCount += 1
-					# 	failedTaskFrameCount += taskFrameCount
+					if taskStatus == "Failed":
+						failedTaskCount += 1
+						failedTaskFrameCount += taskFrameCount
 
 				# Colour the status text
 				for col in range(widget.columnCount()):
@@ -758,23 +764,35 @@ Developers: %s
 			# Calculate job progress and update status
 			colBg = self.colBlack
 			colProgress = self.colCompleted
-			#jobItem.setForeground(4, QtGui.QBrush(self.colWhite))
+			#jobItem.setForeground(header['Status'], QtGui.QBrush(self.colWhite))
+
+			# Not started or no tasks finished...
 			if completedTaskFrameCount == 0:
 				if inProgressTaskFrameCount == 0:
 					jobStatus = "Queued"
 				else:
-					jobStatus = "[0%] Working"
+					if inProgressTaskCount == 1:
+						jobStatus = "[0%] Rendering on 1 worker"
+					else:
+						jobStatus = "[0%%] Rendering on %d workers" %inProgressTaskCount
+
+			# Finished...
 			elif completedTaskFrameCount == totalFrameCount:
 				jobStatus = "Done"
-				#jobItem.setForeground(4, QtGui.QBrush(self.colBorder))
+				#jobItem.setForeground(header['Status'], QtGui.QBrush(self.colBorder))
+
+			# In progress...
 			else:
 				percentComplete = (float(completedTaskFrameCount) / float(totalFrameCount)) * 100
 				if inProgressTaskFrameCount == 0:
+					#colProgress = self.colInactive
 					jobStatus = "[%d%%] Waiting" %percentComplete
-					colProgress = self.colInactive
 				else:
-					jobStatus = "[%d%%] Working" %percentComplete
-					colProgress = self.colCompleted
+					#colProgress = self.colCompleted
+					if inProgressTaskCount == 1:
+						jobStatus = "[%d%%] Rendering on 1 worker" %percentComplete
+					else:
+						jobStatus = "[%d%%] Rendering on %d workers" %(percentComplete, inProgressTaskCount)
 				# if failedTaskCount == 0:
 				# 	colBg = self.colBlack
 				# else:
@@ -799,10 +817,10 @@ Developers: %s
 				jobTotalTime = None
 
 			jobItem.setText(header['Clock'], str(jobTotalTime))
-			if inProgressTaskCount:
-				jobItem.setText(header['Worker'], "[%d rendering]" %inProgressTaskCount)
-			else:
-				jobItem.setText(header['Worker'], "")
+			# if inProgressTaskCount:
+			# 	jobItem.setText(header['Worker'], "[%d rendering]" %inProgressTaskCount)
+			# else:
+			# 	jobItem.setText(header['Worker'], "")
 			jobItem.setText(header['Pool'], job['pool'])
 			jobItem.setText(header['Comment'], job['comment'])
 
@@ -919,11 +937,8 @@ Developers: %s
 		barWidth = width - (border*2)
 		barHeight = height - (border*2)
 		completedRatio = float(completedTaskFrameCount) / float(totalFrameCount)
-		# failedRatio = float(failedTaskFrameCount) / float(totalFrameCount)
+		failedRatio = float(failedTaskFrameCount) / float(totalFrameCount)
 		inProgressRatio = float(inProgressTaskFrameCount) / float(totalFrameCount)
-		completedLevel = math.ceil(completedRatio*barWidth)
-		# failedLevel = math.ceil(failedRatio*barWidth)
-		inProgressLevel = math.ceil((completedRatio+inProgressRatio)*barWidth)
 
 		image = QtGui.QPixmap(width, height)
 
@@ -936,17 +951,22 @@ Developers: %s
 		qp.drawRect(0, 0, width, height)
 		qp.setBrush(self.colBlack)  # Draw background
 		qp.drawRect(border, border, barWidth, barHeight)
-		qp.setBrush(self.colActive.darker())  # Draw in-progress bar
-		qp.drawRect(border, border, inProgressLevel, barHeight)
-		qp.setBrush(colProgress.darker())  # Draw completed level bar
-		qp.drawRect(border, border, completedLevel, barHeight)
-		# qp.setBrush(self.colError.darker())  # Draw failed level bar
-		# qp.drawRect(border, border, failedLevel, barHeight)
+		if inProgressTaskFrameCount:  # Draw in-progress bar
+			inProgressLevel = math.ceil((completedRatio+failedRatio+inProgressRatio)*barWidth)
+			qp.setBrush(self.colActive.darker())
+			qp.drawRect(border, border, inProgressLevel, barHeight)
+		if failedTaskFrameCount:  # Draw failed level bar
+			failedLevel = math.ceil((completedRatio+failedRatio)*barWidth)
+			qp.setBrush(self.colError.darker())
+			qp.drawRect(border, border, failedLevel, barHeight)
+		if completedTaskFrameCount:  # Draw completed level bar
+			completedLevel = math.ceil(completedRatio*barWidth)
+			qp.setBrush(colProgress.darker())
+			qp.drawRect(border, border, completedLevel, barHeight)
 		qp.end()
 
-		#jobItem.setBackground(col, image)  # PyQt5 doesn't like this
-		jobItem.setBackground(col, QtGui.QBrush(image))  # Test with Qt4/PySide
-		#jobItem.setForeground(col, QtGui.QBrush(self.colWhite))
+		jobItem.setBackground(col, QtGui.QBrush(image))
+		jobItem.setForeground(col, QtGui.QBrush(self.colWhite))
 
 
 	# @QtCore.Slot()
