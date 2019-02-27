@@ -112,7 +112,9 @@ class TemplateUI(object):
 		self.col = {}
 		self.col['sys-window'] = tmpWidget.palette().color(QtGui.QPalette.Window)
 		self.col['sys-highlight'] = tmpWidget.palette().color(QtGui.QPalette.Highlight)
-		self.col['window'] = QtGui.QColor('#444444') #self.col['sys-window']
+		# self.col['window'] = self.col['sys-window']
+		# self.col['highlight'] = self.col['sys-highlight']
+		self.col['window'] = QtGui.QColor('#444444') #self.col['sys-window'] # load from settings
 		self.col['highlight'] = QtGui.QColor('#78909c') #self.col['sys-highlight'] # load from settings
 		self.computeUIPalette()
 
@@ -782,6 +784,8 @@ class TemplateUI(object):
 		""" Check if 'filename' exists. If not, search through list of folders
 			given in the optional searchpath, then check in the current dir.
 		"""
+		if filename is None:
+			return None
 		if os.path.isfile(filename):
 			return filename
 		else:
@@ -807,6 +811,9 @@ class TemplateUI(object):
 			for key, value in self.col.items():
 				rgb = "%d, %d, %d" %(value.red(), value.green(), value.blue())
 				stylesheet = stylesheet.replace("%"+key+"%", rgb)
+
+			# Replace image theme tokens
+			stylesheet = stylesheet.replace(r"%theme%", self.imgtheme)
 
 			self.setStyleSheet(stylesheet)
 			return stylesheet
@@ -853,53 +860,51 @@ class TemplateUI(object):
 
 
 	def computeUIPalette(self):
-		""" Compute UI colours based on window colour.
+		""" Compute complementary UI colours based on window colour.
 		"""
-		#self.col['text'] = QtGui.QColor(204, 204, 204)
-		self.col['disabled'] = QtGui.QColor(102, 102, 102)
-		#self.col['base'] = QtGui.QColor(34, 34, 34)
-		#self.col['button'] = QtGui.QColor(102, 102, 102)
-		#self.col['hover'] = QtGui.QColor(119, 119, 119)
-		#self.col['pressed'] = QtGui.QColor(60, 60, 60)
-		self.col['pressed'] = self.col['highlight']
-		#self.col['checked'] = QtGui.QColor(51, 51, 51)
-		#self.col['menu-bg'] = QtGui.QColor(51, 51, 51)
-		#self.col['menu-border'] = QtGui.QColor(68, 68, 68)
 		self.col['group-bg'] = QtGui.QColor(128, 128, 128)
 		self.col['line'] = self.col['window'].darker(110)
-		#self.col['highlighted-text'] = QtGui.QColor(255, 255, 255)
 		self.col['mandatory'] = QtGui.QColor('#f92672')
 		self.col['warning'] = QtGui.QColor('#e6db74')
 		self.col['inherited'] = QtGui.QColor('#a1efe4')
 
 		if self.col['window'].lightness() < 128:  # Dark UI
-			self.col['text'] = self.offsetColor(self.col['window'], +68, 204)
+			self.imgtheme = "light"
+			self.col['text'] = QtGui.QColor(204, 204, 204)
+			self.col['disabled'] = self.offsetColor(self.col['window'], +51)
 			self.col['base'] = self.offsetColor(self.col['window'], -34, 34)
 			self.col['alternate'] = self.offsetColor(self.col['base'], +8)
 			self.col['button'] = self.offsetColor(self.col['window'], +34, 102)
+			self.col['button-border'] = self.offsetColor(self.col['button'], +8)
 			self.col['menu-bg'] = self.offsetColor(self.col['window'], -17, 68)
 			self.col['menu-border'] = self.offsetColor(self.col['menu-bg'], +17)
+			self.col['group-header'] = self.offsetColor(self.col['window'], +17)
 		else:  # Light UI
-			self.col['text'] = self.offsetColor(self.col['window'], -68, 51)
+			self.imgtheme = "dark"
+			self.col['text'] = QtGui.QColor(51, 51, 51)
+			self.col['disabled'] = self.offsetColor(self.col['window'], -51)
 			self.col['base'] = self.offsetColor(self.col['window'], +34, 221)
 			self.col['alternate'] = self.offsetColor(self.col['base'], -8)
-			self.col['button'] = self.offsetColor(self.col['window'], -34, 187)
+			self.col['button'] = self.offsetColor(self.col['window'], -17, 204)
+			self.col['button-border'] = self.offsetColor(self.col['button'], -8)
 			self.col['menu-bg'] = self.offsetColor(self.col['window'], +17, 187)
 			self.col['menu-border'] = self.offsetColor(self.col['menu-bg'], -17)
+			self.col['group-header'] = self.offsetColor(self.col['window'], -17)
 
 		self.col['hover'] = self.offsetColor(self.col['button'], +17)
 		self.col['checked'] = self.offsetColor(self.col['button'], -17)
-		#print("hover: %s" %self.col['hover'].name())
+		self.col['pressed'] = self.col['highlight']
 
-		if self.col['highlight'].lightness() < 192:
+		if self.col['highlight'].lightness() < 170:
 			self.col['highlighted-text'] = QtGui.QColor(255, 255, 255)
 		else:
 			self.col['highlighted-text'] = QtGui.QColor(0, 0, 0)
 
-		if self.col['button'].lightness() < 192:
-			self.col['button-text'] = self.offsetColor(self.col['button'], +68, 204)
-		else:
-			self.col['button-text'] = self.offsetColor(self.col['button'], -68, 51)
+		# if self.col['button'].lightness() < 170:
+		# 	self.col['button-text'] = self.offsetColor(self.col['button'], +68, 204)
+		# else:
+		# 	self.col['button-text'] = self.offsetColor(self.col['button'], -68, 51)
+		self.col['button-text'] = self.col['text']
 
 		self.col['mandatory-bg'] = self.col['mandatory']
 		if self.col['mandatory-bg'].lightness() < 128:

@@ -65,7 +65,7 @@ WINDOW_TITLE = "Render Submit"
 WINDOW_OBJECT = "RenderSubmitUI"
 
 # Set the UI and the stylesheet
-UI_FILE = "submit.ui"
+UI_FILE = 'submit.ui'
 STYLESHEET = 'style.qss'  # Set to None to use the parent app's stylesheet
 
 # Other options
@@ -104,7 +104,7 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 		self.shortcutExpertMode.setKey('Ctrl+Shift+E')
 		self.shortcutExpertMode.activated.connect(self.toggleExpertMode)
 
-		# Set icons (temp)
+		# Set icons
 		self.ui.commandBrowse_toolButton.setIcon(self.iconSet('folder-open-symbolic.svg'))
 		self.ui.mayaSceneBrowse_toolButton.setIcon(self.iconSet('folder-open-symbolic.svg'))
 		self.ui.houdiniSceneBrowse_toolButton.setIcon(self.iconSet('folder-open-symbolic.svg'))
@@ -254,8 +254,8 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 			self.ui.jobType_label.setEnabled(False)
 			self.ui.jobType_comboBox.setEnabled(False)
 			#self.ui.mayaScene_label.setEnabled(False)
-			#self.ui.mayaScene_comboBox.setEnabled(False)
-			self.ui.mayaScene_comboBox.lineEdit().setReadOnly(True)
+			self.ui.mayaScene_comboBox.setEnabled(False)
+			#self.ui.mayaScene_comboBox.lineEdit().setReadOnly(True)
 			#self.ui.mayaSceneBrowse_toolButton.setEnabled(False)
 			self.ui.mayaSceneBrowse_toolButton.hide()
 			self.ui.renderer_label.setEnabled(False)
@@ -281,8 +281,8 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 			self.ui.jobType_label.setEnabled(False)
 			self.ui.jobType_comboBox.setEnabled(False)
 			#self.ui.houdiniScene_label.setEnabled(False)
-			#self.ui.houdiniScene_comboBox.setEnabled(False)
-			self.ui.houdiniScene_comboBox.lineEdit().setReadOnly(True)
+			self.ui.houdiniScene_comboBox.setEnabled(False)
+			#self.ui.houdiniScene_comboBox.lineEdit().setReadOnly(True)
 			#self.ui.houdiniSceneBrowse_toolButton.setEnabled(False)
 			self.ui.houdiniSceneBrowse_toolButton.hide()
 
@@ -310,8 +310,8 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 			self.ui.jobType_label.setEnabled(False)
 			self.ui.jobType_comboBox.setEnabled(False)
 			#self.ui.nukeScript_label.setEnabled(False)
-			#self.ui.nukeScript_comboBox.setEnabled(False)
-			self.ui.nukeScript_comboBox.lineEdit().setReadOnly(True)
+			self.ui.nukeScript_comboBox.setEnabled(False)
+			#self.ui.nukeScript_comboBox.lineEdit().setReadOnly(True)
 			#self.ui.nukeScriptBrowse_toolButton.setEnabled(False)
 			self.ui.nukeScriptBrowse_toolButton.hide()
 
@@ -415,26 +415,29 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 		elif self.jobType == "Maya":
 			self.ui.maya_groupBox.show()
 			try:
-				self.relativeScenesDir = oswrapper.absolutePath('%s/%s' %(os.environ['MAYADIR'], 'scenes'))
+				#self.relativeScenesDir = oswrapper.absolutePath(os.environ['MAYASCENESDIR'])
+				self.relativeScenesDir = oswrapper.absolutePath(os.environ['UHUB_MAYA_SCENES_PATH'])
 			except KeyError:
 				self.relativeScenesDir = ""
 
 		elif self.jobType == "Houdini":
 			self.ui.houdini_groupBox.show()
 			try:
-				self.relativeScenesDir = oswrapper.absolutePath('%s/%s' %(os.environ['HOUDINIDIR'], 'scenes'))
+				#self.relativeScenesDir = oswrapper.absolutePath(os.environ['HOUDINISCENESDIR'])
+				self.relativeScenesDir = oswrapper.absolutePath(os.environ['UHUB_HOUDINI_HIP_PATH'])
 			except KeyError:
 				self.relativeScenesDir = ""
 
 		elif self.jobType == "Nuke":
 			self.ui.nuke_groupBox.show()
 			try:
-				self.relativeScenesDir = oswrapper.absolutePath('%s/%s' %(os.environ['NUKEDIR'], 'scripts'))
+				#self.relativeScenesDir = oswrapper.absolutePath(os.environ['NUKESCRIPTSDIR'])
+				self.relativeScenesDir = oswrapper.absolutePath(os.environ['UHUB_NUKE_SCRIPTS_PATH'])
 			except KeyError:
 				self.relativeScenesDir = ""
 
 		# Representative string to replace the path specified above
-		self.relativeScenesToken = '...'
+		self.relativeScenesToken = "..."
 
 
 	def setSceneList(self):
@@ -478,7 +481,8 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 	def commandBrowse(self):
 		""" Browse for a command.
 		"""
-		fileDir = os.environ.get('JOBPATH', '.')  # Go to current dir if env var is not set
+		#fileDir = os.environ.get('JOBPATH', '.')  # Go to current dir if env var is not set
+		fileDir = os.environ.get('UHUB_JOB_PATH', '.')  # Go to current dir if env var is not set
 		fileFilter = "All files (*.*)"
 
 		currentDir = os.path.dirname(self.ui.command_lineEdit.text())
@@ -500,19 +504,22 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 		"""
 		if self.jobType == "Maya":
 			comboBox = self.ui.mayaScene_comboBox
-			fileDir = os.environ.get('MAYASCENESDIR', '.')  # Go to current dir if env var is not set
+			fileDir = os.environ.get('UHUB_MAYA_SCENES_PATH', '.')  # Go to current dir if env var is not set
 			fileFilter = "Maya files (*.ma *.mb)"
 			fileTerminology = "scenes"
+
 		elif self.jobType == "Houdini":
 			comboBox = self.ui.houdiniScene_comboBox
-			fileDir = os.environ.get('HOUDINISCENESDIR', '.')  # Go to current dir if env var is not set
+			fileDir = os.environ.get('UHUB_HOUDINI_HIP_PATH', '.')  # Go to current dir if env var is not set
 			fileFilter = "Houdini files (*.hip)"
 			fileTerminology = "scenes"
+
 		elif self.jobType == "Nuke":
 			comboBox = self.ui.nukeScript_comboBox
-			fileDir = os.environ.get('NUKESCRIPTSDIR', '.')  # Go to current dir if env var is not set
+			fileDir = os.environ.get('UHUB_NUKE_SCRIPTS_PATH', '.')  # Go to current dir if env var is not set
 			fileFilter = "Nuke files (*.nk)"
 			fileTerminology = "scripts"
+
 		# else:
 		# 	fileDir = os.environ.get('JOBPATH', '.')  # Go to current dir if env var is not set
 		# 	fileFilter = "All files (*.*)"
@@ -788,7 +795,8 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 			MAYA-SPECIFIC
 		"""
 		try:  # Project is implicit if job is set
-			mayaProject = os.environ['MAYADIR'].replace("\\", "/")
+			#mayaProject = os.environ['MAYADIR'].replace("\\", "/")
+			mayaProject = os.environ['UHUB_MAYA_SHOT_PATH'].replace("\\", "/")
 		except KeyError:
 			mayaProject = scene.split('/scenes')[0]
 
@@ -1045,7 +1053,6 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 
 		elif self.jobType == "Maya":
 			submit_args['plugin'] = "MayaBatch"  # Deadline only
-			#submit_args['renderCmdEnvVar'] = 'MAYARENDERVERSION'  # RQ only
 			#submit_args['flags'] = ""  # RQ only
 			submit_args['version'] = os.environ.get('MAYA_VER', "2018")  #jobData.getAppVersion('Maya')
 			submit_args['renderer'] = self.ui.renderer_comboBox.currentText()  # Maya submit only
@@ -1078,7 +1085,6 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 
 		elif self.jobType == "Houdini":
 			submit_args['plugin'] = "Houdini"  # Deadline only
-			#submit_args['renderCmdEnvVar'] = 'MAYARENDERVERSION'  # RQ only
 			#submit_args['flags'] = ""  # RQ only
 			submit_args['version'] = "16"  # Temp
 			scene = self.makePathAbsolute(self.ui.houdiniScene_comboBox.currentText()).replace("\\", "/")
@@ -1089,7 +1095,6 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 
 		elif self.jobType == "Nuke":
 			submit_args['plugin'] = "Nuke"  # Deadline only
-			#submit_args['renderCmdEnvVar'] = 'NUKEVERSION'  # RQ only
 			submit_args['flags'] = ""  # RQ only
 			submit_args['version'] = os.environ.get('NUKE_VER', "10.0v3").split('v')[0]  #jobData.getAppVersion('Nuke')
 			submit_args['isMovie'] = self.getCheckBoxValue(self.ui.isMovie_checkBox)
@@ -1213,6 +1218,7 @@ def run_nuke(session, **kwargs):
 
 # Run as standalone app
 if __name__ == "__main__":
+	print("%s (standalone)" %WINDOW_TITLE)
 	app = QtWidgets.QApplication(sys.argv)
 
 	# Instantiate main application class
