@@ -1624,6 +1624,7 @@ Developers: %s
 		""" Function to execute when the render operation finishes.
 		"""
 		print("Render finished.")
+		self.dequeue()
 
 
 	def cancelRender(self):

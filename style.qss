@@ -867,8 +867,6 @@ QPushButton {
 	min-height: 18px;
 	background: rgba(%button%);
 	color: rgba(%button-text%);
-	/*border-color: rgba(%button-border%);
-	border-width: 1px;*/
 	border-radius: 0;
 }
 
@@ -891,10 +889,10 @@ QPushButton:checked {
 	background: rgba(%checked%);
 }
 
-QPushButton:disabled {
+QPushButton:disabled, QPushButton:default:disabled {
 	background: rgba(%button%, 33%);
+	color: rgba(%disabled%);
 	border-color: transparent;
-	/*border-color: rgba(%button-border%, 25%);*/
 }
 
 QPushButton:focus {

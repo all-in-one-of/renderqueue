@@ -478,6 +478,33 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 		return relPath.replace(self.relativeScenesToken, self.relativeScenesDir)
 
 
+	def snapshot(self):
+		""" Save a copy (snapshot) of the current scene, appended with the
+			date and time. Return the path to the snapshot, ready to be
+			submitted.
+			CURRENTLY NUKE-SPECIFIC
+		"""
+		timestamp = time.strftime(r"%Y%m%d_%H%M%S")
+
+		# if UI.ENVIRONMENT == "MAYA":
+		# 	currentScene = mc.file(query=True, sceneName=True)
+		# 	base, ext = os.path.splitext(currentScene)
+		# 	snapshotScene = "%s_snapshot_%s%s" %(base, timestamp, ext)
+		# 	nuke.scriptSave(snapshotScene)
+		# 	nuke.root()['name'].setValue(currentScene)
+		# 	return snapshotScene
+
+		if UI.ENVIRONMENT == "NUKE":
+			currentScript = nuke.root()['name'].value()
+			#dirname, basename = os.path.split(currentScript)
+			#snapshotScript = os.path.join(tmpdir, basename)
+			base, ext = os.path.splitext(basename)
+			snapshotScript = "%s_snapshot_%s%s" %(base, timestamp, ext)
+			nuke.scriptSave(snapshotScript)
+			nuke.root()['name'].setValue(currentScript)
+			return snapshotScript
+
+
 	def commandBrowse(self):
 		""" Browse for a command.
 		"""
@@ -1037,7 +1064,12 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 		submit_args['username'] = os.environ.get('IC_USERNAME', getpass.getuser())
 
 		# Environment variables...
-		submit_args['envVars'] = ['JOB', 'SHOT', 'JOBPATH', 'SHOTPATH']
+		#submit_args['envVars'] = ['JOB', 'SHOT', 'JOBPATH', 'SHOTPATH']  # Icarus
+		# submit_args['envVars'] = ['UHUB_BASE_PATH', 'UHUB_JOB_PATH']  # Uhub
+		envVarKeys = []
+		for key in os.environ.keys():
+			if 'UHUB' in key.upper():
+				envVarKeys.append(key)
 
 		################################
 		# Application-specific options #
@@ -1057,8 +1089,14 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 			submit_args['version'] = os.environ.get('MAYA_VER', "2018")  #jobData.getAppVersion('Maya')
 			submit_args['renderer'] = self.ui.renderer_comboBox.currentText()  # Maya submit only
 			submit_args['camera'] = self.ui.camera_comboBox.currentText()
+
 			scene = self.makePathAbsolute(self.ui.mayaScene_comboBox.currentText()).replace("\\", "/")
 			submit_args['scene'] = scene
+			# if UI.ENVIRONMENT == "STANDALONE":
+			# 	submit_args['scene'] = scene
+			# else:
+			# 	submit_args['scene'] = self.snapshot()
+
 			submit_args['mayaProject'] = self.getMayaProject(scene)
 			submit_args['outputFilePath'] = self.getOutputFilePath()  # Maya submit only
 			submit_args['outputFilePrefix'] = self.getOutputFilePrefix()  # Maya submit only
@@ -1079,7 +1117,10 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 				submit_args['output'] = self.getOutputs()
 
 			# Environment variables...
-			submit_args['envVars'] += ['MAYADIR', 'MAYASCENESDIR', 'MAYARENDERSDIR']
+			# submit_args['envVars'] += ['MAYADIR', 'MAYASCENESDIR', 'MAYARENDERSDIR']
+			for key in os.environ.keys():
+				if 'MAYA' in key.upper():
+					envVarKeys.append(key)
 			if submit_args['renderer'] == "redshift":
 				submit_args['envVars'] += ['REDSHIFT_COREDATAPATH']
 
@@ -1095,24 +1136,34 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 
 		elif self.jobType == "Nuke":
 			submit_args['plugin'] = "Nuke"  # Deadline only
-			submit_args['flags'] = ""  # RQ only
+			#submit_args['flags'] = ""  # RQ only
 			submit_args['version'] = os.environ.get('NUKE_VER', "10.0v3").split('v')[0]  #jobData.getAppVersion('Nuke')
 			submit_args['isMovie'] = self.getCheckBoxValue(self.ui.isMovie_checkBox)
-			submit_args['nukeX'] = self.getCheckBoxValue(self.ui.useNukeX_checkBox)
-			submit_args['interactiveLicense'] = self.getCheckBoxValue(self.ui.interactiveLicense_checkBox)
 			if submit_args['isMovie']:  # Override task size if output is movie
 				submit_args['taskSize'] = len(self.numList)
+			submit_args['nukeX'] = self.getCheckBoxValue(self.ui.useNukeX_checkBox)
+			submit_args['interactiveLicense'] = self.getCheckBoxValue(self.ui.interactiveLicense_checkBox)
+
 			scene = self.makePathAbsolute(self.ui.nukeScript_comboBox.currentText()).replace("\\", "/")
-			submit_args['scene'] = scene
+			if UI.ENVIRONMENT == "STANDALONE":
+				submit_args['scene'] = scene
+			else:
+				submit_args['scene'] = self.snapshot()
+
 			submit_args['jobName'] = os.path.splitext(os.path.basename(scene))[0]
-			#submit_args['writeNodes'] = self.ui.writeNodes_lineEdit.text()
 			submit_args['renderLayers'] = self.ui.writeNodes_lineEdit.text()  # Use renderLayers for writeNodes
 
 			# File output location(s)... (Nuke submit only)
 			submit_args['output'] = self.getOutputs()
 
 			# Environment variables...
-			submit_args['envVars'] += ['NUKEDIR', 'NUKESCRIPTSDIR', 'NUKERENDERSDIR']
+			#submit_args['envVars'] += ['NUKEDIR', 'NUKESCRIPTSDIR', 'NUKERENDERSDIR']
+			for key in os.environ.keys():
+				if 'NUKE' in key.upper():
+					envVarKeys.append(key)
+
+		# Remove duplicate env var keys
+		submit_args['envVars'] = list(set(envVarKeys))
 
 		return submit_args
 
