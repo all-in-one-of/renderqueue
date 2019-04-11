@@ -23,6 +23,9 @@ Thumbs.db
 *.tar
 *.zip
 
+#IDE stuff
+.idea
+
 #Data files, configs and databases
 *.json
 rq_database

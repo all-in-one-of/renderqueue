@@ -812,6 +812,7 @@
     <addaction name="separator"/>
     <addaction name="actionStartWorker"/>
     <addaction name="actionStopWorker"/>
+    <addaction name="actionKill"/>
     <addaction name="menuOnTaskCompletion"/>
     <addaction name="menuRemoteControl"/>
    </widget>
@@ -1023,6 +1024,11 @@
   <action name="actionArchiveJob">
    <property name="text">
     <string>Archive</string>
+   </property>
+  </action>
+  <action name="actionKill">
+   <property name="text">
+    <string>Kill</string>
    </property>
   </action>
  </widget>

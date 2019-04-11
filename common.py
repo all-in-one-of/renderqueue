@@ -36,16 +36,16 @@ def settings_file(scene, suffix=""):
 		scene file. N.B. This function is duplicated in render_submit.py
 	"""
 	if os.path.isfile(scene):
-		sceneDir, sceneFile = os.path.split(scene)
-		# settingsDir = os.path.join(sceneDir, os.environ['IC_METADATA'])
-		settingsFile = oswrapper.sanitize(sceneFile, replace='_') + suffix
+		scene_dir, scene_file = os.path.split(scene)
+		# settings_dir = os.path.join(scene_dir, os.environ['IC_METADATA'])
+		settings_file = oswrapper.sanitize(scene_file, replace='_') + suffix
 
 		# # Create settings directory if it doesn't exist
-		# if not os.path.isdir(settingsDir):
-		# 	oswrapper.createDir(settingsDir)
+		# if not os.path.isdir(settings_dir):
+		# 	oswrapper.createDir(settings_dir)
 
-		# return os.path.join(settingsDir, settingsFile)
-		return os.path.join('/var/tmp', settingsFile)  # temp - linux only
+		# return os.path.join(settings_dir, settings_file)
+		return os.path.join('/var/tmp', settings_file)  # temp - linux only
 
 	else:
 		return False

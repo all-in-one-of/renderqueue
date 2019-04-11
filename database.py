@@ -43,6 +43,7 @@ class RenderQueue():
 		self.db['failed'] = os.path.join(location, 'tasks', 'failed')
 		self.db['workers'] = os.path.join(location, 'workers')
 		self.db['logs'] = os.path.join(location, 'logs')
+		self.db['archive'] = os.path.join(location, 'archive')
 		print("Connecting to render queue database at: %s" %location)
 
 		# Check database is valid, if not create folder structure 
@@ -140,32 +141,76 @@ class RenderQueue():
 
 
 	def deleteJob(self, jobID):
-		""" Delete a render job and associated tasks.
+		""" Delete a render job and associated tasks and log files.
 			Searches for all JSON files with job UUID under the queue folder
-			structure and deletes them. Also kills processes for tasks that
-			are rendering.
+			structure and deletes them.
+			TODO: Also kill processes for tasks that are rendering.
 		"""
 		datafile = os.path.join(self.db['jobs'], '%s.json' %jobID)
 		oswrapper.remove(datafile)
+		self.queue_logger.info("Deleted job %s" %jobID)
+
+		# Delete task data files and log files...
+		task_count = self.deleteTasks(jobID)
+		log_count = self.deleteJobLogs(jobID)
+
+		return True
+
+
+	def archiveJob(self, jobID):
+		""" Archive a render job.
+			Moves all files associated with a particular job UUID into a
+			special archive folder. Tasks and logs are not archived.
+			TODO: Only allow completed jobs to be archived.
+		"""
+		filename = os.path.join(self.db['jobs'], '%s.json' %jobID)
+		dst_dir = self.db['archive']
+
+		if oswrapper.move(filename, dst_dir):
+			self.queue_logger.info("Archived job %s" %jobID)
+
+			# Delete task data files and log files...
+			self.deleteTasks(jobID)
+			self.deleteJobLogs(jobID)
+			return True
+		else:
+			self.queue_logger.warning("Failed to archive job %s" %jobID)
+			return False
+
+
+	def deleteTasks(self, jobID):
+		""" Delete task data files associated with a particular job.
+		"""
+		task_count = 0
 
 		path = '%s/*/*/%s_*.json' %(self.db['root'], jobID)
 		for filename in glob.glob(path):
 			if 'workers' in filename:
 				# TODO: Deal nicely with tasks that are currently rendering
 				print("Task %s currently rendering." %filename)
+			task_count += 1
 			oswrapper.remove(filename)  # add return value for check
 
-		self.queue_logger.info("Deleted job %s" %jobID)
+		if task_count:
+			self.queue_logger.info("Deleted %d tasks for job %s" %(task_count, jobID))
 
-		return True
+		return task_count
 
 
-	def archiveJob(self, jobID):
-		""" Archive a render job and associated tasks.
-			Moves all files associated with a particular job UUID into a
-			special archive folder. Perhaps don't archive tasks?
+	def deleteJobLogs(self, jobID):
+		""" Delete log files associated with a particular job.
 		"""
-		pass
+		log_count = 0
+
+		path = '%s/%s_*.log' %(self.db['logs'], jobID)
+		for logfile in glob.glob(path):
+			log_count += 1
+			oswrapper.remove(logfile)
+
+		if log_count:
+			self.queue_logger.info("Deleted %d log files for job %s" %(log_count, jobID))
+
+		return log_count
 
 
 	def requeueJob(self, jobID):
@@ -497,7 +542,7 @@ class RenderQueue():
 			%(kwargs['name'], workerID))
 
 
-	def getWorkers(self):
+	def getWorkers(self, onlineOnly=False):
 		""" Return a list of workers in the database. Check if there's a task
 			associated with it and add it to the dictionary.
 		"""
@@ -521,7 +566,7 @@ class RenderQueue():
 			if not worker['enable']:
 				status = "Disabled"
 
-			# Check if remote workers have checked in recently
+			# Check when remote worker was last online
 			if worker['online']:
 				timeSinceLastOnline = time.time() - worker['online']
 				# Mark as offline if not seen for 60 seconds
@@ -533,6 +578,12 @@ class RenderQueue():
 
 			worker['status'] = status
 			workers.append(worker)
+			# print(worker['status'])
+			# if onlineOnly:
+			# 	if worker['status'] != "Offline":
+			# 		workers.append(worker)
+			# else:
+			# 	workers.append(worker)
 
 		return workers
 

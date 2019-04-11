@@ -209,6 +209,8 @@ class WorkerThread(QtCore.QThread):
 
 		except subprocess.CalledProcessError as e:
 			result = e.returncode
+		# renderProcess = QtCore.QProcess(self)
+		# renderProcess.start(args[0], args[1:])
 
 		#result, output = oswrapper.execute(args)
 		#self.task_logger.info("Result: %s", result)

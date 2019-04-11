@@ -21,7 +21,7 @@ from collections import OrderedDict
 def numList(num_range_str, sort=True, quiet=False):
 	""" Takes a formatted string describing a range of numbers and returns a
 		list of integers, with duplicates removed.
-		e.g. '1-5, 20, 24, 50-55x2, 1001-1002'
+		e.g. "1-5, 20, 24, 50-55x2, 1001-1002"
 		returns [1, 2, 3, 4, 5, 20, 24, 50, 52, 54, 1001, 1002]
 	"""
 	# Check that num_range_str isn't empty
@@ -33,18 +33,20 @@ def numList(num_range_str, sort=True, quiet=False):
 
 	num_int_list = []
 
-	# Regex for sequences including x# for steps
+	# Define regex patterns for sequences (including x# for steps)
 	seq_format = re.compile(r'^\d+-\d+(x\d+)?$')
+	separator = re.compile(r',\s*')
 
 	# Split into groups of ranges separated by commas and spaces
-	if num_range_str[-1] != ",":
-		num_range_str += ","
-	grps = [x[:-1] for x in num_range_str.split()]
+	# if num_range_str[-1] != ",":
+	# 	num_range_str += ","
+	# grps = [x[:-1] for x in num_range_str.split()]
+	grps = separator.split(num_range_str)
 
 	# Try/except statements used instead of if statements for speed-up
 	for grp in grps:
-		# Check if 'grp' is a single number (e.g. 10)
 		try:
+			# Check if 'grp' is a single number (e.g. 10)
 			num_int_list.append(int(grp))
 
 		except ValueError:
@@ -84,7 +86,7 @@ def numRange(num_int_list, padding=0, quiet=False):
 	""" Takes a list of integer values and returns a formatted string
 		describing the range of numbers.
 		e.g. [1, 2, 3, 4, 5, 20, 24, 1001, 1002]
-		returns '1-5, 20, 24, 1001-1002'
+		returns "1-5, 20, 24, 1001-1002"
 	"""
 	num_range_str = ''
 

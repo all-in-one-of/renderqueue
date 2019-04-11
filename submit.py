@@ -69,6 +69,7 @@ UI_FILE = 'submit.ui'
 STYLESHEET = 'style.qss'  # Set to None to use the parent app's stylesheet
 
 # Other options
+PREFS_FILE = os.path.join(os.environ['HOME'], '.renderqueue', 'submit.json')
 STORE_WINDOW_GEOMETRY = True
 
 
@@ -83,12 +84,13 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 		super(RenderSubmitUI, self).__init__(parent)
 		self.parent = parent
 
-		self.setupUI(window_object=WINDOW_OBJECT, 
-		             window_title=WINDOW_TITLE, 
-		             ui_file=UI_FILE, 
-		             stylesheet=STYLESHEET, 
-		             prefs_file=None, 
-		             store_window_geometry=STORE_WINDOW_GEOMETRY)  # re-write as **kwargs ?
+		self.setupUI(
+			window_object=WINDOW_OBJECT,
+			window_title=WINDOW_TITLE,
+			ui_file=UI_FILE,
+			stylesheet=STYLESHEET,
+			prefs_file=PREFS_FILE,
+			store_window_geometry=STORE_WINDOW_GEOMETRY)  # re-write as **kwargs ?
 
 		self.conformFormLayoutLabels(self.ui)
 
@@ -112,7 +114,7 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 
 		self.ui.getCameras_toolButton.setIcon(self.iconSet('view-refresh.svg'))
 		self.ui.getPools_toolButton.setIcon(self.iconSet('view-refresh.svg'))
-		self.ui.getPools2_toolButton.setIcon(self.iconSet('view-refresh.svg'))
+		#self.ui.getPools2_toolButton.setIcon(self.iconSet('view-refresh.svg'))
 		self.ui.getGroups_toolButton.setIcon(self.iconSet('view-refresh.svg'))
 
 		self.ui.frameListOptions_toolButton.setIcon(self.iconSet('configure.svg'))
@@ -140,11 +142,11 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 		# self.ui.renderer_comboBox.currentIndexChanged.connect(self.storeComboBoxValue)
 		# self.ui.layers_lineEdit.textEdited.connect(self.storeLineEditValue)
 
-		#self.ui.frames_lineEdit.editingFinished.connect(self.calcFrameList)
-		self.ui.frames_lineEdit.textChanged.connect(self.calcFrameList)
+		self.ui.frames_lineEdit.editingFinished.connect(self.calcFrameList)
+		#self.ui.frames_lineEdit.textChanged.connect(self.calcFrameList)
 		self.ui.taskSize_spinBox.valueChanged.connect(self.calcFrameList)
 		self.ui.getPools_toolButton.clicked.connect(self.getPools)
-		self.ui.getPools2_toolButton.clicked.connect(self.getPools)
+		#self.ui.getPools2_toolButton.clicked.connect(self.getPools)
 		self.ui.getGroups_toolButton.clicked.connect(self.getGroups)
 
 		self.ui.submit_pushButton.clicked.connect(self.submit)
@@ -345,17 +347,21 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 
 	# @QtCore.Slot()
 	def applySettings(self):
-		""" Apply the specific settings for the scene/script file.
+		""" Apply the saved submission settings for the chosen scene/script
+			file.
 		"""
 		if self.jobType == "Maya":
 			comboBox = self.ui.mayaScene_comboBox
+		elif self.jobType == "Houdini":
+			comboBox = self.ui.houdiniScene_comboBox
 		elif self.jobType == "Nuke":
 			comboBox = self.ui.nukeScript_comboBox
 		scene = self.makePathAbsolute(comboBox.currentText()).replace("\\", "/")
 
-		# self.xmlData = common.settings_file(scene, suffix="_icSubmissionData.xml")
-		# if self.xmlData:
-		# 	self.xd.loadXML(self.xmlData, use_template=False)
+		# self.prefs.read_new(common.settings_file(scene, suffix="_submissionData.json"))
+		# if self.prefs:
+		# 	#print(self.prefs)
+		# 	#self.prefs.read()
 		# 	self.setupWidgets(self.ui, updateOnly=True)
 
 
@@ -371,18 +377,19 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 		# Show/hide specific UI elements based on selected queue manager
 		# rq_show_list = [self.ui.flags_label, self.ui.flags_lineEdit]
 		rq_show_list = [self.ui.interactiveLicense_checkBox]
-		dl_show_list = [self.ui.pool2_label, self.ui.pool2_frame, 
-		                self.ui.group_label, self.ui.group_frame, 
-		                self.ui.getPools_toolButton]
+		dl_show_list = [self.ui.group_label, self.ui.group_frame,
+						self.ui.pool2_comboBox, self.ui.getPools_toolButton]
 
 		for item in rq_show_list + dl_show_list:
 			item.setEnabled(False)
 			#item.hide()
 		if self.submitTo == "Render Queue":
+			self.ui.pool2_comboBox.hide()  # TEMP
 			for item in rq_show_list:
 				item.setEnabled(True)
 				#item.show()
 		if self.submitTo == "Deadline":
+			self.ui.pool2_comboBox.show()  # TEMP
 			for item in dl_show_list:
 				item.setEnabled(True)
 				#item.show()
@@ -725,6 +732,7 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 
 	def calcFrameList(self, quiet=True):
 		""" Calculate list of frames to be rendered.
+			TODO: perhaps run on a separate thread to keep UI snappy?
 		"""
 		try:
 			self.numList = sequence.numList(self.ui.frames_lineEdit.text(), sort=False, quiet=quiet)
@@ -1064,12 +1072,12 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 		submit_args['username'] = os.environ.get('IC_USERNAME', getpass.getuser())
 
 		# Environment variables...
-		#submit_args['envVars'] = ['JOB', 'SHOT', 'JOBPATH', 'SHOTPATH']  # Icarus
+		# submit_args['envVars'] = ['JOB', 'SHOT', 'JOBPATH', 'SHOTPATH']  # Icarus
 		# submit_args['envVars'] = ['UHUB_BASE_PATH', 'UHUB_JOB_PATH']  # Uhub
 		envVarKeys = []
-		for key in os.environ.keys():
-			if 'UHUB' in key.upper():
-				envVarKeys.append(key)
+#		for key in os.environ.keys():
+#			if 'UHUB' in key.upper():
+#				envVarKeys.append(key)
 
 		################################
 		# Application-specific options #
@@ -1118,9 +1126,9 @@ class RenderSubmitUI(QtWidgets.QMainWindow, UI.TemplateUI):
 
 			# Environment variables...
 			# submit_args['envVars'] += ['MAYADIR', 'MAYASCENESDIR', 'MAYARENDERSDIR']
-			for key in os.environ.keys():
-				if 'MAYA' in key.upper():
-					envVarKeys.append(key)
+#			for key in os.environ.keys():
+#				if 'MAYA' in key.upper():
+#					envVarKeys.append(key)
 			if submit_args['renderer'] == "redshift":
 				submit_args['envVars'] += ['REDSHIFT_COREDATAPATH']
 

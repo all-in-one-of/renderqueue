@@ -53,7 +53,7 @@ UI_FILE = 'renderqueue.ui'
 STYLESHEET = 'style.qss'  # Set to None to use the parent app's stylesheet
 
 # Other options
-PREFS_FILE = 'config/userprefs.json'
+PREFS_FILE = os.path.join(os.environ['HOME'], '.renderqueue', 'userprefs.json')
 STORE_WINDOW_GEOMETRY = True
 
 
@@ -80,12 +80,13 @@ class RenderQueueApp(QtWidgets.QMainWindow, UI.TemplateUI):
 		self.selection = []
 		self.expandedJobs = {}
 
-		self.setupUI(window_object=WINDOW_OBJECT, 
-					 window_title=WINDOW_TITLE, 
-					 ui_file=UI_FILE, 
-					 stylesheet=STYLESHEET, 
-					 prefs_file=PREFS_FILE, 
-					 store_window_geometry=STORE_WINDOW_GEOMETRY)  # re-write as **kwargs ?
+		self.setupUI(
+			window_object=WINDOW_OBJECT,
+			window_title=WINDOW_TITLE,
+			ui_file=UI_FILE,
+			stylesheet=STYLESHEET,
+			prefs_file=PREFS_FILE,
+			store_window_geometry=STORE_WINDOW_GEOMETRY)  # re-write as **kwargs ?
 
 		# Set window flags
 		self.setWindowFlags(QtCore.Qt.Window)
@@ -212,10 +213,10 @@ class RenderQueueApp(QtWidgets.QMainWindow, UI.TemplateUI):
 		self.ui.jobDelete_toolButton.clicked.connect(self.deleteJob)
 		self.ui.jobDelete_toolButton.setIcon(self.iconSet('edit-delete.svg'))
 
-		#self.ui.actionDeleteLogs.triggered.connect(self.deleteJobLobs)
+		self.ui.actionDeleteLogs.triggered.connect(self.deleteJobLobs)
 		self.ui.actionDeleteLogs.setIcon(self.iconSet('edit-delete.svg'))
 
-		#self.ui.actionArchiveJob.triggered.connect(self.archiveJob)
+		self.ui.actionArchiveJob.triggered.connect(self.archiveJob)
 		self.ui.actionArchiveJob.setIcon(self.iconSet('archive.svg'))
 
 		#self.ui.actionResubmit.triggered.connect(self.resubmitJob)  # not yet implemented
@@ -262,6 +263,8 @@ class RenderQueueApp(QtWidgets.QMainWindow, UI.TemplateUI):
 
 		#self.ui.actionStopWorkerImmediately.triggered.connect(self.cancelRender)
 		#self.ui.actionStopWorkerImmediately.setIcon(self.iconSet('paint-none.svg'))
+		self.ui.actionKill.triggered.connect(self.cancelRender)
+		self.ui.actionKill.setIcon(self.iconSet('process-stop.svg'))
 
 		self.ui.actionDeleteWorker.triggered.connect(self.deleteWorker)
 		self.ui.actionDeleteWorker.setIcon(self.iconSet('edit-delete.svg'))
@@ -844,7 +847,7 @@ Developers: %s
 		widget.blockSignals(True)
 
 		# Populate tree widget with workers
-		workers = self.rq.getWorkers()
+		workers = self.rq.getWorkers() #onlineOnly=True)
 		if not workers:
 			return
 		for worker in workers:
@@ -1156,6 +1159,45 @@ Developers: %s
 					#	verbose.warning("Job ID %s cannot be deleted while in progress." %jobID)
 
 			#self.updateQueueView()
+
+		except ValueError:
+			pass
+
+
+	def archiveJob(self):
+		""" Archives selected render job(s).
+		"""
+		header = self.queue_header
+
+		try:
+			for item in self.ui.queue_treeWidget.selectedItems():
+				# If item has no parent then it must be a top level item, and
+				# therefore also a job
+				if not item.parent():
+					jobID = item.text(header['ID'])
+
+					# Remove item from view
+					if self.rq.archiveJob(jobID):
+						self.ui.queue_treeWidget.takeTopLevelItem(self.ui.queue_treeWidget.indexOfTopLevelItem(item))
+
+			#self.updateQueueView()
+
+		except ValueError:
+			pass
+
+
+	def deleteJobLobs(self):
+		""" Removes log files associated with the selected job(s).
+		"""
+		header = self.queue_header
+
+		try:
+			for item in self.ui.queue_treeWidget.selectedItems():
+				# If item has no parent then it must be a top level item, and
+				# therefore also a job
+				if not item.parent():
+					jobID = item.text(header['ID'])
+					self.rq.deleteJobLogs(jobID)
 
 		except ValueError:
 			pass
@@ -1628,12 +1670,13 @@ Developers: %s
 
 
 	def cancelRender(self):
-		""" Stop the rename operation.
+		""" Stop the render operation.
 		"""
 		print("Aborting render.")
 		# self.workerThread.terminate()  # Enclose in try/except?
-		self.workerThread.quit()  # Enclose in try/except?
-		self.workerThread.wait()  # Enclose in try/except?
+		# self.workerThread.quit()  # Enclose in try/except?
+		# self.workerThread.wait()  # Enclose in try/except?
+		self.workerThread.stop()
 
 		# self.ui.taskList_treeWidget.resizeColumnToContents(self.getHeaderIndex("Status"))
 

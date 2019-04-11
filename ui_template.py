@@ -42,6 +42,10 @@ class SettingsData(object):
 		self.prefs_file = prefs_file
 		self.prefs_dict = {}
 
+	def read_new(self, prefs_file):
+		self.prefs_file = prefs_file
+		self.read()
+
 	def read(self):
 		try:
 			with open(self.prefs_file, 'r') as f:
@@ -102,6 +106,7 @@ class TemplateUI(object):
 		# Instantiate preferences data file
 		self.prefs = SettingsData(prefs_file)
 		if prefs_file:
+			print(prefs_file)
 			self.prefs.read()
 
 		# Load UI file
@@ -409,12 +414,20 @@ class TemplateUI(object):
 
 					# Combo boxes...
 					elif isinstance(widget, QtWidgets.QComboBox):
+						# Add items if history is enabled
+						if widget.property('storeHistory'):
+							history = self.prefs.getValue(category, "%s_history" % attr)
+							if history:
+								widget.addItems(history)
+						# Add/set current item
 						if value is not None:
 							if widget.findText(value) == -1:
 								widget.addItem(value)
 							widget.setCurrentIndex(widget.findText(value))
+						# Store value in external file
 						if storeProperties:
 							self.storeValue(category, attr, widget.currentText())
+						# Connect signals * slots
 						if not updateOnly:
 							if widget.isEditable():
 								widget.editTextChanged.connect(self.storeComboBoxValue)
@@ -461,13 +474,14 @@ class TemplateUI(object):
 
 		action = QtWidgets.QAction(name, None)
 		if icon:
-			actionIcon = QtGui.QIcon()
-			#actionIcon.addPixmap(QtGui.QPixmap(osOps.absolutePath("$IC_FORMSDIR/rsc/%s.png" %icon)), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-			#actionIcon.addPixmap(QtGui.QPixmap(osOps.absolutePath("$IC_FORMSDIR/rsc/%s_disabled.png" %icon)), QtGui.QIcon.Disabled, QtGui.QIcon.Off)
-			searchpath = [pipeline.iconsdir, pipeline.formsdir]
-			actionIcon.addPixmap(QtGui.QPixmap(self.checkFilePath(icon+".png", searchpath)), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-			actionIcon.addPixmap(QtGui.QPixmap(self.checkFilePath(icon+"_disabled.png", searchpath)), QtGui.QIcon.Disabled, QtGui.QIcon.Off)
-			action.setIcon(actionIcon)
+			# actionIcon = QtGui.QIcon()
+			# #actionIcon.addPixmap(QtGui.QPixmap(osOps.absolutePath("$IC_FORMSDIR/rsc/%s.png" %icon)), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+			# #actionIcon.addPixmap(QtGui.QPixmap(osOps.absolutePath("$IC_FORMSDIR/rsc/%s_disabled.png" %icon)), QtGui.QIcon.Disabled, QtGui.QIcon.Off)
+			# searchpath = [pipeline.iconsdir, pipeline.formsdir]
+			# actionIcon.addPixmap(QtGui.QPixmap(self.checkFilePath(icon+".png", searchpath)), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+			# actionIcon.addPixmap(QtGui.QPixmap(self.checkFilePath(icon+"_disabled.png", searchpath)), QtGui.QIcon.Disabled, QtGui.QIcon.Off)
+			# action.setIcon(actionIcon)
+			action.setIcon(self.iconSet(icon))
 		action.setObjectName(actionName)
 		action.triggered.connect(command)
 		widget.addAction(action)
@@ -608,10 +622,12 @@ class TemplateUI(object):
 	def getWidgetMeta(self, widget):
 		""" 
 		"""
-		widget.setProperty('inheritedValue', False)
-		widget.setToolTip("")  # Rework this in case widgets already have a tooltip
-		widget.style().unpolish(widget)
-		widget.style().polish(widget)
+		# Disabled the following code which deals with inherited values.
+		# The polish/unpolish might be cause of combo popup glitch?
+		# widget.setProperty('inheritedValue', False)
+		# widget.setToolTip("")  # Rework this in case widgets already have a tooltip
+		# widget.style().unpolish(widget)
+		# widget.style().polish(widget)
 
 		category = widget.property('xmlCategory')
 		attr = widget.property('xmlTag')
@@ -637,8 +653,6 @@ class TemplateUI(object):
 		color = self.colorPickerDialog(current_color)
 		if color:
 			widget.setStyleSheet("QWidget { background-color: %s }" %color.name())
-			# category = self.sender().property('xmlCategory')
-			# attr = self.sender().property('xmlTag')
 			category, attr = self.getWidgetMeta(self.sender())
 			self.storeValue(category, attr, color.name())
 
@@ -647,8 +661,6 @@ class TemplateUI(object):
 	def storeSliderValue(self):
 		""" Get the value from a Slider and store in XML data.
 		"""
-		# category = self.sender().property('xmlCategory')
-		# attr = self.sender().property('xmlTag')
 		category, attr = self.getWidgetMeta(self.sender())
 		value = self.sender().value()
 		self.storeValue(category, attr, value)
@@ -658,8 +670,6 @@ class TemplateUI(object):
 	def storeSpinBoxValue(self):
 		""" Get the value from a Spin Box and store in XML data.
 		"""
-		# category = self.sender().property('xmlCategory')
-		# attr = self.sender().property('xmlTag')
 		category, attr = self.getWidgetMeta(self.sender())
 		value = self.sender().value()
 		self.storeValue(category, attr, value)
@@ -669,8 +679,6 @@ class TemplateUI(object):
 	def storeLineEditValue(self):
 		""" Get the value from a Line Edit and store in XML data.
 		"""
-		# category = self.sender().property('xmlCategory')
-		# attr = self.sender().property('xmlTag')
 		category, attr = self.getWidgetMeta(self.sender())
 		value = self.sender().text()
 		self.storeValue(category, attr, value)
@@ -680,8 +688,6 @@ class TemplateUI(object):
 	def storeTextEditValue(self):
 		""" Get the value from a Plain Text Edit and store in XML data.
 		"""
-		# category = self.sender().property('xmlCategory')
-		# attr = self.sender().property('xmlTag')
 		category, attr = self.getWidgetMeta(self.sender())
 		value = self.sender().toPlainText()
 		self.storeValue(category, attr, value)
@@ -691,8 +697,6 @@ class TemplateUI(object):
 	def storeCheckBoxValue(self):
 		""" Get the value from a Check Box and store in XML data.
 		"""
-		# category = self.sender().property('xmlCategory')
-		# attr = self.sender().property('xmlTag')
 		category, attr = self.getWidgetMeta(self.sender())
 		value = self.getCheckBoxValue(self.sender())
 		self.storeValue(category, attr, value)
@@ -703,8 +707,6 @@ class TemplateUI(object):
 		""" Get the value from a Radio Button group and store in XML data.
 		"""
 		if self.sender().isChecked():
-			# category = self.sender().property('xmlCategory')
-			# attr = self.sender().property('xmlTag')
 			category, attr = self.getWidgetMeta(self.sender())
 			value = self.sender().text()
 			self.storeValue(category, attr, value)
@@ -714,11 +716,14 @@ class TemplateUI(object):
 	def storeComboBoxValue(self):
 		""" Get the value from a Combo Box and store in XML data.
 		"""
-		# category = self.sender().property('xmlCategory')
-		# attr = self.sender().property('xmlTag')
 		category, attr = self.getWidgetMeta(self.sender())
 		value = self.sender().currentText()
 		self.storeValue(category, attr, value)
+
+		# Store combo box history
+		if self.sender().property('storeHistory'):
+			items = [self.sender().itemText(i) for i in range(self.sender().count())]
+			self.storeValue(category, "%s_history" % attr, items)
 
 
 	def storeValue(self, category, attr, value=""):

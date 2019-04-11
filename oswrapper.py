@@ -4,7 +4,7 @@
 #
 # Nuno Pereira <nuno.pereira@unit.tv>
 # Mike Bonnington <mike.bonnington@unit.tv>
-# (c) 2013-2018
+# (c) 2013-2019
 #
 # This module acts as a wrapper for low-level OS operations.
 

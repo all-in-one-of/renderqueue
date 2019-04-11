@@ -264,6 +264,15 @@ class RenderBrowserUI(QtWidgets.QMainWindow, UI.TemplateUI):
 		else:
 			e.ignore()
 
+
+	def closeEvent(self, event):
+		""" Event handler for when window is closed.
+		"""
+		self.save()  # Save settings
+		self.storeWindow()  # Store window geometry
+
+		#QtWidgets.QMainWindow.closeEvent(self, event)
+
 # ----------------------------------------------------------------------------
 # End main application class
 # ============================================================================
@@ -283,5 +292,6 @@ if __name__ == "__main__":
 
 	# Show the application UI
 	rbApp.show()
+	rbApp.display(directory=os.getcwd())
 	sys.exit(app.exec_())
 

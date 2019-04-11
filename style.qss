@@ -115,7 +115,7 @@ QAbstractItemView {
 }
 
 QAbstractItemView::item {
-	padding: 2px;
+	padding: 2px 0;
 }
 
 /*QAbstractItemView::item:selected {
@@ -135,6 +135,13 @@ QAbstractItemView::item:selected:disabled {
 	background-color: #666;
 	color: #333;
 }*/
+
+QAbstractItemView::item QLineEdit {
+	margin: 0;
+	padding: 0;
+	background: rgba(%base%);
+	border: 1px solid rgba(%window%);
+}
 
 QAbstractItemView::indicator {
 	width: 9px;
